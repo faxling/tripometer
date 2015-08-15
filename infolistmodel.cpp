@@ -62,9 +62,6 @@ QString FormatDurationSec(unsigned int nTime)
     time_t now = nTime ;
 
     strftime(szStr, 20, "%H:%M:%S", gmtime(&now));
-
-
-
     return szStr;
 }
 
@@ -137,7 +134,7 @@ void InfoListModel::UpdateOnTimer()
          fwrite((void*)&p,1,sizeof p,m_pDataFile);
         //  qDebug() << "fwrite " << n;
     }
-    m_nData[3].f = FormatDuration(p.m_fDurationSec*10);
+    m_nData[DURATION].f = FormatDuration(p.m_fDurationSec*10);
     m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
     QVector<int> oc;
     oc.push_back(ValueRole);
@@ -153,6 +150,24 @@ InfoListModel::~InfoListModel()
     delete m_pTimer;
 }
 
+
+
+enum TRIP_FIELDS
+{
+    SPEED,
+    DISTANS,
+    TIMEKM,
+    DURATION,
+    BEARING,
+    ELEVATION,
+    MAXSPEED,
+    AVERAGE_SPEED,
+    DISTANCE_TO_HOME,
+    GPS_SPEED,
+    LAT,
+    LONG,
+    LAST_VAL
+};
 
 InfoListModel::InfoListModel(QObject *parent) :
     QAbstractListModel(parent)
@@ -188,34 +203,21 @@ InfoListModel::InfoListModel(QObject *parent) :
 
     m_pTimer->Start(100);
 
-    m_nData.resize(12);
+    m_nData.resize(LAST_VAL);
 
+    m_nData[SPEED] = Data("km/h","Speed");
+    m_nData[DISTANS] = Data("km","Distans");
+    m_nData[TIMEKM] = Data("time","Time/km");
+    m_nData[DURATION] = Data("time","Duration");
+    m_nData[BEARING] = Data("deg","Bearing");
+    m_nData[ELEVATION] = Data("m","Elevation");
+    m_nData[MAXSPEED] = Data("km/h","Max Speed");
+    m_nData[AVERAGE_SPEED] = Data("km/h","Average Speed");
+    m_nData[DISTANCE_TO_HOME] = Data("km","Distance To Home");
+    m_nData[GPS_SPEED] = Data("km/h","Gps Speed");
+    m_nData[LAT] = Data("deg","Lat");
+    m_nData[LONG] = Data("deg","Long");
 
-    m_nData[0].sU = "km/h";
-    m_nData[1].sU = "km";
-    m_nData[2].sU = "time";
-    m_nData[3].sU = "time";
-    m_nData[4].sU = "deg";
-    m_nData[5].sU = "m";
-    m_nData[6].sU = "deg";
-    m_nData[7].sU = "deg";
-    m_nData[8].sU = "km/h";
-    m_nData[9].sU = "km/h";
-    m_nData[10].sU = "km";
-    m_nData[11].sU = "km/h";
-
-    m_nData[0].sL = "Speed";
-    m_nData[1].sL = "Distans";
-    m_nData[2].sL = "Time/km";
-    m_nData[3].sL = "Duration";
-    m_nData[4].sL = "Bearing";
-    m_nData[5].sL = "Elevation";
-    m_nData[6].sL = "Lat";
-    m_nData[7].sL = "Long";
-    m_nData[8].sL = "Max Speed";
-    m_nData[9].sL = "Average Speed";
-    m_nData[10].sL = "Distance To Home";
-    m_nData[11].sL = "Gps speed";
     ResetData();
 }
 
@@ -232,8 +234,8 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
     QVector<int> oc;
     oc.push_back(ValueRole);
-    m_nData[6].f = FormatPos(o.coordinate().latitude());
-    m_nData[7].f = FormatPos(o.coordinate().longitude());
+    m_nData[LAT].f = FormatPos(o.coordinate().latitude());
+    m_nData[LONG].f = FormatPos(o.coordinate().longitude());
     if (m_oLastPos.isValid()==false)
     {
         m_oLastPos = o.coordinate();
@@ -243,14 +245,14 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
             p.m_oStartPosLong = m_oLastPos.longitude();
         }
 
-        emit dataChanged(index(6), index(7),oc);
+        emit dataChanged(index(LAT), index(LONG),oc);
         double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
         m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
         return;
     }
 
     if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
-        m_nData[11].f = FormatKmH(o.attribute(QGeoPositionInfo::Attribute::GroundSpeed));
+        m_nData[GPS_SPEED].f = FormatKmH(o.attribute(QGeoPositionInfo::Attribute::GroundSpeed)*3.6);
 
     double fStep = m_oLastPos.distanceTo(o.coordinate());
     // if (fStep < 0.5 )
@@ -262,11 +264,11 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     // }
     double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
     m_ocSpeedVal.push_back(SpeedStruct(fTimestamp, fStep));
-    m_nData[10].f = FormatKm( QGeoCoordinate(p.m_oStartPosLat,p.m_oStartPosLong).distanceTo(o.coordinate()) / 1000.0);
+    m_nData[DISTANCE_TO_HOME].f = FormatKm( QGeoCoordinate(p.m_oStartPosLat,p.m_oStartPosLong).distanceTo(o.coordinate()) / 1000.0);
 
 
     p.m_fDist+=fStep;
-    m_nData[1].f = FormatKm(p.m_fDist/1000.0);
+    m_nData[SPEED].f = FormatKm(p.m_fDist/1000.0);
 
     if (m_ocSpeedVal.size() > 10)
         m_ocSpeedVal.removeFirst();
@@ -293,26 +295,26 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
     if (fAvgSpeed > 0.5)
     {
-        m_nData[4].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
-        m_nData[2].f = FormatDuration(10000 / fAvgSpeed);
+        m_nData[BEARING].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
+        m_nData[DURATION].f = FormatDuration(10000 / fAvgSpeed);
     }
     else
     {
-        m_nData[2].f = "-";
-        m_nData[4].f = "-";
+        m_nData[DURATION].f = "-";
+        m_nData[BEARING].f = "-";
     }
 
 
 
-    m_nData[0].f = FormatKmH(fAvgSpeed*3.6);
+    m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
     if (p.m_fDurationSec != 0)
-        m_nData[9].f = FormatKmH(( p.m_fDist /  p.m_fDurationSec) * 3.6);
-    m_nData[5].f = FormatM(o.coordinate().altitude());
+        m_nData[AVERAGE_SPEED].f = FormatKmH(( p.m_fDist /  p.m_fDurationSec) * 3.6);
+    m_nData[ELEVATION].f = FormatM(o.coordinate().altitude());
 
     m_oLastPos = o.coordinate();
     //qDebug() << m_fLastSpeed;
     // qDebug(QString("Speed %1").arg(fSpeed));
-    emit dataChanged(index(0), index(11),oc);
+    emit dataChanged(index(0), index(LAST_VAL-1),oc);
 
 }
 
@@ -355,7 +357,7 @@ void InfoListModel::klicked1(int)
 
 void InfoListModel::klicked2(int row)
 {
-    if (row == 3)
+    if (row == DURATION)
     {
         if (m_pTimer->IsActive()  == true)
         {
@@ -371,10 +373,10 @@ void InfoListModel::klicked2(int row)
     }
     QVector<int> oc;
     oc.push_back(ValueRole);
-    if (row == 8)
+    if (row == MAXSPEED)
     {
-        m_nData[8].f = "-";
-        emit dataChanged(index(8), index(8),oc);
+        m_nData[MAXSPEED].f = "-";
+        emit dataChanged(index(MAXSPEED), index(MAXSPEED),oc);
         p.m_fMaxSpeed = 0;
         return;
     }
@@ -389,7 +391,7 @@ void InfoListModel::klicked2(int row)
     ResetData();
 
 
-    emit dataChanged(index(0), index(11),oc);
+    emit dataChanged(index(0), index(LAST_VAL-1),oc);
 
 }
 

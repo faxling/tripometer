@@ -32,7 +32,16 @@
 #include <QtQuick>
 #endif
 
+#include <QGuiApplication>
+#include <QQuickView>
+#include <QQuickItem>
 #include <sailfishapp.h>
+#include <QtPositioning/QtPositioning>
+#include <QtPositioning/QGeoPositionInfoSource>
+#include <QtQml/qqml.h>
+
+
+#include "infolistmodel.h"
 
 
 int main(int argc, char *argv[])
@@ -46,6 +55,20 @@ int main(int argc, char *argv[])
     //
     // To display the view, call "show()" (will show fullscreen on device).
 
-    return SailfishApp::main(argc, argv);
+
+ // QStringList oc = QGeoPositionInfoSource::availableSources();
+//QtPositioning::
+   qmlRegisterType<InfoListModel>("Local", 1, 0, "InfoListModel");
+    QGuiApplication *app = SailfishApp::application(argc, argv);
+    QQuickView * pU = SailfishApp::createView();
+
+    pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
+    pU->showFullScreen();
+    InfoListModel::m_pRoot = pU->rootObject();
+
+    app->exec();
+
+    qDebug() << "Exit";
+
 }
 

@@ -23,24 +23,22 @@ SOURCES += src/harbour-tripometer.cpp \
     Utils.cpp
 
 OTHER_FILES += qml/harbour-tripometer.qml \
-    qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \
     rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
     rpm/harbour-tripometer.yaml \
-    translations/*.ts \
     harbour-tripometer.desktop
 
 # to disable building translations every time, comment out the
 # following CONFIG line
-CONFIG += sailfishapp_i18n
+# CONFIG += sailfishapp_i18n
 
 # German translation is enabled as an example. If you aren't
 # planning to localize your app, remember to comment out the
 # following TRANSLATIONS line. And also do not forget to
 # modify the localized app name in the the .desktop file.
-TRANSLATIONS += translations/harbour-tripometer-de.ts
+#TRANSLATIONS += translations/harbour-tripometer-de.ts
 
 HEADERS += \
     infolistmodel.h \

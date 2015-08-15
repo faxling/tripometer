@@ -39,6 +39,7 @@ private:
     struct Data
     {
         Data() {}
+        Data(const QString& _sU, const QString& _sL ) {sU = _sU; sL = _sL;}
         QString f;
         QString sU;
         QString sL;

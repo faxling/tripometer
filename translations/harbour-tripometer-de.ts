@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.1">
 <context>
     <name>CoverPage</name>
     <message>
         <source>My Cover</source>
-        <translation>Mein Cover</translation>
+        <translation type="vanished">Mein Cover</translation>
     </message>
 </context>
 <context>
     <name>FirstPage</name>
     <message>
         <source>Show Page 2</source>
-        <translation>Zur Seite 2</translation>
+        <translation type="vanished">Zur Seite 2</translation>
     </message>
     <message>
         <source>UI Template</source>
-        <translation>UI-Vorlage</translation>
+        <translation type="vanished">UI-Vorlage</translation>
     </message>
     <message>
         <source>Hello Sailors</source>
-        <translation>Hallo Matrosen</translation>
+        <translation type="vanished">Hallo Matrosen</translation>
     </message>
 </context>
 <context>
@@ -35,4 +35,3 @@
     </message>
 </context>
 </TS>
-
