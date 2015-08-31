@@ -9,6 +9,7 @@
 #include <QStandardPaths>
 #include <stdio.h>
 #include "Utils.h"
+#include "time.h"
 
 QString FormatBearing(double direction)
 {
@@ -56,6 +57,17 @@ QString FormatBearing(double direction)
     return szStr;
 
 }
+
+QString FormatCurrentTime()
+{
+    char szStr[20];
+    time_t now = 0 ;
+    time(&now);
+    // time(&now);
+    strftime(szStr, 20, "%H:%M:%S",localtime(&now) );
+    return szStr;
+}
+
 QString FormatDurationSec(unsigned int nTime)
 {
     char szStr[20];
@@ -119,6 +131,24 @@ QString FormatM(double f)
 
 QObject* InfoListModel::m_pRoot;
 
+
+enum TRIP_FIELDS
+{
+    SPEED,
+    GPS_SPEED,
+    DISTANS,
+    TIMEKM,
+    DURATION,
+    CURRENTTIME,
+    BEARING,
+    ELEVATION,
+    MAXSPEED,
+    AVERAGE_SPEED,  
+    DISTANCE_TO_HOME,
+    LAT,
+    LONG,
+    LAST_VAL
+};
 void InfoListModel::UpdateOnTimer()
 {
     double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
@@ -127,8 +157,17 @@ void InfoListModel::UpdateOnTimer()
         p.m_fDurationSec += ( fCurTime - m_fLastTimeSec) ;
 
     m_fLastTimeSec = fCurTime;
-
+    QVector<int> oc;
+    oc.push_back(ValueRole);
+    // varje sec
     if ((((int)(p.m_fDurationSec * 10)) % 10) == 0)
+    {
+        m_nData[CURRENTTIME].f = FormatCurrentTime();
+        emit dataChanged(index(CURRENTTIME), index(CURRENTTIME),oc);
+
+    }
+    // var tioned
+    if ((((int)(p.m_fDurationSec )) % 10) == 0)
     {
         fseek(m_pDataFile,0,SEEK_SET );
          fwrite((void*)&p,1,sizeof p,m_pDataFile);
@@ -136,38 +175,19 @@ void InfoListModel::UpdateOnTimer()
     }
     m_nData[DURATION].f = FormatDuration(p.m_fDurationSec*10);
     m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
-    QVector<int> oc;
-    oc.push_back(ValueRole);
-    emit dataChanged(index(3), index(3),oc);
+
+    emit dataChanged(index(DURATION), index(DURATION),oc);
 }
 
 
 InfoListModel::~InfoListModel()
 {
-
-
-
     delete m_pTimer;
 }
 
 
 
-enum TRIP_FIELDS
-{
-    SPEED,
-    DISTANS,
-    TIMEKM,
-    DURATION,
-    BEARING,
-    ELEVATION,
-    MAXSPEED,
-    AVERAGE_SPEED,
-    DISTANCE_TO_HOME,
-    GPS_SPEED,
-    LAT,
-    LONG,
-    LAST_VAL
-};
+
 
 InfoListModel::InfoListModel(QObject *parent) :
     QAbstractListModel(parent)
@@ -217,6 +237,7 @@ InfoListModel::InfoListModel(QObject *parent) :
     m_nData[GPS_SPEED] = Data("km/h","Gps Speed");
     m_nData[LAT] = Data("deg","Lat");
     m_nData[LONG] = Data("deg","Long");
+    m_nData[CURRENTTIME] = Data("time","Current");
 
     ResetData();
 }
@@ -268,7 +289,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
 
     p.m_fDist+=fStep;
-    m_nData[SPEED].f = FormatKm(p.m_fDist/1000.0);
+    m_nData[DISTANS].f = FormatKm(p.m_fDist/1000.0);
 
     if (m_ocSpeedVal.size() > 10)
         m_ocSpeedVal.removeFirst();
@@ -291,16 +312,16 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     if (p.m_fMaxSpeed < fAvgSpeed)
         p.m_fMaxSpeed = fAvgSpeed;
 
-    m_nData[8].f = FormatKmH(p.m_fMaxSpeed*3.6);
+    m_nData[MAXSPEED].f = FormatKmH(p.m_fMaxSpeed*3.6);
 
     if (fAvgSpeed > 0.5)
     {
         m_nData[BEARING].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
-        m_nData[DURATION].f = FormatDuration(10000 / fAvgSpeed);
+        m_nData[TIMEKM].f = FormatDuration(10000 / fAvgSpeed);
     }
     else
     {
-        m_nData[DURATION].f = "-";
+        m_nData[TIMEKM].f = "-";
         m_nData[BEARING].f = "-";
     }
 
@@ -366,6 +387,8 @@ void InfoListModel::klicked2(int row)
         }
         else
         {
+            double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
+            m_fLastTimeSec = fCurTime;
             m_pRoot->setProperty("bIsPause",false);
             m_pTimer->Start(100);
         }

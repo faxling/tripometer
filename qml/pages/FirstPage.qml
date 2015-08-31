@@ -2,6 +2,8 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Local 1.0
 
+
+
 Page {
     id: page
     InfoListModel {
@@ -13,6 +15,12 @@ Page {
         height: 120
         width: page.width
         PullDownMenu {
+            MenuItem {
+                text: "Exit"
+                onClicked: {
+                    Qt.quit()
+                }
+            }
             MenuItem {
                 text: "Reset"
                 onClicked: {
@@ -28,7 +36,7 @@ Page {
             MenuItem {
                 text: bIsPause ? "Resume" : "Pause"
                 onClicked: {
-                    idListModel.klicked2(3)
+                    idListModel.klicked2(4)
                 }
             }
         }

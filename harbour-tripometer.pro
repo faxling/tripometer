@@ -12,10 +12,10 @@
 # The name of your application
 TARGET = harbour-tripometer
 
-QT += quick positioning
+QT += quick positioning dbus
 
 CONFIG += sailfishapp
-
+#CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
