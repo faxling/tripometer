@@ -44,7 +44,7 @@ private:
         QString sU;
         QString sL;
     };
-
+/*
     struct SpeedStruct
     {
         SpeedStruct() {fTimeSec=0;fDistM=0;}
@@ -52,7 +52,7 @@ private:
         double fTimeSec;
         double fDistM;
     };
-
+*/
 
     struct SaveStruct
     {
@@ -76,7 +76,7 @@ private:
     MssTimer* m_pTimer;
     void ResetData();
     QGeoCoordinate m_oLastPos;
-    QList<SpeedStruct> m_ocSpeedVal;
+  //   QList<SpeedStruct> m_ocSpeedVal;
     SaveStruct p;
  //   double m_fGpsSpeedMs;
     double m_fLastTimeSec;

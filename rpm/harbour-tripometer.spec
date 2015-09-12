@@ -13,8 +13,8 @@ Name:       harbour-tripometer
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Tripometer
-Version:    0.1
-Release:    1
+Version:    0.2
+Release:    2
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/
@@ -63,7 +63,8 @@ desktop-file-install --delete-original       \
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}
+%defattr(644,root,root,-)
+%attr(655,-,-) %{_bindir}
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png

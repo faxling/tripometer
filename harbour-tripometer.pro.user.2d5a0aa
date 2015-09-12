@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.1.2, 2015-09-12T07:48:11. -->
+<!-- Written by QtCreator 3.1.2, 2015-09-08T21:11:26. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
-  <value type="int">1</value>
+  <value type="int">0</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.EditorSettings</variable>
@@ -56,9 +56,9 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">MerSDK-SailfishOS-armv7hl</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">MerSDK-SailfishOS-armv7hl</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{10b6fdd7-2c0c-41af-ae22-dce558749317}</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{ef100bfe-192b-4c25-b27f-69bd10335c10}</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">2</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/fax/Documents/qt/build-harbour-tripometer-MerSDK_SailfishOS_armv7hl-Debug</value>
@@ -89,7 +89,7 @@
        <value type="QString">-r</value>
       </valuelist>
       <value type="bool" key="Qt4ProjectManager.MakeStep.Clean">false</value>
-      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments"></value>
+      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments">-s</value>
       <value type="QString" key="Qt4ProjectManager.MakeStep.MakeCommand"></value>
      </valuemap>
      <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">3</value>
@@ -160,7 +160,7 @@
        <value type="QString">-r</value>
       </valuelist>
       <value type="bool" key="Qt4ProjectManager.MakeStep.Clean">false</value>
-      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments"></value>
+      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments">-s</value>
       <value type="QString" key="Qt4ProjectManager.MakeStep.MakeCommand"></value>
      </valuemap>
      <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">3</value>
@@ -302,7 +302,7 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Mer Device)</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Remote Device)</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">QmakeProjectManager.MerRunConfiguration:C:/Users/fax/Documents/qt/harbour-tripometer/harbour-tripometer.pro</value>
     <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments"/>
@@ -325,15 +325,15 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">MerSDK-SailfishOS-i486</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">MerSDK-SailfishOS-i486</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{d535f17b-9d71-4b3b-926d-87f4649614a8}</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
-   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">1</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{88991092-b711-4126-bb74-870da3c91611}</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
+   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/fax/Documents/qt/build-harbour-tripometer-MerSDK_SailfishOS_i486-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
-      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
+      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">false</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Start SDK</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Mer.MerSdkStartStep</value>
@@ -358,7 +358,7 @@
        <value type="QString">-r</value>
       </valuelist>
       <value type="bool" key="Qt4ProjectManager.MakeStep.Clean">false</value>
-      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments"></value>
+      <value type="QString" key="Qt4ProjectManager.MakeStep.MakeArguments">-s</value>
       <value type="QString" key="Qt4ProjectManager.MakeStep.MakeCommand"></value>
      </valuemap>
      <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">3</value>
@@ -559,7 +559,7 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Mer Device)</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Remote Device)</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">QmakeProjectManager.MerRunConfiguration:C:/Users/fax/Documents/qt/harbour-tripometer/harbour-tripometer.pro</value>
     <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments"/>
@@ -572,7 +572,7 @@
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
-    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">false</value>
+    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>
@@ -583,7 +583,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.EnvironmentId</variable>
-  <value type="QByteArray">{28a6d8ad-5bb6-412e-a6d8-fd8b2736909c}</value>
+  <value type="QByteArray">{2d5a0aac-230d-4aeb-8873-9bdf6197e814}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.FileVersion</variable>

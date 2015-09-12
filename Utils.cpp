@@ -1,6 +1,8 @@
 #include "Utils.h"
 
 #include <QBasicTimer>
+#include <QDBusConnection>
+#include <QDBusInterface>
 
 
 MssTimer::MssTimer()
@@ -56,3 +58,24 @@ void MssTimer::timerEvent(QTimerEvent *)
   if (m_bIsSingleShot == true)
     m_pTimer->stop();
 }
+
+
+void ScreenOn(bool b)
+{
+    QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
+                                                           "system");
+    QDBusInterface interface("com.nokia.mce",
+                             "/com/nokia/mce/request",
+                             "com.nokia.mce.request",
+                             system);
+
+
+    if (b == true)
+        interface.call("req_display_blanking_pause");
+    else
+        interface.call("req_display_cancel_blanking_pause");
+
+  //   QDBusConnection::disconnectFromBus("system");
+}
+
+

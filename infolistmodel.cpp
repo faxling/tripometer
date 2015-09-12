@@ -134,7 +134,6 @@ QObject* InfoListModel::m_pRoot;
 
 enum TRIP_FIELDS
 {
-    SPEED,
     GPS_SPEED,
     DISTANS,
     TIMEKM,
@@ -143,7 +142,7 @@ enum TRIP_FIELDS
     BEARING,
     ELEVATION,
     MAXSPEED,
-    AVERAGE_SPEED,  
+    AVERAGE_SPEED,
     DISTANCE_TO_HOME,
     LAT,
     LONG,
@@ -170,7 +169,7 @@ void InfoListModel::UpdateOnTimer()
     if ((((int)(p.m_fDurationSec )) % 10) == 0)
     {
         fseek(m_pDataFile,0,SEEK_SET );
-         fwrite((void*)&p,1,sizeof p,m_pDataFile);
+        fwrite((void*)&p,1,sizeof p,m_pDataFile);
         //  qDebug() << "fwrite " << n;
     }
     m_nData[DURATION].f = FormatDuration(p.m_fDurationSec*10);
@@ -225,7 +224,6 @@ InfoListModel::InfoListModel(QObject *parent) :
 
     m_nData.resize(LAST_VAL);
 
-    m_nData[SPEED] = Data("km/h","Speed");
     m_nData[DISTANS] = Data("km","Distans");
     m_nData[TIMEKM] = Data("time","Time/km");
     m_nData[DURATION] = Data("time","Duration");
@@ -234,7 +232,7 @@ InfoListModel::InfoListModel(QObject *parent) :
     m_nData[MAXSPEED] = Data("km/h","Max Speed");
     m_nData[AVERAGE_SPEED] = Data("km/h","Average Speed");
     m_nData[DISTANCE_TO_HOME] = Data("km","Distance To Home");
-    m_nData[GPS_SPEED] = Data("km/h","Gps Speed");
+    m_nData[GPS_SPEED] = Data("km/h","Speed");
     m_nData[LAT] = Data("deg","Lat");
     m_nData[LONG] = Data("deg","Long");
     m_nData[CURRENTTIME] = Data("time","Current");
@@ -244,7 +242,6 @@ InfoListModel::InfoListModel(QObject *parent) :
 
 void InfoListModel::ResetData()
 {
-    m_ocSpeedVal.clear();
     m_oLastPos = QGeoCoordinate();
     m_fLastTimeSec = 0;
     for(auto &oI : m_nData)
@@ -267,13 +264,24 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
         }
 
         emit dataChanged(index(LAT), index(LONG),oc);
-        double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-        m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
+        //  double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
+        // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
         return;
     }
 
+
     if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
-        m_nData[GPS_SPEED].f = FormatKmH(o.attribute(QGeoPositionInfo::Attribute::GroundSpeed)*3.6);
+    {
+        double fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed)*3.6;
+        m_nData[GPS_SPEED].f = FormatKmH(fSpeed);
+
+        if (p.m_fMaxSpeed < fSpeed)
+            p.m_fMaxSpeed = fSpeed;
+
+        m_nData[MAXSPEED].f = FormatKmH(p.m_fMaxSpeed*3.6);
+        if (fabs(fSpeed) > 0.5)
+            m_nData[TIMEKM].f = FormatDuration(10000 / fSpeed);
+    }
 
     double fStep = m_oLastPos.distanceTo(o.coordinate());
     // if (fStep < 0.5 )
@@ -283,51 +291,46 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     // m_ocSpeedVal.clear();
     //  return;
     // }
-    double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-    m_ocSpeedVal.push_back(SpeedStruct(fTimestamp, fStep));
+    // double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
+    //m_ocSpeedVal.push_back(SpeedStruct(fTimestamp, fStep));
     m_nData[DISTANCE_TO_HOME].f = FormatKm( QGeoCoordinate(p.m_oStartPosLat,p.m_oStartPosLong).distanceTo(o.coordinate()) / 1000.0);
 
 
     p.m_fDist+=fStep;
     m_nData[DISTANS].f = FormatKm(p.m_fDist/1000.0);
 
-    if (m_ocSpeedVal.size() > 10)
-        m_ocSpeedVal.removeFirst();
+    //if (m_ocSpeedVal.size() > 10)
+    //     m_ocSpeedVal.removeFirst();
 
-    double fAvgSpeed  = 0;
-    double fTimeSegment = 0;
-    double fDistSegment = 0;
+    // double fAvgSpeed  = 0;
+    //double fTimeSegment = 0;
+    // double fDistSegment = 0;
 
-    for ( auto oI = m_ocSpeedVal.begin()+1; oI != m_ocSpeedVal.end() ; ++oI)
-    {
-        fTimeSegment+= (oI->fTimeSec - (oI - 1)->fTimeSec);
-        fDistSegment+= oI->fDistM;
-    }
+    // for ( auto oI = m_ocSpeedVal.begin()+1; oI != m_ocSpeedVal.end() ; ++oI)
+    //{
+    //    fTimeSegment+= (oI->fTimeSec - (oI - 1)->fTimeSec);
+    //    fDistSegment+= oI->fDistM;
+    //}
 
-    if (fabs(fTimeSegment) > 0.1)
-        fAvgSpeed = fDistSegment / fTimeSegment ;
+    //if (fabs(fTimeSegment) > 0.1)
+    //   fAvgSpeed = fDistSegment / fTimeSegment ;
 
 
 
-    if (p.m_fMaxSpeed < fAvgSpeed)
-        p.m_fMaxSpeed = fAvgSpeed;
 
-    m_nData[MAXSPEED].f = FormatKmH(p.m_fMaxSpeed*3.6);
-
-    if (fAvgSpeed > 0.5)
+    if (fStep > 5)
     {
         m_nData[BEARING].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
-        m_nData[TIMEKM].f = FormatDuration(10000 / fAvgSpeed);
+
     }
     else
     {
-        m_nData[TIMEKM].f = "-";
         m_nData[BEARING].f = "-";
     }
 
 
 
-    m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
+    //m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
     if (p.m_fDurationSec != 0)
         m_nData[AVERAGE_SPEED].f = FormatKmH(( p.m_fDist /  p.m_fDurationSec) * 3.6);
     m_nData[ELEVATION].f = FormatM(o.coordinate().altitude());
@@ -376,9 +379,11 @@ void InfoListModel::klicked1(int)
 
 }
 
-void InfoListModel::klicked2(int row)
+void InfoListModel::klicked2(int nCmd)
 {
-    if (row == DURATION)
+
+    // Pause
+    if (nCmd == 1)
     {
         if (m_pTimer->IsActive()  == true)
         {
@@ -396,25 +401,33 @@ void InfoListModel::klicked2(int row)
     }
     QVector<int> oc;
     oc.push_back(ValueRole);
-    if (row == MAXSPEED)
+    if (nCmd == 2)
     {
         m_nData[MAXSPEED].f = "-";
         emit dataChanged(index(MAXSPEED), index(MAXSPEED),oc);
         p.m_fMaxSpeed = 0;
         return;
     }
-    if (row != 1)
-        return;
-    p.m_oStartPosLat = 0;
-    p.m_oStartPosLong = 0;
-    p.m_fDist = 0;
-    p.m_fDurationSec = 0;
-    p.m_fMaxSpeed = 0;
-
-    ResetData();
+    if (nCmd == 3)
+    {
 
 
-    emit dataChanged(index(0), index(LAST_VAL-1),oc);
+        p.m_oStartPosLat = 0;
+        p.m_oStartPosLong = 0;
+        p.m_fDist = 0;
+        p.m_fDurationSec = 0;
+        p.m_fMaxSpeed = 0;
+
+        ResetData();
+
+
+        emit dataChanged(index(0), index(LAST_VAL-1),oc);
+    }
+
+    if (nCmd == 4)
+    {
+        ScreenOn(true);
+    }
 
 }
 

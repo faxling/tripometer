@@ -24,7 +24,6 @@ SOURCES += src/harbour-tripometer.cpp \
 
 OTHER_FILES += qml/harbour-tripometer.qml \
     qml/pages/FirstPage.qml \
-    qml/pages/SecondPage.qml \
     rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
     rpm/harbour-tripometer.yaml \

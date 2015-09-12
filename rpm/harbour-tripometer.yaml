@@ -1,7 +1,7 @@
 Name: harbour-tripometer
 Summary: Tripometer
-Version: 0.1
-Release: 1
+Version: 0.2
+Release: 2
 # The contents of the Group field should be one of the groups listed here:
 # http://gitorious.org/meego-developer-tools/spectacle/blobs/master/data/GROUPS
 Group: Qt/Qt
@@ -36,7 +36,8 @@ Requires:
 
 # All installed files
 Files:
-  - '%{_bindir}'
+  - '%defattr(644,root,root,-)'
+  - '%attr(655,-,-) %{_bindir}'
   - '%{_datadir}/%{name}'
   - '%{_datadir}/applications/%{name}.desktop'
   - '%{_datadir}/icons/hicolor/86x86/apps/%{name}.png'

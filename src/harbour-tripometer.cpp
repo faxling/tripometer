@@ -39,11 +39,10 @@
 #include <QtPositioning/QtPositioning>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtQml/qqml.h>
-#include <QDBusConnection>
-#include <QDBusInterface>
+
 #include <QQmlEngine>
 #include "infolistmodel.h"
-
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -61,25 +60,19 @@ int main(int argc, char *argv[])
 //QtPositioning::
 
 
-    QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
-                                                           "system");
 
-    qmlRegisterType<InfoListModel>("Local", 1, 0, "InfoListModel");
+
+    qmlRegisterType<InfoListModel>("harbour.tripometer", 1, 0, "InfoListModel");
     QGuiApplication *app = SailfishApp::application(argc, argv);
     QQuickView * pU = SailfishApp::createView();
     QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
     pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
     pU->showFullScreen();
     InfoListModel::m_pRoot = pU->rootObject();
-    QDBusInterface interface("com.nokia.mce",
-                             "/com/nokia/mce/request",
-                             "com.nokia.mce.request",
-                             system);
 
-
-    interface.call(QLatin1String("req_display_blanking_pause"));
+    ScreenOn(true);
     app->exec();
-    interface.call(QLatin1String("req_display_cancel_blanking_pause"));
+    ScreenOn(false);
     qDebug() << "Exit";
 
 }

@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Local 1.0
-
+import harbour.tripometer 1.0
 
 
 Page {
@@ -22,21 +21,28 @@ Page {
                 }
             }
             MenuItem {
-                text: "Reset"
+                text: "Reset Max Speed"
                 onClicked: {
-                    idListModel.klicked2(1)
+                    idListModel.klicked2(2)
                 }
             }
             MenuItem {
-                text: "Reset Max Speed"
+                text: "Screen On"
                 onClicked: {
-                    idListModel.klicked2(8)
+                    idListModel.klicked2(4)
                 }
             }
+            MenuItem {
+                text: "Reset"
+                onClicked: {
+                    idListModel.klicked2(3)
+                }
+            }
+
             MenuItem {
                 text: bIsPause ? "Resume" : "Pause"
                 onClicked: {
-                    idListModel.klicked2(4)
+                    idListModel.klicked2(1)
                 }
             }
         }
@@ -48,7 +54,7 @@ Page {
             font.pixelSize: Theme.fontSizeHuge
 
             width: listView.width
-            text: "Frax Tripometer"
+            text: "Tripometer"
         }
     }
     ListView {
@@ -97,7 +103,7 @@ Page {
 
                 //   idListModel.get(index).fV = 10 * index
                 //  console.log("Clicked " + index)
-                idListModel.klicked2(index)
+                // idListModel.klicked2(index)
             }
         }
         //  VerticalScrollDecorator{

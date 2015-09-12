@@ -6,6 +6,9 @@
 #include <QObject>
 
 
+void ScreenOn(bool b);
+
+
 class QBasicTimer;
 class MssTimer : public QObject
 {
@@ -18,6 +21,8 @@ public:
   void SingleShot(int nMilliSec);
   void Stop();
   bool IsActive();
+
+
 
 
 private:
