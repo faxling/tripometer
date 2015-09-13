@@ -16,35 +16,35 @@ class MssTimer;
 
 class InfoListModel : public QAbstractListModel
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    Q_INVOKABLE void klicked2(int row);
-    Q_INVOKABLE void klicked1(int row);
-    InfoListModel(QObject *parent = 0);
-    ~InfoListModel();
-    static QObject* m_pRoot;
-    enum {
-        ValueRole = Qt::UserRole +1,
-        LabelRole = Qt::UserRole +2,
-        UnitRole = Qt::UserRole +3
-    };
+  Q_INVOKABLE void klicked2(int row);
+  Q_INVOKABLE void klicked1(int row);
+  InfoListModel(QObject *parent = 0);
+  ~InfoListModel();
+  static QObject* m_pRoot;
+  enum {
+    ValueRole = Qt::UserRole +1,
+    LabelRole = Qt::UserRole +2,
+    UnitRole = Qt::UserRole +3
+  };
 private slots:
-    void PositionUpdated(const QGeoPositionInfo& o);
+  void PositionUpdated(const QGeoPositionInfo& o);
 
 
 private:
 
-    void UpdateOnTimer();
-    struct Data
-    {
-        Data() {}
-        Data(const QString& _sU, const QString& _sL ) {sU = _sU; sL = _sL;}
-        QString f;
-        QString sU;
-        QString sL;
-    };
-/*
+  void UpdateOnTimer();
+  struct Data
+  {
+    Data() {}
+    Data(const QString& _sU, const QString& _sL ) {sU = _sU; sL = _sL;}
+    QString f;
+    QString sU;
+    QString sL;
+  };
+  /*
     struct SpeedStruct
     {
         SpeedStruct() {fTimeSec=0;fDistM=0;}
@@ -54,32 +54,33 @@ private:
     };
 */
 
-    struct SaveStruct
-    {
-        double m_fMaxSpeed;
-        double m_fDurationSec;
-        double m_fDist;
-        double m_oStartPosLat;
-        double m_oStartPosLong;
-    };
+  struct SaveStruct
+  {
+    double m_fMaxSpeed;
+    double m_fDurationSec;
+    double m_fDist;
+    double m_oStartPosLat;
+    double m_oStartPosLong;
+  };
 
 
-    //From QAbstractListModel
-    int rowCount(const QModelIndex &parent) const;
-    QVariant data(const QModelIndex &index, int role) const;
-    QHash<int, QByteArray> roleNames() const;
-    QVector<Data> m_nData;
-    FILE* m_pDataFile;
+  //From QAbstractListModel
+  int rowCount(const QModelIndex &parent) const;
+  int columnCount(const QModelIndex &parent) const;
+  QVariant data(const QModelIndex &index, int role) const;
+  QHash<int, QByteArray> roleNames() const;
+  QVector<QVector<Data>> m_nData;
+  //   FILE* m_pDataFile;
 
 
 
-    MssTimer* m_pTimer;
-    void ResetData();
-    QGeoCoordinate m_oLastPos;
+  MssTimer* m_pTimer;
+  void ResetData();
+  QGeoCoordinate m_oLastPos;
   //   QList<SpeedStruct> m_ocSpeedVal;
-    SaveStruct p;
- //   double m_fGpsSpeedMs;
-    double m_fLastTimeSec;
+  SaveStruct p;
+  //   double m_fGpsSpeedMs;
+  double m_fLastTimeSec;
 
 };
 

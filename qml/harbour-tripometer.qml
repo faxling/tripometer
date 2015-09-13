@@ -5,39 +5,41 @@ import "pages"
 
 ApplicationWindow {
 
-    property string sDur
-    property bool bIsPause : false
+  property string sDur
+  property bool bIsPause : false
 
-    CoverBackground {
-        id: blueCover
+  // 0 = km/h 1 kts
+  property int nUnit : 0
+  CoverBackground {
+    id: blueCover
 
 
-        //CoverBackground  {
-          //  anchors.fill: parent
-            // color: Qt.rgba(0, 0, 1, 0.4)
-            Label {
-                anchors.topMargin: 30
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "Tripometer"
-            }
-            Image
-            {
-                id: idIcon
-                anchors.centerIn: parent
-                source: "harbour-tripometer.png"
-
-            }
-
-            Label {
-                anchors.top: idIcon.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: sDur
-            }
+    //CoverBackground  {
+    //  anchors.fill: parent
+    // color: Qt.rgba(0, 0, 1, 0.4)
+    Label {
+      anchors.topMargin: 30
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: "Tripometer"
+    }
+    Image
+    {
+      id: idIcon
+      anchors.centerIn: parent
+      source: "harbour-tripometer.png"
 
     }
-    initialPage: Component {
-        FirstPage {
-        }
+
+    Label {
+      anchors.top: idIcon.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: sDur
     }
-    cover: blueCover
+
+  }
+  initialPage: Component {
+    FirstPage {
+    }
+  }
+  cover: blueCover
 }
