@@ -71,7 +71,12 @@ void ScreenOn(bool b)
 
 
     if (b == true)
+    {
+
+      // interface.call( "req_display_state_dim");
+        interface.call("req_display_state_on");
         interface.call("req_display_blanking_pause");
+    }
     else
         interface.call("req_display_cancel_blanking_pause");
 

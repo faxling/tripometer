@@ -34,13 +34,17 @@
 
 #include <QGuiApplication>
 #include <QQuickView>
+#include <QQmlEngine>
 #include <QQuickItem>
+#include <QQmlContext>
 #include <sailfishapp.h>
 #include <QtPositioning/QtPositioning>
 #include <QtPositioning/QGeoPositionInfoSource>
-#include <QtQml/qqml.h>
+// #include <QtQml/qqml>
 
-#include <QQmlEngine>
+//
+
+
 #include "infolistmodel.h"
 #include "utils.h"
 
@@ -68,12 +72,16 @@ int main(int argc, char *argv[])
   QQmlContext *pContext = pU->rootContext();
   InfoListModel* pInfoListModel =  new InfoListModel;
   pContext->setContextProperty("idListModel", pInfoListModel);
-  QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
+  // QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
   InfoListModel::m_pRoot = pU->rootObject();
 
-  ScreenOn(true);
+  MssTimer oTimer([] {
+    if (InfoListModel::m_pRoot->property("bScreenallwaysOn").toBool()==true)
+      ScreenOn(true);
+  });
+  oTimer.Start(1000*30);
   pInfoListModel->klicked2(5);
   app->exec();
   ScreenOn(false);

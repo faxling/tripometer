@@ -14,7 +14,7 @@ Page {
     PullDownMenu {
       MenuItem {
 
-        text: "Kts"
+        text: "Nautical Units"
         font.bold: nUnit === 1
         onClicked: {
           nUnit = 1;
@@ -23,7 +23,7 @@ Page {
       }
       MenuItem {
         font.bold: nUnit === 0
-        text: "Km/h"
+        text: "Metric Units"
         onClicked: {
           nUnit = 0;
           idListModel.klicked2(5)
@@ -35,12 +35,15 @@ Page {
           idListModel.klicked2(2)
         }
       }
+
       MenuItem {
-        text: "Screen Allways On"
+        text: bScreenallwaysOn ? "Turn On Screensaver" : "Turn Off Screensaver"
         onClicked: {
-          idListModel.klicked2(4)
+          bScreenallwaysOn = !bScreenallwaysOn
+
         }
       }
+
       MenuItem {
         text: "Reset"
         onClicked: {
@@ -56,13 +59,11 @@ Page {
       }
     }
     Text {
-      x: 50
       font.family: Theme.fontFamilyHeading
       font.bold: true
       color: Theme.highlightColor
       font.pixelSize: Theme.fontSizeHuge
-
-      width: listView.width
+      anchors.horizontalCenter: parent.horizontalCenter
       text: "Tripometer"
     }
   }

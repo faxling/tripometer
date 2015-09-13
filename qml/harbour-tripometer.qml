@@ -7,7 +7,7 @@ ApplicationWindow {
 
   property string sDur
   property bool bIsPause : false
-
+  property bool bScreenallwaysOn : true
   // 0 = km/h 1 kts
   property int nUnit : 0
   CoverBackground {
