@@ -275,25 +275,38 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
   QVector<int> oc;
   oc.push_back(ValueRole);
+  if (m_oLastPos.isValid()==false)
+  {
+    m_oLastPos = o.coordinate();
+    if (p.m_oStartPosLat == 0)
+    {
+      p.m_oStartPosLat = m_oLastPos.latitude();
+      p.m_oStartPosLong = m_oLastPos.longitude();
+    }
+
+    emit dataChanged(index(LAT), index(LONG),oc);
+    //  double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
+    // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
+    return;
+  }
+
+  double fSpeed =  0;
+  if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
+  {
+    fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
+
+    if (p.m_fMaxSpeed < fSpeed)
+      p.m_fMaxSpeed = fSpeed;
+  }
+  double fStep = m_oLastPos.distanceTo(o.coordinate());
+
+  p.m_fDist+=fStep;
+
   for (int i = 0; i < 2;++i)
   {
 
     m_nData[i][LAT].f = FormatPos(o.coordinate().latitude());
     m_nData[i][LONG].f = FormatPos(o.coordinate().longitude());
-    if (m_oLastPos.isValid()==false)
-    {
-      m_oLastPos = o.coordinate();
-      if (p.m_oStartPosLat == 0)
-      {
-        p.m_oStartPosLat = m_oLastPos.latitude();
-        p.m_oStartPosLong = m_oLastPos.longitude();
-      }
-
-      emit dataChanged(index(LAT), index(LONG),oc);
-      //  double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-      // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
-      return;
-    }
 
 
     double fFactor = 0;
@@ -314,18 +327,13 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
     if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
     {
-      double fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed)*fFactorDist;
-      m_nData[i][GPS_SPEED].f = FormatKmH(fSpeed);
-
-      if (p.m_fMaxSpeed < fSpeed)
-        p.m_fMaxSpeed = fSpeed;
-
+      m_nData[i][GPS_SPEED].f = FormatKmH(fSpeed*fFactor);
       m_nData[i][MAXSPEED].f = FormatKmH(p.m_fMaxSpeed*fFactor);
       if (fabs(fSpeed) > 0.5)
-        m_nData[i][TIMEKM].f = FormatDuration(10000 / fSpeed);
+        m_nData[i][TIMEKM].f = FormatDurationSec(1000 * fFactorDist / fSpeed   );
     }
 
-    double fStep = m_oLastPos.distanceTo(o.coordinate());
+
     // if (fStep < 0.5 )
     // {
     //m_nData[0].f = "0";
@@ -335,11 +343,9 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     // }
     // double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
     //m_ocSpeedVal.push_back(SpeedStruct(fTimestamp, fStep));
-    m_nData[i][DISTANCE_TO_HOME].f = FormatKm( QGeoCoordinate(p.m_oStartPosLat,p.m_oStartPosLong).distanceTo(o.coordinate()) * fFactorDist/ 1000.0);
+    m_nData[i][DISTANCE_TO_HOME].f = FormatKm( QGeoCoordinate(p.m_oStartPosLat,p.m_oStartPosLong).distanceTo(o.coordinate()) / fFactorDist/ 1000.0);
 
-
-    p.m_fDist+=fStep;
-    m_nData[i][DISTANS].f = FormatKm(p.m_fDist *fFactorDist/1000.0);
+    m_nData[i][DISTANS].f = FormatKm(p.m_fDist / fFactorDist/1000.0);
 
     //if (m_ocSpeedVal.size() > 10)
     //     m_ocSpeedVal.removeFirst();
@@ -371,10 +377,10 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     }
 
 
-
     //m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
     if (p.m_fDurationSec != 0)
       m_nData[i][AVERAGE_SPEED].f = FormatKmH(( p.m_fDist /  p.m_fDurationSec) *fFactor);
+
     m_nData[i][ELEVATION].f = FormatM(o.coordinate().altitude());
   }
   m_oLastPos = o.coordinate();

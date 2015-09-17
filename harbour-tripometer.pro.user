@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.1.2, 2015-09-13T23:15:30. -->
+<!-- Written by QtCreator 3.1.2, 2015-09-13T23:18:57. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -354,8 +354,8 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Mer Device)</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Remote Device)</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">harbour-tripometer (on Remote Device)2</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">QmakeProjectManager.MerRunConfiguration:C:/Users/fax/Documents/qt/harbour-tripometer/harbour-tripometer.pro</value>
     <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments"/>
     <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.ProFile">harbour-tripometer.pro</value>
