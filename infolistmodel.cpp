@@ -366,10 +366,9 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
 
 
-    if (fStep > 5)
+    if (fStep > 1)
     {
       m_nData[i][BEARING].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
-
     }
     else
     {
