@@ -146,6 +146,7 @@ enum TRIP_FIELDS
   BEARING,
   LAT,
   LONG,
+  PREC,
   LAST_VAL
 };
 
@@ -242,9 +243,10 @@ InfoListModel::InfoListModel(QObject *parent) :
   m_nData[0][AVERAGE_SPEED] = Data("km/h","Average Speed");
   m_nData[0][DISTANCE_TO_HOME] = Data("km","Distance To Home");
   m_nData[0][GPS_SPEED] = Data("km/h","Speed");
-  m_nData[0][LAT] = Data("deg","Lat");
-  m_nData[0][LONG] = Data("deg","Long");
+  m_nData[0][LAT] = Data("","Lat");
+  m_nData[0][LONG] = Data("","Long");
   m_nData[0][CURRENTTIME] = Data("time","Current");
+  m_nData[0][PREC] = Data("m","Precision");
 
   m_nData[1][DISTANS] = Data("NM","Distans");
   m_nData[1][TIMEKM] = Data("time","Time/NM");
@@ -255,9 +257,10 @@ InfoListModel::InfoListModel(QObject *parent) :
   m_nData[1][AVERAGE_SPEED] = Data("kts","Average Speed");
   m_nData[1][DISTANCE_TO_HOME] = Data("NM","Distance To Home");
   m_nData[1][GPS_SPEED] = Data("kts","Speed");
-  m_nData[1][LAT] = Data("deg","Lat");
-  m_nData[1][LONG] = Data("deg","Long");
+  m_nData[1][LAT] = Data("","Lat");
+  m_nData[1][LONG] = Data("","Long");
   m_nData[1][CURRENTTIME] = Data("time","Current");
+  m_nData[1][PREC] = Data("m","Precision");
 
   ResetData();
 }
@@ -275,23 +278,51 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
   QVector<int> oc;
   oc.push_back(ValueRole);
+
+  bool bHasSpeed =  o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed);
+
+  double fPrec = 10000;
+
+  if (o.hasAttribute(QGeoPositionInfo::Attribute::HorizontalAccuracy)==true)
+    fPrec = o.attribute(QGeoPositionInfo::Attribute::HorizontalAccuracy);
+
+  for (int i = 0; i < 2;++i)
+    m_nData[i][PREC].f = FormatKmH(fPrec);
+
+  emit dataChanged(index(PREC), index(PREC),oc);
+
   if (m_oLastPos.isValid()==false)
   {
-    m_oLastPos = o.coordinate();
-    if (p.m_oStartPosLat == 0)
+
+
+    for (int i = 0; i < 2;++i)
     {
+      m_nData[i][LAT].f = FormatLatitude(o.coordinate().latitude());
+      m_nData[i][LONG].f = FormatLongitude(o.coordinate().longitude());
+    }
+    if (p.m_oStartPosLat == 0 && bHasSpeed == true)
+    {
+      m_oLastPos = o.coordinate();
       p.m_oStartPosLat = m_oLastPos.latitude();
       p.m_oStartPosLong = m_oLastPos.longitude();
+
     }
 
     emit dataChanged(index(LAT), index(LONG),oc);
+
     //  double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
     // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
     return;
   }
 
+
+  if (fPrec > 10)
+    return;
+
   double fSpeed =  0;
-  if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
+
+
+  if ( bHasSpeed == true )
   {
     fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
 
@@ -302,11 +333,11 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
   p.m_fDist+=fStep;
 
+
   for (int i = 0; i < 2;++i)
   {
-
-    m_nData[i][LAT].f = FormatPos(o.coordinate().latitude());
-    m_nData[i][LONG].f = FormatPos(o.coordinate().longitude());
+    m_nData[i][LAT].f = FormatLatitude(o.coordinate().latitude());
+    m_nData[i][LONG].f = FormatLongitude(o.coordinate().longitude());
 
 
     double fFactor = 0;
@@ -325,7 +356,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     }
 
 
-    if (o.hasAttribute(QGeoPositionInfo::Attribute::GroundSpeed) == true)
+    if (bHasSpeed == true)
     {
       m_nData[i][GPS_SPEED].f = FormatKmH(fSpeed*fFactor);
       m_nData[i][MAXSPEED].f = FormatKmH(p.m_fMaxSpeed*fFactor);
@@ -364,17 +395,10 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     //   fAvgSpeed = fDistSegment / fTimeSegment ;
 
 
-
-
-    if (fStep > 1)
-    {
-      m_nData[i][BEARING].f = FormatBearing(m_oLastPos.azimuthTo(o.coordinate()));
-    }
+    if (o.hasAttribute(QGeoPositionInfo::Attribute::Direction)==true)
+      m_nData[i][BEARING].f =  FormatBearing(o.attribute(QGeoPositionInfo::Attribute::Direction));
     else
-    {
       m_nData[i][BEARING].f = "-";
-    }
-
 
     //m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
     if (p.m_fDurationSec != 0)

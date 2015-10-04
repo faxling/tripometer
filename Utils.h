@@ -8,6 +8,9 @@
 
 void ScreenOn(bool b);
 
+QString FormatLatitude(double fLatitude);
+QString FormatLongitude(double fLongitude);
+
 
 class QBasicTimer;
 class MssTimer : public QObject

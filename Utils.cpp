@@ -60,6 +60,64 @@ void MssTimer::timerEvent(QTimerEvent *)
 }
 
 
+
+QString FormatLatitude(double fLatitude)
+{
+
+  int nDegrees = abs(static_cast<int>(fLatitude));
+  double fMinutes = 60.0 * (fabs(fLatitude) - nDegrees);
+
+  //Check if we have overflow
+  if (fMinutes >= 59.995)
+  {
+    fMinutes = 0.0;
+    nDegrees++;
+  }
+
+  char cLat('N');
+  if (fLatitude < 0.0)
+  {
+    cLat = 'S';
+  }
+
+  char szStr[20];
+  sprintf(szStr, "%c%02d\xb0 %.2f'",cLat,nDegrees,fMinutes);
+  return QString::fromLatin1(szStr);
+
+  //   return QString(QLatin1String("%1%2\xB0%3'")).arg(cLat).arg(nDegrees, 2, 10, QChar('0')).arg(fMinutes, 5, 'f', 2, QChar('0'));
+}
+
+
+
+QString FormatLongitude(double fLongitude)
+{
+
+  int nDegrees = abs(static_cast<int>(fLongitude));
+  double fMinutes = 60.0 * (fabs(fLongitude) - nDegrees);
+
+  //Check if we have overflow
+  if (fMinutes >= 59.995)
+  {
+    fMinutes = 0.0;
+    nDegrees++;
+  }
+
+  char cLong('E');
+  if (fLongitude < 0.0)
+  {
+    cLong = 'W';
+  }
+
+  char szStr[20];
+
+  sprintf(szStr, "%c%03d\xb0 %.2f'",cLong,nDegrees,fMinutes);
+  return QString::fromLatin1(szStr);
+
+  //   return QString(QLatin1String("%1%2\xB0%3'")).arg(cLong).arg(nDegrees, 3, 10, QChar('0')).arg(fMinutes, 5, 'f', 2, QChar('0'));
+}
+
+
+
 void ScreenOn(bool b)
 {
     QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
