@@ -316,7 +316,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   }
 
 
-  if (fPrec > 10)
+  if (fPrec > 20)
     return;
 
   double fSpeed =  0;

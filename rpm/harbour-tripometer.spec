@@ -14,7 +14,7 @@ Name:       harbour-tripometer
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Tripometer
 Version:    0.4
-Release:    5
+Release:    2
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/
@@ -28,7 +28,7 @@ BuildRequires:  pkgconfig(Qt5Quick)
 BuildRequires:  desktop-file-utils
 
 %description
-Short description of my SailfishOS Application
+Tripometer
 
 
 %prep
