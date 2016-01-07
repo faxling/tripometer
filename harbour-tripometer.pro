@@ -1,45 +1,79 @@
-# NOTICE:
-#
-# Application name defined in TARGET has a corresponding QML filename.
-# If name defined in TARGET is changed, the following needs to be done
-# to match new name:
-#   - corresponding QML filename must be changed
-#   - desktop icon filename must be changed
-#   - desktop filename must be changed
-#   - icon definition filename in desktop file must be changed
-#   - translation filenames have to be changed
+#TEMPLATE = app
 
-# The name of your application
 TARGET = harbour-tripometer
+DEPENDPATH += .
+INCLUDEPATH += .
+CONFIG +=  link_pkgconfig hide_symbols sailfishapp
+PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl
+QT += qml quick positioning sensors dbus
+LIBS += -ljpeg
 
-QT += quick positioning dbus
 
-CONFIG += sailfishapp
-#CONFIG += c++11
 QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \
     Utils.cpp
 
-OTHER_FILES += qml/harbour-tripometer.qml \
-    qml/pages/FirstPage.qml \
+
+OTHER_FILES += \
     rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
-    rpm/harbour-tripometer.yaml \
+    qml/harbour-tripometer.qml \
+    qml/pages/FirstPage.qml \
     harbour-tripometer.desktop
-
-# to disable building translations every time, comment out the
-# following CONFIG line
-# CONFIG += sailfishapp_i18n
-
-# German translation is enabled as an example. If you aren't
-# planning to localize your app, remember to comment out the
-# following TRANSLATIONS line. And also do not forget to
-# modify the localized app name in the the .desktop file.
-#TRANSLATIONS += translations/harbour-tripometer-de.ts
 
 HEADERS += \
     infolistmodel.h \
     Utils.h
+
+
+packagesExist(qdeclarative5-boostable) {
+  DEFINES += HAS_BOOSTER
+  PKGCONFIG += qdeclarative5-boostable
+} else {
+  warning("qdeclarative-boostable not available; startup times will be slower")
+}
+
+isEmpty(PREFIX)
+{
+  PREFIX = /usr
+}
+
+DEPLOYMENT_PATH = $$PREFIX/share/$$TARGET
+DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
+DEFINES += APP=\"\\\"\"$${TARGET}\"\\\"\"
+DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
+DEFINES += SAILFISH
+DEFINES += VERSION=\"\\\"\"0.5.3\"\\\"\"
+
+# Input
+HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/osm-gps-map-osd-classic.h src/osm-gps-map/layer-wiki.h src/osm-gps-map/layer-gps.h
+SOURCES += src/misc.c src/net_io.c src/geonames.c src/search.c src/track.c src/img_loader.c src/icon.c src/converter.c src/osm-gps-map/osm-gps-map.c src/osm-gps-map/osm-gps-map-layer.c src/osm-gps-map/osm-gps-map-qt.cpp src/osm-gps-map/osm-gps-map-osd-classic.c src/osm-gps-map/layer-wiki.c src/osm-gps-map/layer-gps.c
+
+# Installation
+#target.path = $$PREFIX/bin
+
+#desktop.path = $$PREFIX/share/applications
+#desktop.files = harbour-tripometer.desktop
+
+#icon.path = $$PREFIX/share/icons/hicolor/86x86/apps
+#icon.files = harbour-tripometer.png
+
+#qml.path = $$DEPLOYMENT_PATH
+#qml.files = qml/harbour-tripometer.qml qml/pages/FirstPage.qml
+
+#src/main.qml src/Header.qml src/PlaceHeader.qml src/TrackHeader.qml src/TrackView.qml src/About.qml src/Settings.qml src/FileChooser.qml
+
+#resources.path = $$DEPLOYMENT_PATH
+#resources.files = data/wikipedia_w.48.png data/icon-camera-zoom-wide.png data/icon-camera-zoom-tele.png data/icon-cover-remove.png data/AUTHORS data/COPYING
+
+#INSTALLS += target desktop icon resources
+
+OTHER_FILES += rpm/harbour-tripometer.spec
+
+# This part is to circumvent harbour limitations.
+QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
+
+#QT += qml-private core-private
 

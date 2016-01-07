@@ -1,19 +1,20 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-// import harbour.tripometer 1.0
+import harbour.maep.qt 1.0
+
+//import harbour.tripometer 1.0
 
 
 Page {
   id: page
-
 
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
     width: page.width
     PullDownMenu {
-      MenuItem {
 
+      MenuItem {
         text: "Nautical Units"
         font.bold: nUnit === 1
         onClicked: {
@@ -55,6 +56,12 @@ Page {
         text: bIsPause ? "Resume" : "Pause"
         onClicked: {
           idListModel.klicked2(1)
+        }
+      }
+      MenuItem {
+        text: "Map"
+        onClicked: {
+          pageStack.push(idMap)
         }
       }
     }

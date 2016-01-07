@@ -40,6 +40,9 @@
 #include <sailfishapp.h>
 #include <QtPositioning/QtPositioning>
 #include <QtPositioning/QGeoPositionInfoSource>
+
+#include "osm-gps-map/osm-gps-map-qt.h"
+
 // #include <QtQml/qqml>
 
 //
@@ -72,6 +75,9 @@ int main(int argc, char *argv[])
   QQmlContext *pContext = pU->rootContext();
   InfoListModel* pInfoListModel =  new InfoListModel;
   pContext->setContextProperty("idListModel", pInfoListModel);
+
+  qmlRegisterType<Maep::GpsMap>("harbour.maep.qt", 1, 0, "GpsMap");
+
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
