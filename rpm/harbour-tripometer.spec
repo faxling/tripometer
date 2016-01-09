@@ -1,9 +1,9 @@
-# RPM sgpec file for Maep.
-# This file is used to build Redhat Package Manager packages for
-# Maep.  Such packages make it easy to install and uninstall
+# RPM sgpec file
+# This file is used to build Redhat Package Manager packages
+# Such packages make it easy to install and uninstall
 # the library and related files from binaries or source.
 #
-# RPM. To build, use the command: rpmbuild --clean -ba maep-qt.spec
+# RPM. To build, use the command: rpmbuild --clean -ba harbour-tripometer.spec
 #
 
 Name: harbour-tripometer
@@ -80,7 +80,10 @@ install -m 644 -p /usr/lib/libicudata.so.52 %{buildroot}/usr/share/%{name}/lib/
 #/usr/share/icons
 #/usr/share/%{name}
 #/usr/bin
-%attr(655,-,-) %{_bindir}
+
+# eg /usr/share/applications/harbour-tripometer.desktop
+%attr(655,-,-)
+%{_bindir}
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png

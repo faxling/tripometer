@@ -14,52 +14,72 @@ ApplicationWindow {
   // 0 = km/h 1 kts
   property int nUnit : 0
 
-
-
   CoverBackground {
     id: blueCover
 
 
-        //CoverBackground  {
-        //  anchors.fill: parent
-        // color: Qt.rgba(0, 0, 1, 0.4)
-        Label {
-            anchors.topMargin: 30
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "Tripometer"
-        }
-        Image
-        {
-            id: idIcon
-            anchors.centerIn: parent
-            source: "harbour-tripometer.png"
-        }
+    //CoverBackground  {
+    //  anchors.fill: parent
+    // color: Qt.rgba(0, 0, 1, 0.4)
+    Label {
+      anchors.topMargin: 30
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: "Tripometer"
+    }
+    Image
+    {
+      id: idIcon
+      anchors.centerIn: parent
+      source: "harbour-tripometer.png"
+    }
 
 
-        Label {
-            anchors.top: idIcon.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: sDur
-        }
+    Label {
+      anchors.top: idIcon.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: sDur
+    }
 
   }
 
   Component
   {
-      id:idMap
-      Page
+    id:idMapComponent
+    Page
+    {
+      GpsMap
       {
-          GpsMap
-          {
-            anchors.fill: parent
-          }
-      }
-  }
+        id:idMap
 
+        anchors.fill: parent
+      }
+
+      Row {
+        id: map_controls
+        anchors.bottom: parent.bottom
+        width: parent.width
+        height: Theme.itemSizeMedium
+        z: idMap.z + 1
+        anchors.bottomMargin: -Theme.paddingMedium
+        //  visible: !Qt.inputMethod.visible
+        IconButton {
+          id: zoomout
+          icon.source: "icon-camera-zoom-wide.png"
+          onClicked: { idMap.zoomOut() }
+        }
+        IconButton {
+          id: zoomin
+          icon.source: "icon-camera-zoom-tele.png"
+          onClicked: { idMap.zoomIn() }
+        }
+      }
+
+    }
+  }
 
   Component.onCompleted:
   {
-    pageStack.pushAttached(idMap)
+    pageStack.pushAttached(idMapComponent)
   }
 
   initialPage: Component {
@@ -69,3 +89,4 @@ ApplicationWindow {
   }
   cover: blueCover
 }
+

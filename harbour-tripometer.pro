@@ -20,6 +20,8 @@ OTHER_FILES += \
     rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
     qml/harbour-tripometer.qml \
+    qml/icon-camera-zoom-wide.png \
+    qml/icon-camera-zoom-tele.png \
     qml/pages/FirstPage.qml \
     harbour-tripometer.desktop
 
@@ -40,6 +42,8 @@ isEmpty(PREFIX)
   PREFIX = /usr
 }
 
+
+# eg /usr/share/applications/harbour-tripometer.desktop
 DEPLOYMENT_PATH = $$PREFIX/share/$$TARGET
 DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += APP=\"\\\"\"$${TARGET}\"\\\"\"
