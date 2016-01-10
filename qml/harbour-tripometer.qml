@@ -72,8 +72,13 @@ ApplicationWindow {
           icon.source: "icon-camera-zoom-tele.png"
           onClicked: { idMap.zoomIn() }
         }
-      }
+        IconButton {
+          id: idTrack
+          icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
+          onClicked: { idMap.track_capture = !idMap.track_capture }
+        }
 
+      }
     }
   }
 
