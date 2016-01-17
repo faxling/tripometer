@@ -20,8 +20,8 @@ OTHER_FILES += \
     rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
     qml/harbour-tripometer.qml \
-    qml/icon-camera-zoom-wide.png \
-    qml/icon-camera-zoom-tele.png \
+    qml/btnPlus.png \
+    qml/btnMinus.png \
     qml/btnTrack.png \
     qml/btnTrackOff.png \
     qml/pages/FirstPage.qml \

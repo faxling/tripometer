@@ -564,17 +564,16 @@ void Maep::GpsMap::zoomIn()
     gfloat factor;
 
     g_object_get(G_OBJECT(map), "factor", &factor, NULL);
-    osm_gps_map_set_factor(map, 1.f);
-    if (factor >= 1.)
-        osm_gps_map_zoom_in(map);
-}
+    osm_gps_map_set_factor(map, 4.f);
+    if (factor >= 4.)
+        
 void Maep::GpsMap::zoomOut()
 {
     gfloat factor;
 
     g_object_get(G_OBJECT(map), "factor", &factor, NULL);
-    osm_gps_map_set_factor(map, 1.f);
-    if (factor <= 1.)
+    osm_gps_map_set_factor(map, 4.f);
+    if (factor <= 4.)
         osm_gps_map_zoom_out(map);
 }
 

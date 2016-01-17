@@ -1,8 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.maep.qt 1.0
+//import harbour.maep.qt 1.0
 
-//import harbour.tripometer 1.0
+
 
 
 Page {

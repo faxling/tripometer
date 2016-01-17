@@ -1,8 +1,7 @@
 
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import harbour.maep.qt 1.0
-
+import harbour.tripometer 1.0
 
 import "pages"
 
@@ -50,7 +49,7 @@ ApplicationWindow {
       GpsMap
       {
         id:idMap
-
+        enable_compass : true
         anchors.fill: parent
       }
 
@@ -64,12 +63,12 @@ ApplicationWindow {
         //  visible: !Qt.inputMethod.visible
         IconButton {
           id: zoomout
-          icon.source: "icon-camera-zoom-wide.png"
+          icon.source: "btnMinus.png"
           onClicked: { idMap.zoomOut() }
         }
         IconButton {
           id: zoomin
-          icon.source: "icon-camera-zoom-tele.png"
+          icon.source: "btnPlus.png"
           onClicked: { idMap.zoomIn() }
         }
         IconButton {
@@ -77,7 +76,16 @@ ApplicationWindow {
           icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
           onClicked: { idMap.track_capture = !idMap.track_capture }
         }
-
+        IconButton {
+          id: idCenter
+          icon.source: "btnCenter.png"
+          onClicked: { idMap.auto_center = !idMap.auto_center }
+        }
+        IconButton {
+          id: idMarker
+          icon.source: "btnMarker.png"
+          onClicked: { idMap.zoomIn() }
+        }
       }
     }
   }

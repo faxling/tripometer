@@ -82,8 +82,8 @@ install -m 644 -p /usr/lib/libicudata.so.52 %{buildroot}/usr/share/%{name}/lib/
 #/usr/bin
 
 # eg /usr/share/applications/harbour-tripometer.desktop
-%attr(655,-,-)
-%{_bindir}
+%defattr(644,root,root,-)
+%attr(755,-,-) %{_bindir}
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/icons/hicolor/86x86/apps/%{name}.png

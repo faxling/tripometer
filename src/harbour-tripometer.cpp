@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
   InfoListModel* pInfoListModel =  new InfoListModel;
   pContext->setContextProperty("idListModel", pInfoListModel);
 
-  qmlRegisterType<Maep::GpsMap>("harbour.maep.qt", 1, 0, "GpsMap");
+  qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
 
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
