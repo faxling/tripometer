@@ -26,7 +26,6 @@
 #include <QPainterPath>
 #include <QDebug>
 #include <cmath>
-
 #define GCONF_KEY_ZOOM       "zoom"
 #define GCONF_KEY_SOURCE     "source"
 #define GCONF_KEY_OVERLAY_SOURCE "overlay-source"
@@ -565,15 +564,17 @@ void Maep::GpsMap::zoomIn()
 
     g_object_get(G_OBJECT(map), "factor", &factor, NULL);
     osm_gps_map_set_factor(map, 4.f);
-    if (factor >= 4.)
-        
+   // if (factor >= 4.)
+         osm_gps_map_zoom_in(map);
+}
+
 void Maep::GpsMap::zoomOut()
 {
     gfloat factor;
 
     g_object_get(G_OBJECT(map), "factor", &factor, NULL);
     osm_gps_map_set_factor(map, 4.f);
-    if (factor <= 4.)
+   //  if (factor <= 4.)
         osm_gps_map_zoom_out(map);
 }
 
@@ -1044,6 +1045,8 @@ void Maep::GpsMap::unsetGps()
 
     maep_layer_gps_set_active(lgps, FALSE);
 }
+
+
 void Maep::GpsMap::compassReadingChanged()
 {
     // Apparently this event fires spuriously once when the class is initialized, so double-check
@@ -1053,12 +1056,16 @@ void Maep::GpsMap::compassReadingChanged()
         QCompassReading *compass_reading = compass.reading();
         if (compass_reading)
         {
-            qreal azimuth = compass_reading->azimuth();
+            double azimuth = compass_reading->azimuth();
+
+            osm_gps_map_set_azimuth(osd,azimuth );
+            osd_render_scale(osd) ;
             if (lastAzimuth == -1. || std::abs(lastAzimuth - azimuth) > 2)
             {
                 maep_layer_gps_set_azimuth(lgps, static_cast<gfloat>(azimuth));
                 lastAzimuth = azimuth;
             }
+
         }
     }
 }
