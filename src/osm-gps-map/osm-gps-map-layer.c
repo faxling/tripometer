@@ -9,7 +9,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -18,26 +18,26 @@
 
 GType osm_gps_map_layer_get_type()
 {
-	static GType object_type = 0;
-	if (!object_type) {
-		static const GTypeInfo object_info = {
-			sizeof(OsmGpsMapLayerIface),
-			NULL,	/* base init */
-			NULL,	/* base finalize */
-                        NULL,
-                        NULL,
-                        NULL,
-                        0,
-                        0,
-                        NULL,
-                        NULL
-		};
-		object_type =
-		    g_type_register_static(G_TYPE_INTERFACE,
-					   "OsmGpsMapLayer",
-					   &object_info, 0);
-	}
-	return object_type;
+  static GType object_type = 0;
+  if (!object_type) {
+    static const GTypeInfo object_info = {
+      sizeof(OsmGpsMapLayerIface),
+      NULL,	/* base init */
+      NULL,	/* base finalize */
+      NULL,
+      NULL,
+      NULL,
+      0,
+      0,
+      NULL,
+      NULL
+    };
+    object_type =
+        g_type_register_static(G_TYPE_INTERFACE,
+                               "OsmGpsMapLayer",
+                               &object_info, 0);
+  }
+  return object_type;
 }
 
 void
