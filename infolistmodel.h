@@ -6,6 +6,8 @@
 #include <QGeoLocation>
 #include <QGeoCoordinate>
 #include <QGeoPositionInfo>
+#include <QCompass>
+
 #include <QList>
 #include <stdio.h>
 
@@ -31,7 +33,7 @@ public:
   };
 private slots:
   void PositionUpdated(const QGeoPositionInfo& o);
-
+  void CompassReadingChanged();
 
 private:
 
@@ -73,7 +75,7 @@ private:
   //   FILE* m_pDataFile;
 
 
-
+  QCompass m_oCompass;
   MssTimer* m_pTimer;
   void ResetData();
   QGeoCoordinate m_oLastPos;

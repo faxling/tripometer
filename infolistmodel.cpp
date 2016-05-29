@@ -1,5 +1,6 @@
 #include <QGeoLocation>
 #include <QGeoCoordinate>
+#include <QCompass>
 #include "infolistmodel.h"
 #include "QtSensors/QAccelerometer"
 #include <QtGlobal>
@@ -11,7 +12,7 @@
 #include "Utils.h"
 #include "time.h"
 
-QString FormatBearing(double direction)
+QString FormatBearing(double direction )
 {
   QString dirStr;
   if (direction < 11.25) {
@@ -56,6 +57,13 @@ QString FormatBearing(double direction)
   sprintf(szStr, "%s %.1f",dirStr.toLatin1().data(),direction);
   return szStr;
 
+}
+
+QString FormatBearing(double direction, double fLevel )
+{
+  char szStr[20];
+  sprintf(szStr, "%s : %.1f",FormatBearing(direction).toLatin1().data(),fLevel);
+  return szStr;
 }
 
 QString FormatCurrentTime()
@@ -143,6 +151,7 @@ enum TRIP_FIELDS
   MAXSPEED,
   AVERAGE_SPEED,
   DISTANCE_TO_HOME,
+  COMPASS,
   BEARING,
   LAT,
   LONG,
@@ -219,7 +228,8 @@ InfoListModel::InfoListModel(QObject *parent) :
   //m_pDataFile = fopen(sDataFileName.toLatin1(),"w+");
 
   QGeoPositionInfoSource *source = QGeoPositionInfoSource::createDefaultSource(this);
-
+  connect(&m_oCompass, SIGNAL(readingChanged()), this, SLOT(CompassReadingChanged()));
+  m_oCompass.start();
   if (source != nullptr)
   {
     connect(source, SIGNAL(positionUpdated(const QGeoPositionInfo&)),
@@ -238,6 +248,7 @@ InfoListModel::InfoListModel(QObject *parent) :
   m_nData[0][TIMEKM] = Data("time","Time/km");
   m_nData[0][DURATION] = Data("time","Duration");
   m_nData[0][BEARING] = Data("deg","Bearing");
+  m_nData[0][COMPASS] = Data("deg","Compass");
   m_nData[0][ELEVATION] = Data("m","Elevation");
   m_nData[0][MAXSPEED] = Data("km/h","Max Speed");
   m_nData[0][AVERAGE_SPEED] = Data("km/h","Average Speed");
@@ -252,6 +263,7 @@ InfoListModel::InfoListModel(QObject *parent) :
   m_nData[1][TIMEKM] = Data("time","Time/NM");
   m_nData[1][DURATION] = Data("time","Duration");
   m_nData[1][BEARING] = Data("deg","Bearing");
+  m_nData[1][COMPASS] = Data("deg","Compass");
   m_nData[1][ELEVATION] = Data("m","Elevation");
   m_nData[1][MAXSPEED] = Data("kts","Max Speed");
   m_nData[1][AVERAGE_SPEED] = Data("kts","Average Speed");
@@ -272,6 +284,20 @@ void InfoListModel::ResetData()
   for (auto & oJ : m_nData)
     for(auto &oI : oJ)
       oI.f = "-";
+}
+
+
+void InfoListModel::CompassReadingChanged()
+{
+  double fAz = m_oCompass.reading()->azimuth();
+  double fLevel = m_oCompass.reading()->calibrationLevel();
+  for (int i = 0; i < 2;++i)
+    m_nData[i][COMPASS].f = FormatBearing(fAz,fLevel);
+
+  QVector<int> oc;
+  oc.push_back(ValueRole);
+
+  emit dataChanged(index(COMPASS), index(COMPASS),oc);
 }
 
 void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)

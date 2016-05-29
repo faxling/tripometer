@@ -7,11 +7,13 @@ import "pages"
 
 ApplicationWindow {
 
+  id:idApp
   property string sDur
   property bool bIsPause : false
   property bool bScreenallwaysOn : true
   // 0 = km/h 1 kts
   property int nUnit : 0
+
 
   CoverBackground {
     id: blueCover
@@ -43,9 +45,12 @@ ApplicationWindow {
 
   Component
   {
+
     id:idMapComponent
     Page
     {
+      id:idMapPage
+      backNavigation: false
       GpsMap
       {
         id:idMap
@@ -84,7 +89,9 @@ ApplicationWindow {
         IconButton {
           id: idMarker
           icon.source: "btnMarker.png"
-          onClicked: { idMap.zoomIn() }
+          onClicked: {
+            pageStack.pop()
+          }
         }
       }
     }
@@ -92,12 +99,14 @@ ApplicationWindow {
 
   Component.onCompleted:
   {
-    pageStack.pushAttached(idMapComponent)
+
   }
 
   initialPage: Component {
-    FirstPage {
-
+    FirstPage  {
+      onShowMap: {
+        pageStack.push(idMapComponent)
+      }
     }
   }
   cover: blueCover

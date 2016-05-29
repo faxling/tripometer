@@ -8,6 +8,8 @@ import Sailfish.Silica 1.0
 Page {
   id: page
 
+  signal showMap()
+
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
@@ -61,7 +63,7 @@ Page {
       MenuItem {
         text: "Map"
         onClicked: {
-          pageStack.push(idMap)
+          showMap()
         }
       }
     }
@@ -118,12 +120,7 @@ Page {
 
       onPressAndHold: {
 
-        //   idListModel.get(index).fV = 10 * index
-        //  console.log("Clicked " + index)
-        // idListModel.klicked2(index)
       }
     }
-    //  VerticalScrollDecorator{
-    //  }
   }
 }
