@@ -24,6 +24,7 @@ OTHER_FILES += \
     qml/btnMinus.png \
     qml/btnTrack.png \
     qml/btnTrackOff.png \
+    qml/btnBack.png \
     qml/pages/FirstPage.qml \
     harbour-tripometer.desktop
 

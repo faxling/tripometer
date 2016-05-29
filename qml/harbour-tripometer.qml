@@ -93,6 +93,13 @@ ApplicationWindow {
             pageStack.pop()
           }
         }
+        IconButton {
+          id: idBack
+          icon.source: "btnBack.png"
+          onClicked: {
+            pageStack.pop()
+          }
+        }
       }
     }
   }
