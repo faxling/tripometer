@@ -3,6 +3,12 @@
 TARGET = harbour-tripometer
 DEPENDPATH += .
 INCLUDEPATH += .
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\dconf
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\libxml2
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\glib-2.0
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\cairo
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\c++\4.8.3
+
 CONFIG +=  link_pkgconfig hide_symbols sailfishapp
 PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl
 QT += qml quick positioning sensors dbus
@@ -25,6 +31,7 @@ OTHER_FILES += \
     qml/btnTrack.png \
     qml/btnTrackOff.png \
     qml/btnBack.png \
+    qml/btnClearTrack.png \
     qml/pages/FirstPage.qml \
     harbour-tripometer.desktop
 

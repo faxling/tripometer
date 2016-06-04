@@ -77,15 +77,16 @@ ApplicationWindow {
           onClicked: { idMap.zoomIn() }
         }
         IconButton {
-          id: idTrack
-          icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
-          onClicked: { idMap.track_capture = !idMap.track_capture }
-        }
-        IconButton {
           id: idCenter
           icon.source: "btnCenter.png"
           onClicked: { idMap.auto_center = !idMap.auto_center }
         }
+        IconButton {
+          id: idTrack
+          icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
+          onClicked: { idMap.track_capture = !idMap.track_capture }
+        }
+
         IconButton {
           id: idMarker
           icon.source: "btnMarker.png"
@@ -93,6 +94,15 @@ ApplicationWindow {
             pageStack.pop()
           }
         }
+
+        IconButton {
+          id: idClearTrack
+          icon.source: "btnClearTrack.png"
+          onClicked: {
+            idMap.clearTrack()
+          }
+        }
+
         IconButton {
           id: idBack
           icon.source: "btnBack.png"
