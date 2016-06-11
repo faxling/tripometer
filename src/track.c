@@ -20,6 +20,7 @@
  * along with Maep.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #define _XOPEN_SOURCE /* glibc2 needs this */
 #define __USE_XOPEN
 #include <time.h>
@@ -35,6 +36,7 @@
 #include <libxml/tree.h>
 #include <string.h>
 #include <strings.h>
+
 
 #ifndef NAN
 #define NAN (0.0/0.0)
@@ -609,6 +611,8 @@ static gboolean track_autosave(gpointer data) {
   g_free(dirname);
 
   error = (GError*)0;
+
+
   maep_geodata_to_file(track_state, track_state->priv->path, &error);
   if (error)
     {

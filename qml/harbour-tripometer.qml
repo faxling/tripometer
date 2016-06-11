@@ -9,6 +9,7 @@ ApplicationWindow {
 
   id:idApp
   property string sDur
+  property string sDirname : "pucko"
   property bool bIsPause : false
   property bool bScreenallwaysOn : true
   // 0 = km/h 1 kts
@@ -51,11 +52,38 @@ ApplicationWindow {
     {
       id:idMapPage
       backNavigation: false
+
+      Track
+      {
+        id: idTrack1
+       // autosavePeriod: 10
+      }
+
       GpsMap
       {
+        Component.onDestruction:
+        {
+          idTrack1.autosavePeriod = 0
+
+        }
+
+        onTrackChanged:
+        {
+
+        }
+        track: idTrack1
+
         id:idMap
         enable_compass : true
         anchors.fill: parent
+      }
+
+      Text
+      {
+        font.pixelSize: 12
+        text: sDirname
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 70
       }
 
       Row {
@@ -82,16 +110,24 @@ ApplicationWindow {
           onClicked: { idMap.auto_center = !idMap.auto_center }
         }
         IconButton {
-          id: idTrack
-          icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
-          onClicked: { idMap.track_capture = !idMap.track_capture }
-        }
-
-        IconButton {
           id: idMarker
           icon.source: "btnMarker.png"
           onClicked: {
-            pageStack.pop()
+            if (idMap.track !== null)
+              idMap.track.autosavePeriod = 10
+            // pageStack.pop()
+          }
+        }
+
+
+        IconButton {
+          id: idTrack
+          icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
+          onClicked: {
+            idMap.track_capture = !idMap.track_capture
+            //if (idMap.track_capture === true)
+            // idMap.setTrack(idTrack1)
+
           }
         }
 
@@ -99,7 +135,8 @@ ApplicationWindow {
           id: idClearTrack
           icon.source: "btnClearTrack.png"
           onClicked: {
-            idMap.clearTrack()
+            pageStack.popAttached()()
+            //   idMap.setTrack()
           }
         }
 
@@ -107,22 +144,25 @@ ApplicationWindow {
           id: idBack
           icon.source: "btnBack.png"
           onClicked: {
-            pageStack.pop()
+            idMapPage.backNavigation =   !idMapPage.backNavigation
           }
         }
       }
     }
   }
 
+
   Component.onCompleted:
   {
-
+    pageStack.pushAttached(idMapComponent)
   }
 
   initialPage: Component {
+
     FirstPage  {
+
       onShowMap: {
-        pageStack.push(idMapComponent)
+
       }
     }
   }

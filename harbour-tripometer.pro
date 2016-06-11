@@ -3,11 +3,12 @@
 TARGET = harbour-tripometer
 DEPENDPATH += .
 INCLUDEPATH += .
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\dconf
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\libxml2
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\glib-2.0
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\cairo
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)\SailfishOS-i486\usr\include\c++\4.8.3
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\dconf
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libxml2
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\glib-2.0
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\cairo
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++\4.8.3
+INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libsoup-2.4
 
 CONFIG +=  link_pkgconfig hide_symbols sailfishapp
 PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl

@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.48.5 r10040"
    sodipodi:docname="btn.svg"
-   inkscape:export-filename="C:\Users\fax\Documents\qt\harbour-tripometer\qml\btnBack.png"
+   inkscape:export-filename="C:\Users\fax\Documents\qt\harbour-tripometer\qml\btnTrackOff.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -177,9 +177,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.75"
-     inkscape:cx="-141.3262"
-     inkscape:cy="83.419914"
-     inkscape:current-layer="layer3"
+     inkscape:cx="-169.09091"
+     inkscape:cy="38.760598"
+     inkscape:current-layer="layer2"
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
@@ -187,9 +187,9 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1058"
-     inkscape:window-x="1592"
+     inkscape:window-width="2048"
+     inkscape:window-height="1130"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:snap-grids="true"
@@ -230,7 +230,7 @@
        sodipodi:cy="48"
        sodipodi:rx="38"
        sodipodi:ry="38.18182"
-       d="m 86.909092,48 a 38,38.18182 0 1 1 -76,0 38,38.18182 0 1 1 76,0 z"
+       d="m 86.909092,48 c 0,21.087237 -17.01318,38.18182 -38,38.18182 -20.986821,0 -38,-17.094583 -38,-38.18182 0,-21.087237 17.013179,-38.1818199 38,-38.1818199 20.98682,0 38,17.0945829 38,38.1818199 z"
        transform="matrix(0.76958248,0,0,0.71353686,13.269512,-19.522496)" />
     <path
        sodipodi:type="arc"
@@ -240,7 +240,7 @@
        sodipodi:cy="45.636364"
        sodipodi:rx="20.181818"
        sodipodi:ry="19.454546"
-       d="m 61.09091,45.636364 a 20.181818,19.454546 0 1 1 -40.363636,0 20.181818,19.454546 0 1 1 40.363636,0 z"
+       d="m 61.09091,45.636364 c 0,10.744449 -9.035708,19.454546 -20.181818,19.454546 -11.14611,0 -20.181818,-8.710097 -20.181818,-19.454546 0,-10.744449 9.035708,-19.454546 20.181818,-19.454546 11.14611,0 20.181818,8.710097 20.181818,19.454546 z"
        transform="matrix(1.7245169,0,0,1.6768352,-21.639328,-60.888299)" />
     <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -282,7 +282,7 @@
      sodipodi:insensitive="true">
     <path
        transform="matrix(0.76958248,0,0,0.71353686,13.269512,-19.522496)"
-       d="m 86.909092,48 c 0,21.087237 -17.01318,38.18182 -38,38.18182 -20.986821,0 -38,-17.094583 -38,-38.18182 0,-21.087237 17.013179,-38.1818199 38,-38.1818199 20.98682,0 38,17.0945829 38,38.1818199 z"
+       d="m 86.909092,48 a 38,38.18182 0 1 1 -76,0 38,38.18182 0 1 1 76,0 z"
        sodipodi:ry="38.18182"
        sodipodi:rx="38"
        sodipodi:cy="48"
@@ -377,7 +377,7 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="back"
-     style="display:inline">
+     style="display:none">
     <rect
        ry="15.636373"
        rx="1.1231299e-008"
@@ -538,7 +538,7 @@
          inkscape:transform-center-y="1.8181818"
          inkscape:transform-center-x="10.181818"
          transform="matrix(0.90013381,0,0,0.9426394,107.43142,-7.5741524)"
-         d="m -182.90909,10.363636 a 14.545455,12.909091 0 1 1 -29.09091,0 14.545455,12.909091 0 1 1 29.09091,0 z"
+         d="m -182.90909,10.363636 c 0,7.129494 -6.51222,12.909091 -14.54545,12.909091 -8.03324,0 -14.54546,-5.779597 -14.54546,-12.909091 0,-7.1294941 6.51222,-12.909091 14.54546,-12.909091 8.03323,0 14.54545,5.7795969 14.54545,12.909091 z"
          sodipodi:ry="12.909091"
          sodipodi:rx="14.545455"
          sodipodi:cy="10.363636"

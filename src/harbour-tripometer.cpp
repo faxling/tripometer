@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
   pContext->setContextProperty("idListModel", pInfoListModel);
 
   qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
-
+  qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
@@ -91,6 +91,8 @@ int main(int argc, char *argv[])
   pInfoListModel->klicked2(5);
   app->exec();
   ScreenOn(false);
+  oTimer.Stop();
+  delete pU;
   qDebug() << "Exit";
 
 }

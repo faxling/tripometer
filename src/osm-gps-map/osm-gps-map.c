@@ -180,7 +180,7 @@ enum
 
 static GParamSpec *properties[PROP_LAST];
 
-G_DEFINE_TYPE (OsmGpsMap, osm_gps_map, G_TYPE_OBJECT);
+G_DEFINE_TYPE (OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
 
 /*
  * Drawing function forward defintions

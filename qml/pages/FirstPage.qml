@@ -76,13 +76,22 @@ Page {
       text: "Tripometer"
     }
   }
+
+  Component.onDestruction:
+  {
+    pageStack.popAttached()
+  }
+
+  Component.onCompleted:
+  {
+    pageStack.pushAttached(idMapComponent)
+  }
+
   ListView {
     clip: true
     id: listView
 
-    Component.onCompleted: {
 
-    }
     model: idListModel
     anchors.fill: parent
     anchors.topMargin: 120

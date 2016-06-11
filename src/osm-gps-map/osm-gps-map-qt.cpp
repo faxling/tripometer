@@ -21,7 +21,7 @@
 #include "osm-gps-map-layer.h"
 #undef WITH_GTK
 #include "../net_io.h"
-
+#include "infolistmodel.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QDebug>
@@ -63,6 +63,9 @@ bool Maep::Track::set(const QString &filename)
   GError *error;
 
   error = NULL;
+ if (InfoListModel::m_pRoot != 0)
+  InfoListModel::m_pRoot->setProperty("sDirname",filename);
+
   t = maep_geodata_new_from_file(filename.toLocal8Bit().data(), &error);
   if (t)
   {
@@ -85,6 +88,8 @@ bool Maep::Track::toFile(const QString &filename)
   bool res;
 
   error = NULL;
+   if (InfoListModel::m_pRoot != 0)
+   InfoListModel::m_pRoot->setProperty("sDirname",filename);
   res = maep_geodata_to_file(track, filename.toLocal8Bit().data(), &error);
   if (error)
   {
@@ -126,9 +131,14 @@ void Maep::Track::finalizeSegment()
   if (track)
     maep_geodata_track_finalize_segment(track);
 }
+
 bool Maep::Track::setAutosavePeriod(unsigned int value)
 {
   bool ret;
+
+
+  if (InfoListModel::m_pRoot != 0)
+    InfoListModel::m_pRoot->setProperty("sDirname",maep_geodata_get_autosave_path(track));
 
   autosavePeriod = value;
   ret = maep_geodata_set_autosave_period(track, (guint)value);
@@ -202,6 +212,8 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   bool compassEnabled = gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE);
 
   path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
+
+
 
   /* Backward compatibility, move old path. */
   oldPath = g_build_filename(g_get_user_data_dir(), "maep", NULL);
@@ -544,6 +556,8 @@ void Maep::GpsMap::paint(QPainter *painter)
   if (mapSized())
     mapUpdate();
   paintTo(painter, width(), height());
+
+  return;
   /* Make top rounded corners. */
   painter->setCompositionMode(QPainter::CompositionMode_Clear);
   w = width();
@@ -1041,6 +1055,7 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo &info)
   osm_gps_map_auto_center_at(map, info.coordinate().latitude(),
                              info.coordinate().longitude());
 
+
   lastGps = info;
   emit gpsCoordinateChanged();
 
@@ -1146,7 +1161,10 @@ void Maep::GpsMap::setTrackCapture(bool status)
   emit trackCaptureChanged(track_capture);
 
   if (status && lastGps.isValid())
+  {
+  //   setTrack(0);
     gpsToTrack();
+  }
 }
 
 void Maep::GpsMap::setTrack(Maep::Track *track)
