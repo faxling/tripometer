@@ -117,6 +117,36 @@ QString FormatLongitude(double fLongitude)
 }
 
 
+QRegExp& SLASH = *new QRegExp("[\\\\/]");
+
+QString DirName(const QString & sFileName) {
+  int n  = sFileName.lastIndexOf(SLASH);
+  if (n < 0)
+    return sFileName;
+  return sFileName.left(n);
+}
+
+QString JustFileNameNoExt(const QString & sFileName) {
+  return BaseName(JustFileName(sFileName));
+}
+
+
+QString JustFileName(const QString & sFileName) {
+  int n  = sFileName.lastIndexOf(SLASH);
+  if (n < 0)
+    return sFileName;
+  return sFileName.right(sFileName.size() - n -1);
+}
+
+
+QString BaseName(const QString & sFileName) {
+  return sFileName.left(sFileName.lastIndexOf('.'));
+}
+
+QString Ext(const QString & sFileName) {
+  return sFileName.right(sFileName.size() - sFileName.lastIndexOf('.') -1 );
+}
+
 
 void ScreenOn(bool b)
 {

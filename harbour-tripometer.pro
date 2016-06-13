@@ -20,8 +20,8 @@ QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \
+    trackmodel.cpp \
     Utils.cpp
-
 
 OTHER_FILES += \
     rpm/harbour-tripometer.changes.in \
@@ -34,9 +34,11 @@ OTHER_FILES += \
     qml/btnBack.png \
     qml/btnClearTrack.png \
     qml/pages/FirstPage.qml \
+    qml/pages/SecondPage.qml \
     harbour-tripometer.desktop
 
 HEADERS += \
+    trackmodel.h \
     infolistmodel.h \
     Utils.h
 

@@ -422,6 +422,9 @@ class GpsMap : public QQuickPaintedItem
       return SOURCE_NULL;
     }
   }
+
+
+  Q_INVOKABLE void saveTrack();
   Q_INVOKABLE void clearTrack();
   Q_INVOKABLE inline QString sourceLabel(Source id) const {
     return QString(osm_gps_map_source_get_friendly_name((OsmGpsMapSource_t)id));
@@ -455,7 +458,9 @@ class GpsMap : public QQuickPaintedItem
   void touchEvent(QTouchEvent *touchEvent);
 
  signals:
+  void TrackSaved(QString);
   void mapChanged();
+
   void sourceChanged(Source source);
   void overlaySourceChanged(Source source);
   void doublePixelChanged(bool status);

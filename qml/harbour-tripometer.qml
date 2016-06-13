@@ -44,8 +44,7 @@ ApplicationWindow {
 
   }
 
-  Component
-  {
+  Component  {
 
     id:idMapComponent
     Page
@@ -53,25 +52,18 @@ ApplicationWindow {
       id:idMapPage
       backNavigation: false
 
-      Track
-      {
-        id: idTrack1
-       // autosavePeriod: 10
-      }
 
       GpsMap
       {
         Component.onDestruction:
         {
           idTrack1.autosavePeriod = 0
-
         }
 
         onTrackChanged:
         {
 
         }
-        track: idTrack1
 
         id:idMap
         enable_compass : true
@@ -113,9 +105,8 @@ ApplicationWindow {
           id: idMarker
           icon.source: "btnMarker.png"
           onClicked: {
-            if (idMap.track !== null)
-              idMap.track.autosavePeriod = 10
-            // pageStack.pop()
+            idMap.saveTrack()
+
           }
         }
 
@@ -125,8 +116,14 @@ ApplicationWindow {
           icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
           onClicked: {
             idMap.track_capture = !idMap.track_capture
-            //if (idMap.track_capture === true)
-            // idMap.setTrack(idTrack1)
+
+            if (idMap.track_capture === true)
+            {
+              var o = Qt.createQmlObject("import harbour.tripometer 1.0; Track {}",
+                                         idMapPage, "track1");
+
+              idMap.setTrack(o)
+            }
 
           }
         }
@@ -135,8 +132,7 @@ ApplicationWindow {
           id: idClearTrack
           icon.source: "btnClearTrack.png"
           onClicked: {
-            pageStack.popAttached()()
-            //   idMap.setTrack()
+ 
           }
         }
 
@@ -150,20 +146,25 @@ ApplicationWindow {
       }
     }
   }
+  Component
+  {
+    id:idSecondPage
+    SecondPage
+    {
 
-
+    }
+  }
   Component.onCompleted:
   {
-    pageStack.pushAttached(idMapComponent)
+
+   pageStack.pushAttached(idMapComponent)
   }
 
   initialPage: Component {
 
     FirstPage  {
 
-      onShowMap: {
 
-      }
     }
   }
   cover: blueCover

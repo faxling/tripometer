@@ -8,8 +8,6 @@ import Sailfish.Silica 1.0
 Page {
   id: page
 
-  signal showMap()
-
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
@@ -61,9 +59,9 @@ Page {
         }
       }
       MenuItem {
-        text: "Map"
+        text: "Tracks"
         onClicked: {
-          showMap()
+          pageStack.push(idSecondPage)
         }
       }
     }
@@ -79,12 +77,12 @@ Page {
 
   Component.onDestruction:
   {
-    pageStack.popAttached()
+  //  pageStack.popAttached()
   }
 
   Component.onCompleted:
   {
-    pageStack.pushAttached(idMapComponent)
+//    pageStack.pushAttached(idMapComponent)
   }
 
   ListView {
