@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.48.5 r10040"
    sodipodi:docname="btn.svg"
-   inkscape:export-filename="C:\Users\fax\Documents\qt\harbour-tripometer\qml\btnTrackOff.png"
+   inkscape:export-filename="C:\Users\fax\Documents\qt\harbour-tripometer\qml\btnBackDis.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -177,9 +177,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.75"
-     inkscape:cx="-169.09091"
-     inkscape:cy="38.760598"
-     inkscape:current-layer="layer2"
+     inkscape:cx="-112.36364"
+     inkscape:cy="65.010823"
+     inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
@@ -187,8 +187,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-midpoints="true"
-     inkscape:window-width="2048"
-     inkscape:window-height="1130"
+     inkscape:window-width="1600"
+     inkscape:window-height="878"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -230,7 +230,7 @@
        sodipodi:cy="48"
        sodipodi:rx="38"
        sodipodi:ry="38.18182"
-       d="m 86.909092,48 c 0,21.087237 -17.01318,38.18182 -38,38.18182 -20.986821,0 -38,-17.094583 -38,-38.18182 0,-21.087237 17.013179,-38.1818199 38,-38.1818199 20.98682,0 38,17.0945829 38,38.1818199 z"
+       d="m 86.909092,48 a 38,38.18182 0 1 1 -76,0 38,38.18182 0 1 1 76,0 z"
        transform="matrix(0.76958248,0,0,0.71353686,13.269512,-19.522496)" />
     <path
        sodipodi:type="arc"
@@ -240,7 +240,7 @@
        sodipodi:cy="45.636364"
        sodipodi:rx="20.181818"
        sodipodi:ry="19.454546"
-       d="m 61.09091,45.636364 c 0,10.744449 -9.035708,19.454546 -20.181818,19.454546 -11.14611,0 -20.181818,-8.710097 -20.181818,-19.454546 0,-10.744449 9.035708,-19.454546 20.181818,-19.454546 11.14611,0 20.181818,8.710097 20.181818,19.454546 z"
+       d="m 61.09091,45.636364 a 20.181818,19.454546 0 1 1 -40.363636,0 20.181818,19.454546 0 1 1 40.363636,0 z"
        transform="matrix(1.7245169,0,0,1.6768352,-21.639328,-60.888299)" />
     <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -388,13 +388,36 @@
        id="rect4024-1"
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
     <path
-       style="color:#000000;fill:#000000;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       style="color:#000000;fill:#000000;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="M 57.5,73.5 21.9091,48.454545 57.5,23.5 52,48 z"
        id="path4463"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccc"
        inkscape:transform-center-x="2.545454"
        inkscape:transform-center-y="-5" />
+  </g>
+  <g
+     style="display:inline"
+     inkscape:label="back disabled"
+     id="g3062"
+     inkscape:groupmode="layer">
+    <rect
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3064"
+       width="80.363571"
+       height="31.272745"
+       x="-101.27273"
+       y="-51.272724"
+       rx="1.1231299e-008"
+       ry="15.636373" />
+    <path
+       inkscape:transform-center-y="-5"
+       inkscape:transform-center-x="2.545454"
+       sodipodi:nodetypes="ccccc"
+       inkscape:connector-curvature="0"
+       id="path3066"
+       d="M 57.5,73.5 21.9091,48.454545 57.5,23.5 52,48 z"
+       style="color:#000000;fill:#000000;fill-opacity:0.19607843;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;opacity:1" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -538,7 +561,7 @@
          inkscape:transform-center-y="1.8181818"
          inkscape:transform-center-x="10.181818"
          transform="matrix(0.90013381,0,0,0.9426394,107.43142,-7.5741524)"
-         d="m -182.90909,10.363636 c 0,7.129494 -6.51222,12.909091 -14.54545,12.909091 -8.03324,0 -14.54546,-5.779597 -14.54546,-12.909091 0,-7.1294941 6.51222,-12.909091 14.54546,-12.909091 8.03323,0 14.54545,5.7795969 14.54545,12.909091 z"
+         d="m -182.90909,10.363636 a 14.545455,12.909091 0 1 1 -29.09091,0 14.545455,12.909091 0 1 1 29.09091,0 z"
          sodipodi:ry="12.909091"
          sodipodi:rx="14.545455"
          sodipodi:cy="10.363636"

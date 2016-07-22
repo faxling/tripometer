@@ -7,13 +7,11 @@
 #include <QGeoCoordinate>
 #include <QGeoPositionInfo>
 #include <QCompass>
-#include <QFileSystemWatcher>
+
 #include <QList>
 #include <stdio.h>
 
 class MssTimer;
-
-
 
 
 class TrackModel : public QAbstractItemModel
@@ -23,9 +21,14 @@ class TrackModel : public QAbstractItemModel
 
 
 public:
+
+
+  Q_INVOKABLE void trackLoaded(QString sTrack);
+  Q_INVOKABLE void tracksUnloaded(QString sTrack);
   TrackModel(QObject *parent = 0);
   ~TrackModel();
   static QObject* m_pRoot;
+
   enum {
     ValueRole = Qt::UserRole +1,
     
@@ -38,10 +41,11 @@ public:
   QVariant data(const QModelIndex&, int) const;
 private slots:
   void TrackAdded(QString);
+
 private:
    
   QStringList oc; 
-  QFileSystemWatcher m_oFileWatcher;
+  QVector<bool> ocBool;
 };
 
 #endif // INFOLISTMODEL_H

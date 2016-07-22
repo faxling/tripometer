@@ -32,6 +32,7 @@ OTHER_FILES += \
     qml/btnTrack.png \
     qml/btnTrackOff.png \
     qml/btnBack.png \
+    qml/btnBackDis.png \
     qml/btnClearTrack.png \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \

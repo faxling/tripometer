@@ -14,8 +14,8 @@ ApplicationWindow {
   property bool bScreenallwaysOn : true
   // 0 = km/h 1 kts
   property int nUnit : 0
-
-
+  property GpsMap mainMap
+  property var oPage2
   CoverBackground {
     id: blueCover
 
@@ -57,12 +57,16 @@ ApplicationWindow {
       {
         Component.onDestruction:
         {
-          idTrack1.autosavePeriod = 0
+
         }
 
         onTrackChanged:
         {
 
+        }
+        Component.onCompleted:
+        {
+          mainMap = idMap
         }
 
         id:idMap
@@ -132,13 +136,13 @@ ApplicationWindow {
           id: idClearTrack
           icon.source: "btnClearTrack.png"
           onClicked: {
- 
+
           }
         }
 
         IconButton {
           id: idBack
-          icon.source: "btnBack.png"
+          icon.source: idMapPage.backNavigation ? "btnBackDis.png": "btnBack.png"
           onClicked: {
             idMapPage.backNavigation =   !idMapPage.backNavigation
           }
@@ -146,14 +150,7 @@ ApplicationWindow {
       }
     }
   }
-  Component
-  {
-    id:idSecondPage
-    SecondPage
-    {
 
-    }
-  }
   Component.onCompleted:
   {
 

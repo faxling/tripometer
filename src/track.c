@@ -683,6 +683,7 @@ MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error) {
     return NULL;
   }
 
+
   MaepGeodata *track_state = track_parse_doc(doc);
 
   if(!track_state || !track_state->priv->track) {

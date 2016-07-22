@@ -8,6 +8,17 @@ import Sailfish.Silica 1.0
 Page {
   id: page
 
+
+
+  Component
+  {
+    id:idSecondPageComponent
+    SecondPage
+    {
+
+    }
+  }
+
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
@@ -61,7 +72,7 @@ Page {
       MenuItem {
         text: "Tracks"
         onClicked: {
-          pageStack.push(idSecondPage)
+          pageStack.push(oPage2)
         }
       }
     }
@@ -82,6 +93,8 @@ Page {
 
   Component.onCompleted:
   {
+    oPage2 = idSecondPageComponent.createObject()
+
 //    pageStack.pushAttached(idMapComponent)
   }
 

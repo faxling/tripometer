@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-//import harbour.maep.qt 1.0
+import harbour.tripometer 1.0
 
 /*
 
@@ -18,15 +18,28 @@ Page {
 
   SilicaListView {
     x:100
-      width: 480; height: 800
-      model: idTrackModel
+    width: 480; height: 800
+    model: idTrackModel
 
-      delegate: Item {
-          width: ListView.view.width
-          height: 50
+    delegate: Item {
+      width: ListView.view.width
+      height: 50
 
-          Label { text: aValue}
+      Label {
+        id : idLabel
+        text: aValue
+        font.bold:bLoaded
       }
+      MouseArea {
+        onClicked: {
+          idTrackModel.trackLoaded(aValue)
+          mainMap.loadTrack(aValue)
+
+        }
+        anchors.fill: parent
+      }
+
+    }
   }
 
 }
