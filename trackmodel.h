@@ -23,8 +23,8 @@ class TrackModel : public QAbstractItemModel
 public:
 
 
-  Q_INVOKABLE void trackLoaded(QString sTrack);
-  Q_INVOKABLE void tracksUnloaded(QString sTrack);
+  Q_INVOKABLE void trackLoaded(int nId);
+  Q_INVOKABLE void trackUnloaded(int nId);
   TrackModel(QObject *parent = 0);
   ~TrackModel();
   static QObject* m_pRoot;
@@ -43,9 +43,16 @@ private slots:
   void TrackAdded(QString);
 
 private:
-   
-  QStringList oc; 
-  QVector<bool> ocBool;
+  struct ModelDataNode
+  {
+    QString sName;
+    bool bIsLoaded;
+    int nId;
+  };
+
+  QVector<ModelDataNode> m_oc;
+  int m_nLastId;
+
 };
 
 #endif // INFOLISTMODEL_H

@@ -426,7 +426,8 @@ class GpsMap : public QQuickPaintedItem
 
   Q_INVOKABLE void saveTrack();
   Q_INVOKABLE void clearTrack();
-  Q_INVOKABLE void loadTrack(QString sTrackName);
+  Q_INVOKABLE void loadTrack(QString sTrackName, int nId);
+  Q_INVOKABLE void unloadTrack(int nId);
 
   Q_INVOKABLE inline QString sourceLabel(Source id) const {
     return QString(osm_gps_map_source_get_friendly_name((OsmGpsMapSource_t)id));

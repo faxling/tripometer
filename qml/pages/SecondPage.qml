@@ -32,8 +32,20 @@ Page {
       }
       MouseArea {
         onClicked: {
-          idTrackModel.trackLoaded(aValue)
-          mainMap.loadTrack(aValue)
+          if (bLoaded===false)
+          {
+            idTrackModel.trackLoaded(nId)
+
+            // invocable function
+            mainMap.loadTrack(aValue, nId)
+          }
+          else
+          {
+            idTrackModel.trackUnloaded(nId)
+
+            // invocable function
+            mainMap.unloadTrack(nId)
+          }
 
         }
         anchors.fill: parent

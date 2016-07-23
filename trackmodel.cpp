@@ -8,19 +8,20 @@
 TrackModel::TrackModel(QObject *)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-
+  m_nLastId = 0;
   QDir oDir(sDataFilePath);
   oDir.setNameFilters(QStringList() << "*.gpx");
   oDir.setFilter(QDir::Files);
 
   for (auto &oI : oDir.entryList() )
   {
-    oc.append(JustFileNameNoExt(oI));
-    ocBool.append(false);
-
+    ++m_nLastId;
+    ModelDataNode tNode;
+    tNode.sName = JustFileNameNoExt(oI);
+    tNode.bIsLoaded = false;
+    tNode.nId = m_nLastId;
+    m_oc.append(tNode);
   }
-  
-
   ;
 }
 
@@ -29,30 +30,44 @@ TrackModel::~TrackModel()
 
 }
 
-void TrackModel::tracksUnloaded(QString sTrack)
+void TrackModel::trackUnloaded(int nId)
 {
-
-
-
-}
-void TrackModel::trackLoaded(QString sTrack)
-{
-
-  int nRow = 0;
-  int nRowF = -1;
-  for (auto& oJ : oc)
+  int nRow = -1;
+  for (auto& oJ : m_oc)
   {
-    if (sTrack == oJ)
+    if (nId == oJ.nId)
     {
-      nRowF = nRow;
+      nRow = IndexOf(oJ,m_oc);
+      oJ.bIsLoaded = false;
       break;
     }
-    nRow++;
   }
-  if (nRowF<0)
+  if (nRow<0)
     return;
-  ocBool[nRowF] = true;
-  QModelIndex oMI = index(nRowF, 1, QModelIndex());
+
+  QModelIndex oMI = index(nRow, 1, QModelIndex());
+  QVector<int> oc;
+  oc.push_back(Qt::UserRole+1);
+  emit dataChanged(oMI, oMI, oc);
+}
+
+void TrackModel::trackLoaded(int nId)
+{
+
+  int nRow = -1;
+  for (auto& oJ : m_oc)
+  {
+    if (nId == oJ.nId)
+    {
+      nRow = IndexOf(oJ,m_oc);
+      oJ.bIsLoaded = true;
+      break;
+    }
+  }
+  if (nRow<0)
+    return;
+
+  QModelIndex oMI = index(nRow, 1, QModelIndex());
   QVector<int> oc;
   oc.push_back(Qt::UserRole+1);
   emit dataChanged(oMI, oMI, oc);
@@ -60,10 +75,14 @@ void TrackModel::trackLoaded(QString sTrack)
 }
 void TrackModel::TrackAdded(QString sTrack)
 {
-  int nRow = oc.size();
+  ++m_nLastId;
+  int nRow = m_oc.size();
   beginInsertRows(QModelIndex(), nRow, nRow);
-  oc.append(JustFileNameNoExt(sTrack));
-  ocBool.append(true);
+  ModelDataNode tNode;
+  tNode.sName = JustFileNameNoExt(sTrack);
+  tNode.bIsLoaded = true;
+  tNode.nId = m_nLastId;
+  m_oc.append(tNode);
   endInsertRows();
 }
 
@@ -84,14 +103,18 @@ QModelIndex TrackModel::parent(const QModelIndex&) const
 
 int TrackModel::rowCount(const QModelIndex &) const
 {
-  return oc.size();
+  return m_oc.size();
 }
 
 QVariant TrackModel::data(const QModelIndex &index, int nRole) const
 {
   if (nRole == Qt::UserRole)
-    return oc[index.row()];
-  return ocBool[index.row()];
+    return m_oc[index.row()].sName;
+
+  if (nRole == (Qt::UserRole + 2))
+    return m_oc[index.row()].nId;
+
+  return m_oc[index.row()].bIsLoaded;
 }
 
 QHash<int, QByteArray> TrackModel::roleNames() const
@@ -99,5 +122,7 @@ QHash<int, QByteArray> TrackModel::roleNames() const
   QHash<int, QByteArray> roleNames;
   roleNames.insert(Qt::UserRole, "aValue");
   roleNames.insert(Qt::UserRole +1, "bLoaded");
+  roleNames.insert(Qt::UserRole +2, "nId");
+
   return roleNames;
 }

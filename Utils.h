@@ -4,7 +4,7 @@
 #include <functional>
 
 #include <QObject>
-
+#include <QVector>
 
 void ScreenOn(bool b);
 
@@ -22,6 +22,14 @@ QString JustFileNameNoExt(const QString & sFileName);
 QString BaseName(const QString & sFileName);
 // txt
 QString Ext(const QString & sFileName);
+
+template <class T>
+int IndexOf(const T& o, const QVector<T>& oc)
+{
+  if (oc.size() <= 0)
+    return 0;
+  return ((&o - &oc[0]));
+}
 
 class QBasicTimer;
 class MssTimer : public QObject

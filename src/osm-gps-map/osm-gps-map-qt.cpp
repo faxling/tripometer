@@ -856,18 +856,22 @@ void Maep::GpsMap::clearTrack()
   osm_gps_map_clear_tracks(map);
 }
 
-void Maep::GpsMap::loadTrack(QString sTrackName)
+void Maep::GpsMap::loadTrack(QString sTrackName, int nId)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
   QString sGpxFileName;
   sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
   GError *error = 0;
   MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toLatin1().data(), &error);
- 
+
   if (track != 0)
-    osm_gps_map_add_track(map,track);
+    osm_gps_map_add_track(map,track,nId);
+}
 
 
+void Maep::GpsMap::unloadTrack(int nId)
+{
+  osm_gps_map_clear_track(map, nId);
 }
 
 
@@ -1245,7 +1249,7 @@ void Maep::GpsMap::setTrack(Maep::Track *track)
     coord_t top_left, bottom_right;
     
     /* Set track for map. */
-    osm_gps_map_add_track(map, track->get());
+    osm_gps_map_add_track(map, track->get(),0);
     
     /* Adjust map zoom and location according to track bounding box. */
     if (maep_geodata_get_bounding_box(track->get(), &top_left, &bottom_right))
