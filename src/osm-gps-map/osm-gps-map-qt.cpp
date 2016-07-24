@@ -25,7 +25,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QDebug>
-#include <QStandardPaths>
+#include <Utils.h>
 
 //#include <cmath>
 #define GCONF_KEY_ZOOM       "zoom"
@@ -192,6 +192,7 @@ static void osm_gps_map_qt_places_failure(Maep::GpsMap *widget,
                                           GError *error, MaepSearchContext *wiki);
 
 extern QObject* g_pTheTrackModel;
+extern QObject* g_pTheMap;
 
 Maep::GpsMap::GpsMap(QQuickItem *parent)
   : QQuickPaintedItem(parent)
@@ -199,7 +200,9 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   , compassEnabled_(FALSE)
 {
   char *path, *oldPath;
-  
+
+  g_pTheMap = this;
+
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
@@ -311,10 +314,11 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   maep_layer_gps_set_azimuth(lgps, NAN);
   connect(&compass, SIGNAL(readingChanged()), this, SLOT(compassReadingChanged()));
   enableCompass(compassEnabled);
-  connect(this, SIGNAL(TrackSaved(QString)), g_pTheTrackModel, SLOT(TrackAdded(QString)));
+
   track_capture = track;
   track_current = NULL;
 }
+
 Maep::GpsMap::~GpsMap()
 {
   qDebug() << "Destruct Qmap";
@@ -858,9 +862,9 @@ void Maep::GpsMap::clearTrack()
 
 void Maep::GpsMap::loadTrack(QString sTrackName, int nId)
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-  QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
+
+  QString sGpxFileName = GpxFullName(sTrackName);
+
   GError *error = 0;
   MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toLatin1().data(), &error);
 
@@ -877,13 +881,11 @@ void Maep::GpsMap::unloadTrack(int nId)
 
 void Maep::GpsMap::saveTrack()
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-  
-  
-  QDateTime oNow(QDateTime::currentDateTimeUtc());
 
-  QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/track_%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)oNow.toString("yyyy-MM-dd-hh-mm-ss").utf16());
+  QDateTime oNow(QDateTime::currentDateTime());
+
+  QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sGpxFileName = GpxFullName(sShortFileName);
 
 
   GError *error;
@@ -894,10 +896,10 @@ void Maep::GpsMap::saveTrack()
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
 
   if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",sGpxFileName);
+    InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
   
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
 
-  emit TrackSaved(sGpxFileName);
 }
 
 void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)

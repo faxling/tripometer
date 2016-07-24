@@ -79,7 +79,7 @@ ApplicationWindow {
         font.pixelSize: 12
         text: sDirname
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 70
+        anchors.bottomMargin: 80
       }
 
       Row {

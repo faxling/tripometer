@@ -22,9 +22,14 @@ class TrackModel : public QAbstractItemModel
 
 public:
 
-
+  Q_INVOKABLE void trackAdd(QString);
   Q_INVOKABLE void trackLoaded(int nId);
   Q_INVOKABLE void trackUnloaded(int nId);
+  Q_INVOKABLE void deleteSelected();
+  Q_INVOKABLE void loadSelected();
+  Q_INVOKABLE void unloadSelected();
+  Q_INVOKABLE void trackDelete(int nId);
+  Q_INVOKABLE void trackRename(QString sName, int nId);
   TrackModel(QObject *parent = 0);
   ~TrackModel();
   static QObject* m_pRoot;
@@ -39,15 +44,18 @@ public:
   QModelIndex parent(const QModelIndex&) const;
   QHash<int, QByteArray> roleNames() const;
   QVariant data(const QModelIndex&, int) const;
-private slots:
-  void TrackAdded(QString);
+
+  bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
 
 private:
   struct ModelDataNode
   {
+    ModelDataNode() {bSelected=false; nId = -1; bIsLoaded = false;}
     QString sName;
     bool bIsLoaded;
     int nId;
+    bool bSelected;
   };
 
   QVector<ModelDataNode> m_oc;

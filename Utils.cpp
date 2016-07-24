@@ -3,7 +3,7 @@
 #include <QBasicTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
-
+#include <QStandardPaths>
 
 MssTimer::MssTimer()
 {
@@ -59,7 +59,14 @@ void MssTimer::timerEvent(QTimerEvent *)
     m_pTimer->stop();
 }
 
+QString GpxFullName(const QString& sTrackName)
+{
+  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sGpxFileName;
+  sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
 
+  return sGpxFileName;
+}
 
 QString FormatLatitude(double fLatitude)
 {

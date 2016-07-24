@@ -25,6 +25,8 @@
 
 
 QObject* g_pTheTrackModel;
+QObject* g_pTheMap;
+
 int main(int argc, char *argv[])
 {
   // SailfishApp::main() will display "qml/template.qml", if you need more

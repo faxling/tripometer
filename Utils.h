@@ -23,6 +23,8 @@ QString BaseName(const QString & sFileName);
 // txt
 QString Ext(const QString & sFileName);
 
+
+QString GpxFullName(const QString& sTrackName);
 template <class T>
 int IndexOf(const T& o, const QVector<T>& oc)
 {

@@ -461,7 +461,7 @@ class GpsMap : public QQuickPaintedItem
   void touchEvent(QTouchEvent *touchEvent);
 
  signals:
-  void TrackSaved(QString);
+
   void mapChanged();
 
   void sourceChanged(Source source);
@@ -481,6 +481,7 @@ class GpsMap : public QQuickPaintedItem
   void enableCompassChanged(bool enable);
 
  public slots:
+
   void setSource(Source source);
   void setOverlaySource(Source source);
   void setDoublePixel(bool status);
