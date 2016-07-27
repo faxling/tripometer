@@ -52,10 +52,12 @@ Page {
       width: ListView.view.width
       menu: contextMenu
       TextField   {
+        id:idEditText
         color:   bSelected ? Theme.highlightColor : Theme.primaryColor
         onClicked: {
           bSelected = !bSelected
         }
+        RemorseItem { id: remorse }
 
         onTextChanged:{
           if (readOnly===true)
@@ -65,7 +67,7 @@ Page {
 
           idTrackModel.trackRename(text,nId)
         }
-        id:idEditText
+
         readOnly: true
         font.italic: bSelected
 
@@ -80,12 +82,17 @@ Page {
         ContextMenu {
           MenuItem {
             height: 50
-            text: "Remove"
+            text: "Delete"
             onClicked: {
+              var idx = nId
+              var oT = idTrackModel
+              var oM = mainMap
+              remorse.execute(idEditText, "Deleting", function()
+              {
+                oT.trackDelete(idx)
+                oM.unloadTrack(idx)
+              }  )
 
-              idTrackModel.trackDelete(nId)
-
-              mainMap.unloadTrack(nId)
             }
           }
           MenuItem {
@@ -120,41 +127,9 @@ Page {
 
         }
       }
-      /*
-      Button {
-        text: "Rename"
-        x:300
-        height: 40
-        width: 40
 
-        onClicked: {
-
-        }
-      }
-      */
     }
-    /*
-      MouseArea {
-        onClicked: {
-          if (bLoaded===false)
-          {
-            idTrackModel.trackLoaded(nId)
 
-            // invocable function
-            mainMap.loadTrack(aValue, nId)
-          }
-          else
-          {
-            idTrackModel.trackUnloaded(nId)
-
-            // invocable function
-            mainMap.unloadTrack(nId)
-          }
-
-        }
-        anchors.fill: parent
-      }
-*/
     VerticalScrollDecorator {}
   }
 

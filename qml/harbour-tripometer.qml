@@ -9,7 +9,7 @@ ApplicationWindow {
 
   id:idApp
   property string sDur
-  property string sDirname : "pucko"
+  property string sDirname : "track name"
   property bool bIsPause : false
   property bool bScreenallwaysOn : true
   // 0 = km/h 1 kts
@@ -76,10 +76,11 @@ ApplicationWindow {
 
       Text
       {
-        font.pixelSize: 12
+        font.pixelSize: 15
         text: sDirname
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 80
+        anchors.bottomMargin: 90
+        anchors.leftMargin: 10
       }
 
       Row {
