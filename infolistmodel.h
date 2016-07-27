@@ -9,7 +9,7 @@
 #include <QCompass>
 
 #include <QList>
-#include <stdio.h>
+#include <QFile>
 
 class MssTimer;
 
@@ -72,7 +72,7 @@ private:
   QVariant data(const QModelIndex &index, int role) const;
   QHash<int, QByteArray> roleNames() const;
   QVector<QVector<Data>> m_nData;
-  //   FILE* m_pDataFile;
+  QFile m_pDataFile;
 
 
   QCompass m_oCompass;

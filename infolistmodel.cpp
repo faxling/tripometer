@@ -1,13 +1,14 @@
 #include <QGeoLocation>
 #include <QGeoCoordinate>
 #include <QCompass>
+#include <QFile>
+#include <QStandardPaths>
 #include "infolistmodel.h"
 #include "QtSensors/QAccelerometer"
 #include <QtGlobal>
 #include <QGeoPositionInfoSource>
 #include <stdio.h>
 #include <QDebug>
-#include <QStandardPaths>
 #include <stdio.h>
 #include "Utils.h"
 #include "time.h"
@@ -182,14 +183,13 @@ void InfoListModel::UpdateOnTimer()
   }
   // var tioned
 
-  /*
-    if ((((int)(p.m_fDurationSec )) % 10) == 0)
-    {
-        fseek(m_pDataFile,0,SEEK_SET );
-        fwrite((void*)&p,1,sizeof p,m_pDataFile);
-        //  qDebug() << "fwrite " << n;
-    }
-    */
+
+  if ((((int)(p.m_fDurationSec )) % 10) == 0)
+  {
+    m_pDataFile.seek(0);
+    m_pDataFile.write((char*)&p,sizeof p);
+  }
+
   m_nData[nUnit][DURATION].f = FormatDuration(p.m_fDurationSec*10);
   m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
 
@@ -209,14 +209,16 @@ InfoListModel::~InfoListModel()
 InfoListModel::InfoListModel(QObject *parent) :
   QAbstractListModel(parent)
 {
-  //  QString sDataFileName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-  //  sDataFileName+="/fraxtrip.dat";
-  //  qDebug() << sDataFileName;
-  // m_pDataFile = fopen(sDataFileName.toLatin1(),"r");
-  //size_t nSize = fread(&p,1,sizeof p,m_pDataFile);
-  //if ( m_pDataFile != 0 )
-  //     fclose(m_pDataFile);
-  //if (nSize != sizeof p)
+  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sDataFileName;
+  sDataFileName.sprintf("%ls/%ls",(wchar_t*)sDataFilePath.utf16(),L"fraxtrip.dat");
+  m_pDataFile.setFileName(sDataFileName);
+  m_pDataFile.open(QIODevice::ReadOnly);
+
+  size_t nSize = m_pDataFile.read((char*)&p,sizeof p);
+  m_pDataFile.close();
+
+  if (nSize != sizeof p)
   {
     p.m_fDist =0;
     p.m_fDurationSec = 0;
@@ -225,7 +227,7 @@ InfoListModel::InfoListModel(QObject *parent) :
     p.m_oStartPosLong = 0;
   }
 
-  //m_pDataFile = fopen(sDataFileName.toLatin1(),"w+");
+  m_pDataFile.open(QIODevice::ReadWrite);
 
   QGeoPositionInfoSource *source = QGeoPositionInfoSource::createDefaultSource(this);
   connect(&m_oCompass, SIGNAL(readingChanged()), this, SLOT(CompassReadingChanged()));
@@ -320,15 +322,20 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   if (m_oLastPos.isValid()==false)
   {
 
-
     for (int i = 0; i < 2;++i)
     {
       m_nData[i][LAT].f = FormatLatitude(o.coordinate().latitude());
       m_nData[i][LONG].f = FormatLongitude(o.coordinate().longitude());
     }
+
+    if (bHasSpeed == true)
+    {
+        m_oLastPos = o.coordinate();
+    }
+
     if (p.m_oStartPosLat == 0 && bHasSpeed == true)
     {
-      m_oLastPos = o.coordinate();
+
       p.m_oStartPosLat = m_oLastPos.latitude();
       p.m_oStartPosLong = m_oLastPos.longitude();
 

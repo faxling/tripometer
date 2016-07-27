@@ -220,8 +220,6 @@ bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nR
 {
   if (nRole == SELECTED_t)
   {
-    int nRow = index.row();
-    qDebug() << nRow;
     m_oc[index.row()].bSelected = value.toBool();
     QVector<int> oc;
     oc.push_back(SELECTED_t);
