@@ -59,6 +59,15 @@ void MssTimer::timerEvent(QTimerEvent *)
     m_pTimer->stop();
 }
 
+QString GpxDatFullName(const QString& sTrackName)
+{
+  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sGpxFileName;
+  sGpxFileName.sprintf("%ls/%ls.dat",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
+
+  return sGpxFileName;
+}
+
 QString GpxFullName(const QString& sTrackName)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
@@ -66,6 +75,13 @@ QString GpxFullName(const QString& sTrackName)
   sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
 
   return sGpxFileName;
+}
+
+QString FormatKm(double f)
+{
+  char szStr[20];
+  sprintf(szStr, "%.3f",f);
+  return szStr;
 }
 
 QString FormatLatitude(double fLatitude)

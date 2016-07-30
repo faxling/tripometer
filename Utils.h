@@ -10,7 +10,7 @@ void ScreenOn(bool b);
 
 QString FormatLatitude(double fLatitude);
 QString FormatLongitude(double fLongitude);
-
+QString FormatKm(double f);
 // C:/user/foo.txt
 // C:/user
 QString DirName(const QString & sFileName);
@@ -23,7 +23,7 @@ QString BaseName(const QString & sFileName);
 // txt
 QString Ext(const QString & sFileName);
 
-
+QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
 template <class T>
 int IndexOf(const T& o, const QVector<T>& oc)

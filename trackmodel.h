@@ -22,7 +22,7 @@ class TrackModel : public QAbstractItemModel
 
 public:
 
-  Q_INVOKABLE void trackAdd(QString);
+  Q_INVOKABLE void trackAdd(const QString& sName, double fLength);
   Q_INVOKABLE void trackLoaded(int nId);
   Q_INVOKABLE void trackUnloaded(int nId);
   Q_INVOKABLE void deleteSelected();
@@ -53,6 +53,7 @@ private:
   {
     ModelDataNode() {bSelected=false; nId = -1; bIsLoaded = false;}
     QString sName;
+    QString sLength;
     bool bIsLoaded;
     int nId;
     bool bSelected;

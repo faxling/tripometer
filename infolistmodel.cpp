@@ -114,12 +114,6 @@ QString FormatPos(double f)
   return szStr;
 }
 
-QString FormatKm(double f)
-{
-  char szStr[20];
-  sprintf(szStr, "%.3f",f);
-  return szStr;
-}
 
 QString FormatKmH(double f)
 {
@@ -454,7 +448,7 @@ int InfoListModel::rowCount(const QModelIndex &) const
 
 int InfoListModel::columnCount(const QModelIndex &) const
 {
-  return 3;
+  return 1;
 }
 
 QVariant InfoListModel::data(const QModelIndex &index, int role) const

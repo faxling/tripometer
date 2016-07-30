@@ -16,12 +16,6 @@ ListModel {
 Page {
   id: idPage2
 
-  PageHeader {
-    id: header
-    title: "Tracks"
-    x:20
-  }
-
 
   SilicaListView {
 
@@ -51,32 +45,42 @@ Page {
       contentHeight:50
       width: ListView.view.width
       menu: contextMenu
-      TextField   {
-        id:idEditText
-        color:   bSelected ? Theme.highlightColor : Theme.primaryColor
-        onClicked: {
-          bSelected = !bSelected
+      Row
+      {
+        TextField   {
+          id:idEditText
+          width:400
+          color:   bSelected ? Theme.highlightColor : Theme.primaryColor
+          onClicked: {
+            bSelected = !bSelected
+          }
+          RemorseItem { id: remorse }
+
+          onTextChanged:{
+            if (readOnly===true)
+              return
+            if (text == aValue)
+              return
+
+            idTrackModel.trackRename(text,nId)
+          }
+
+          readOnly: true
+          font.italic: bSelected
+
+          font.bold: bLoaded
+
+          text: aValue
         }
-        RemorseItem { id: remorse }
 
-        onTextChanged:{
-          if (readOnly===true)
-            return
-          if (text == aValue)
-            return
-
-          idTrackModel.trackRename(text,nId)
+        Label
+        {
+          // color: Theme.primaryColor
+          y:10
+          text: sLength + " km"
         }
 
-        readOnly: true
-        font.italic: bSelected
-
-        font.bold: bLoaded
-
-        text: aValue
       }
-
-
       Component {
         id: contextMenu
         ContextMenu {

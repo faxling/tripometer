@@ -10,7 +10,8 @@ enum TRACK_ROLES_t
   NAME_t = Qt::UserRole,
   ISLOADED_t,
   ID_t ,
-  SELECTED_t
+  SELECTED_t,
+  LENGTH_t
 };
 
 
@@ -24,13 +25,23 @@ TrackModel::TrackModel(QObject *)
 
   for (auto &oI : oDir.entryList() )
   {
-    ++m_nLastId;
     ModelDataNode tNode;
     tNode.sName = JustFileNameNoExt(oI);
+    QString sGpxDatFileName = GpxDatFullName(tNode.sName);
+
+    QFile oDat;
+    oDat.setFileName(sGpxDatFileName);
+    oDat.open(QIODevice::ReadOnly);
+    double fLen = 0;
+    oDat.read((char*)&fLen,sizeof fLen);
+    oDat.close();
+    ++m_nLastId;
+
+    tNode.sLength = FormatKm(fLen);
     tNode.nId = m_nLastId;
     m_oc.append(tNode);
   }
-  ;
+
 }
 
 TrackModel::~TrackModel()
@@ -154,6 +165,7 @@ void TrackModel::trackDelete(int nId)
     {
       nRow = IndexOf(oJ,m_oc);
       QFile::remove(GpxFullName(oJ.sName));
+      QFile::remove(GpxDatFullName(oJ.sName));
       break;
     }
   }
@@ -174,6 +186,7 @@ void TrackModel::trackRename(QString sTrackName, int nId)
       if (oJ.sName == sTrackName)
         return;
       QFile::rename(GpxFullName(oJ.sName),GpxFullName(sTrackName));
+      QFile::rename(GpxDatFullName(oJ.sName),GpxDatFullName(sTrackName));
       oJ.sName = sTrackName;
       break;
     }
@@ -182,7 +195,7 @@ void TrackModel::trackRename(QString sTrackName, int nId)
 }
 
 
-void TrackModel::trackAdd(QString sTrack)
+void TrackModel::trackAdd(const QString&sTrack, double fLengthM)
 {
   ++m_nLastId;
   int nRow = m_oc.size();
@@ -190,6 +203,7 @@ void TrackModel::trackAdd(QString sTrack)
   ModelDataNode tNode;
   tNode.sName = sTrack;
   tNode.nId = m_nLastId;
+  tNode.sLength = FormatKm(fLengthM / 1000.0);
   m_oc.append(tNode);
   endInsertRows();
 }
@@ -241,6 +255,8 @@ QVariant TrackModel::data(const QModelIndex &index, int nRole) const
     return  m_oc[index.row()].bIsLoaded;
   case ID_t:
     return m_oc[index.row()].nId;
+  case LENGTH_t:
+    return m_oc[index.row()].sLength;
   }
 
   return QVariant();
@@ -253,5 +269,6 @@ QHash<int, QByteArray> TrackModel::roleNames() const
   roleNames.insert(ISLOADED_t, "bLoaded");
   roleNames.insert(ID_t, "nId");
   roleNames.insert(SELECTED_t, "bSelected");
+  roleNames.insert(LENGTH_t, "sLength");
   return roleNames;
 }

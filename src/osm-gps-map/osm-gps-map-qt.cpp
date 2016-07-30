@@ -894,11 +894,20 @@ void Maep::GpsMap::saveTrack()
     return;
   
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
+  double fLen = maep_geodata_track_get_metric_length(track_current->get());
+
+  QString sGpxDatFileName = GpxDatFullName(sShortFileName);
+
+  QFile oDat;
+  oDat.setFileName(sGpxDatFileName);
+  oDat.open(QIODevice::ReadWrite);
+  oDat.write((char*)&fLen,sizeof fLen);
+  oDat.close();
 
   if (InfoListModel::m_pRoot != 0)
     InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
   
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName), Q_ARG(double,fLen));
 
 }
 
