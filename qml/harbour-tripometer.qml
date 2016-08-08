@@ -1,9 +1,10 @@
-
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
+// import QtQuick.Controls 1.0
 
 import "pages"
+
 
 ApplicationWindow {
 
@@ -15,7 +16,6 @@ ApplicationWindow {
   // 0 = km/h 1 kts
   property int nUnit : 0
   property GpsMap mainMap
-  property var oPage2
   CoverBackground {
     id: blueCover
 
@@ -110,8 +110,7 @@ ApplicationWindow {
           id: idMarker
           icon.source: "btnMarker.png"
           onClicked: {
-            idMap.saveTrack()
-
+            idMap.saveMark()
           }
         }
 
@@ -135,9 +134,9 @@ ApplicationWindow {
 
         IconButton {
           id: idClearTrack
-          icon.source: "btnClearTrack.png"
+          icon.source: "btnTracks.png"
           onClicked: {
-
+            idTrackPanel.open =  !idTrackPanel.open
           }
         }
 
@@ -149,22 +148,66 @@ ApplicationWindow {
           }
         }
       }
+
+      DockedPanel {
+        id: idTrackPanel
+        open : bShowPanel
+        width: parent.width
+        height: 700
+        dock: Dock.Bottom
+
+        SecondPage
+        {
+          anchors.fill: parent
+          anchors.topMargin: 100
+          anchors.bottomMargin: 100
+          clip: true
+        }
+        Row
+        {
+          id:idButtonRow
+          x:30
+          y:30
+
+          spacing: 10
+          Button {
+            width: 150
+            text: "Delete"
+            onClicked: idTrackModel.deleteSelected()
+          }
+          Button {
+            width: 150
+            text: "Load"
+            onClicked: idTrackModel.loadSelected()
+          }
+          Button {
+            width: 150
+            text: "Unload"
+            onClicked: idTrackModel.unloadSelected()
+          }
+          Button {
+            width: 150
+            text: "Save"
+            onClicked:  idMap.saveTrack()
+          }
+        }
+      }
     }
   }
 
   Component.onCompleted:
   {
-
-   pageStack.pushAttached(idMapComponent)
+    pageStack.pushAttached(idMapComponent)
   }
+
 
   initialPage: Component {
 
     FirstPage  {
 
 
+
     }
   }
   cover: blueCover
 }
-

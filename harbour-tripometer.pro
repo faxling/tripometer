@@ -36,6 +36,8 @@ OTHER_FILES += \
     qml/btnClearTrack.png \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \
+    qml/symFia.png \
+    qml/btnTracks.png \
     harbour-tripometer.desktop
 
 HEADERS += \

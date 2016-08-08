@@ -423,7 +423,7 @@ class GpsMap : public QQuickPaintedItem
     }
   }
 
-
+  Q_INVOKABLE void saveMark();
   Q_INVOKABLE void saveTrack();
   Q_INVOKABLE void clearTrack();
   Q_INVOKABLE void loadTrack(QString sTrackName, int nId);
@@ -565,6 +565,14 @@ class GpsMap : public QQuickPaintedItem
   /* Tracks */
   bool track_capture;
   Maep::Track *track_current;
+
+
+  struct MarkData
+  {
+    double lo;
+    double la;
+    int nType;
+  };
 };
 
 class GpsMapCover : public QQuickPaintedItem

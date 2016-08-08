@@ -177,9 +177,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.75"
-     inkscape:cx="-112.36364"
-     inkscape:cy="65.010823"
-     inkscape:current-layer="layer1"
+     inkscape:cx="-20.241531"
+     inkscape:cy="65.192641"
+     inkscape:current-layer="layer4"
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
@@ -187,8 +187,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-midpoints="true"
-     inkscape:window-width="1600"
-     inkscape:window-height="878"
+     inkscape:window-width="2048"
+     inkscape:window-height="1130"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -212,7 +212,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -272,6 +272,37 @@
        id="path3939"
        inkscape:connector-curvature="0"
        transform="translate(0,-32)" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="TrackList"
+     style="display:inline">
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:4.80653286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 26.403266,40.088339 c 43.193468,0 43.193468,0 43.193468,0 l 0,0"
+       id="path3107-4-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:4.80653286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 26.403266,32.176678 c 43.193468,0 43.193468,0 43.193468,0 l 0,0"
+       id="path3107-4-2-4"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:4.80653286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 26.403266,63.823322 c 43.193468,0 43.193468,0 43.193468,0 l 0,0"
+       id="path3107-4-2-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:4.80653286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 26.403266,48 c 43.193468,0 43.193468,0 43.193468,0 l 0,0"
+       id="path3107-4-2-51"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:4.80653286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m 26.403266,55.911661 c 43.193468,0 43.193468,0 43.193468,0 l 0,0"
+       id="path3107-4-2-7"
+       inkscape:connector-curvature="0" />
   </g>
   <g
      style="display:none"
@@ -397,7 +428,7 @@
        inkscape:transform-center-y="-5" />
   </g>
   <g
-     style="display:inline"
+     style="display:none"
      inkscape:label="back disabled"
      id="g3062"
      inkscape:groupmode="layer">
@@ -417,7 +448,7 @@
        inkscape:connector-curvature="0"
        id="path3066"
        d="M 57.5,73.5 21.9091,48.454545 57.5,23.5 52,48 z"
-       style="color:#000000;fill:#000000;fill-opacity:0.19607843;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;opacity:1" />
+       style="color:#000000;fill:#000000;fill-opacity:0.19607843;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
   </g>
   <g
      inkscape:groupmode="layer"

@@ -37,7 +37,7 @@ TrackModel::TrackModel(QObject *)
     oDat.close();
     ++m_nLastId;
 
-    tNode.sLength = FormatKm(fLen);
+    tNode.sLength = FormatKm(fLen/1000.0);
     tNode.nId = m_nLastId;
     m_oc.append(tNode);
   }

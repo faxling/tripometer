@@ -878,6 +878,36 @@ void Maep::GpsMap::unloadTrack(int nId)
   osm_gps_map_clear_track(map, nId);
 }
 
+void Maep::GpsMap::saveMark()
+{
+
+
+
+  if (lastGps.isValid())
+  {
+    QDateTime oNow(QDateTime::currentDateTime());
+    QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+
+    QString sPointFileName = PointFullName(sShortFileName);
+    char* szSymName = find_file("qml/symFia.png");
+    cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
+    g_free(szSymName);
+    QGeoCoordinate oPos = lastGps.coordinate();
+    MarkData t;
+    t.la = oPos.latitude();
+    t.lo = oPos.longitude();
+    t.nType = 0;
+    QFile oDat;
+    oDat.setFileName(sPointFileName);
+    oDat.open(QIODevice::ReadWrite);
+    oDat.write((char*)&t,sizeof t);
+    oDat.close();
+
+    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0);
+
+  }
+
+}
 
 void Maep::GpsMap::saveTrack()
 {
@@ -906,7 +936,7 @@ void Maep::GpsMap::saveTrack()
 
   if (InfoListModel::m_pRoot != 0)
     InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
-  
+
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName), Q_ARG(double,fLen));
 
 }

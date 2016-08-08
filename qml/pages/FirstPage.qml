@@ -2,22 +2,8 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 //import harbour.maep.qt 1.0
 
-
-
-
 Page {
   id: page
-
-
-
-  Component
-  {
-    id:idSecondPageComponent
-    SecondPage
-    {
-
-    }
-  }
 
   SilicaFlickable {
     // anchors.fill: parent
@@ -72,7 +58,7 @@ Page {
       MenuItem {
         text: "Tracks"
         onClicked: {
-          pageStack.push(oPage2)
+          idTrackPanel.open = !idTrackPanel.open
         }
       }
     }
@@ -84,19 +70,9 @@ Page {
       anchors.horizontalCenter: parent.horizontalCenter
       text: "Tripometer"
     }
+
   }
 
-  Component.onDestruction:
-  {
-  //  pageStack.popAttached()
-  }
-
-  Component.onCompleted:
-  {
-    oPage2 = idSecondPageComponent.createObject()
-
-//    pageStack.pushAttached(idMapComponent)
-  }
 
   ListView {
     clip: true
@@ -143,4 +119,6 @@ Page {
       }
     }
   }
+
 }
+

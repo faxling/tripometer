@@ -22,9 +22,10 @@ QString JustFileNameNoExt(const QString & sFileName);
 QString BaseName(const QString & sFileName);
 // txt
 QString Ext(const QString & sFileName);
-
+QString PointFullName(const QString& sTrackName);
 QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
+
 template <class T>
 int IndexOf(const T& o, const QVector<T>& oc)
 {
