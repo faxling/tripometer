@@ -97,6 +97,7 @@ typedef struct {
     int h;
     int xoffset;
     int yoffset;
+    char* sz;
 } image_t;
 
 #endif /* _OSM_GPS_MAP_TYPES_H_ */

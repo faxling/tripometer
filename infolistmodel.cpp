@@ -15,7 +15,7 @@
 
 QString FormatBearing(double direction )
 {
-  QString dirStr;
+  const char* dirStr;
   if (direction < 11.25) {
     dirStr = "N";
   } else if (direction < 33.75) {
@@ -55,7 +55,7 @@ QString FormatBearing(double direction )
   }
 
   char szStr[20];
-  sprintf(szStr, "%s %.1f",dirStr.toLatin1().data(),direction);
+  sprintf(szStr, "%s %.1f",dirStr,direction);
   return szStr;
 
 }

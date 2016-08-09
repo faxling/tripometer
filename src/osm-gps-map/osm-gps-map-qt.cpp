@@ -859,25 +859,62 @@ void Maep::GpsMap::clearTrack()
   osm_gps_map_clear_tracks(map);
 }
 
-void Maep::GpsMap::loadTrack(QString sTrackName, int nId)
+void Maep::GpsMap::centerTrack(const QString& sTrackName)
 {
+  MarkData t = GetMarkData(sTrackName);
+  osm_gps_map_set_center(map,t.la,t.lo);
+}
 
-  QString sGpxFileName = GpxFullName(sTrackName);
+void Maep::GpsMap::renameTrack(const QString& sTrackName, int nId)
+{
+  auto oI = m_ocMarkers.find(nId);
+  if (oI != m_ocMarkers.end())
+  {
+    osm_gps_map_rename_image (map, *oI, sTrackName.toLatin1().data());
+  }
+}
 
-  GError *error = 0;
-  MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toLatin1().data(), &error);
+void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
+{
+  MarkData t = GetMarkData(sTrackName);
 
-  if (track != 0)
-    osm_gps_map_add_track(map,track,nId);
+  if (t.nType == 0 )
+  {
+    QString sGpxFileName = GpxFullName(sTrackName);
+
+    GError *error = 0;
+    MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toLatin1().data(), &error);
+
+    if (track != 0)
+      osm_gps_map_add_track(map,track,nId);
+  }
+  else
+  {
+    char* szSymName = find_file("qml/symFia.png");
+    cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
+    m_ocMarkers[nId] = pSurface;
+    g_free(szSymName);
+    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0, sTrackName.toLatin1().data());
+  }
 }
 
 
 void Maep::GpsMap::unloadTrack(int nId)
 {
+
+  auto oI = m_ocMarkers.find(nId);
+  if (oI != m_ocMarkers.end() )
+  {
+    osm_gps_map_remove_image (map,*oI);
+
+    m_ocMarkers.erase(oI);
+    return;
+  }
+
   osm_gps_map_clear_track(map, nId);
 }
 
-void Maep::GpsMap::saveMark()
+void Maep::GpsMap::saveMark(int nId)
 {
 
   coord_t tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
@@ -887,7 +924,7 @@ void Maep::GpsMap::saveMark()
 
   QString sPointFileName = GpxDatFullName(sShortFileName);
   char* szSymName = find_file("qml/symFia.png");
-  cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
+  cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);
   g_free(szSymName);
 
   MarkData t;
@@ -900,12 +937,12 @@ void Maep::GpsMap::saveMark()
   oDat.write((char*)&t,sizeof t);
   oDat.close();
 
-  osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0);
-
-
+  osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0,sShortFileName.toLatin1().data());
+  m_ocMarkers[nId] = pSurface;
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
 }
 
-void Maep::GpsMap::saveTrack()
+void Maep::GpsMap::saveTrack(int nId)
 {
 
   QDateTime oNow(QDateTime::currentDateTime());
@@ -922,18 +959,24 @@ void Maep::GpsMap::saveTrack()
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
 
+
   QString sGpxDatFileName = GpxDatFullName(sShortFileName);
 
   QFile oDat;
   oDat.setFileName(sGpxDatFileName);
   oDat.open(QIODevice::ReadWrite);
-  oDat.write((char*)&fLen,sizeof fLen);
+  MarkData t;
+  t.nType = 0;
+  t.len = fLen;
+  t.la = lastGps.coordinate().latitude();
+  t.lo = lastGps.coordinate().longitude();
+  oDat.write((char*)&t,sizeof t);
   oDat.close();
 
   if (InfoListModel::m_pRoot != 0)
     InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
 
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName), Q_ARG(double,fLen));
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
 
 }
 

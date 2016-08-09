@@ -423,11 +423,13 @@ class GpsMap : public QQuickPaintedItem
     }
   }
 
-  Q_INVOKABLE void saveMark();
-  Q_INVOKABLE void saveTrack();
+  Q_INVOKABLE void saveMark(int nId);
+  Q_INVOKABLE void saveTrack(int nId);
   Q_INVOKABLE void clearTrack();
-  Q_INVOKABLE void loadTrack(QString sTrackName, int nId);
+  Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
   Q_INVOKABLE void unloadTrack(int nId);
+  Q_INVOKABLE void centerTrack(const QString& sTrackName);
+  Q_INVOKABLE void renameTrack(const QString& sTrackName, int nId);
 
   Q_INVOKABLE inline QString sourceLabel(Source id) const {
     return QString(osm_gps_map_source_get_friendly_name((OsmGpsMapSource_t)id));
@@ -567,14 +569,8 @@ class GpsMap : public QQuickPaintedItem
   Maep::Track *track_current;
 
 
-  struct MarkData
-  {
-    double lo;
-    double la;
-    double len;
-    int nTime;
-    int nType;
-  };
+  /* Marker images */
+  QMap<int, cairo_surface_t *> m_ocMarkers;
 };
 
 class GpsMapCover : public QQuickPaintedItem

@@ -7,7 +7,6 @@
 #include <QGeoCoordinate>
 #include <QGeoPositionInfo>
 #include <QCompass>
-
 #include <QList>
 #include <stdio.h>
 
@@ -22,7 +21,9 @@ class TrackModel : public QAbstractItemModel
 
 public:
 
-  Q_INVOKABLE void trackAdd(const QString& sName, double fLength);
+  Q_INVOKABLE int  nextId();
+  Q_INVOKABLE void trackAdd(const QString& sName);
+  Q_INVOKABLE void trackCenter(int nId);
   Q_INVOKABLE void trackLoaded(int nId);
   Q_INVOKABLE void trackUnloaded(int nId);
   Q_INVOKABLE void deleteSelected();
@@ -57,6 +58,10 @@ private:
     bool bIsLoaded;
     int nId;
     bool bSelected;
+    double lo;
+    double la;
+    int nType;
+    int nTime;
   };
 
   QVector<ModelDataNode> m_oc;

@@ -9,6 +9,7 @@ import "pages"
 ApplicationWindow {
 
   id:idApp
+ //  property alias idMap : idMap.id
   property string sDur
   property string sDirname : "track name"
   property bool bIsPause : false
@@ -110,7 +111,7 @@ ApplicationWindow {
           id: idMarker
           icon.source: "btnMarker.png"
           onClicked: {
-            idMap.saveMark()
+            idMap.saveMark(idTrackModel.nextId())
           }
         }
 
@@ -172,7 +173,13 @@ ApplicationWindow {
           Button {
             width: 150
             text: "Delete"
-            onClicked: idTrackModel.deleteSelected()
+
+            onClicked:
+            {
+              idTrackModel.unloadSelected()
+              idTrackModel.deleteSelected()
+
+            }
           }
           Button {
             width: 150
@@ -187,7 +194,7 @@ ApplicationWindow {
           Button {
             width: 150
             text: "Save"
-            onClicked:  idMap.saveTrack()
+            onClicked:  idMap.saveTrack(idTrackModel.nextId())
           }
         }
       }

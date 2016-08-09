@@ -1,10 +1,10 @@
 #include "trackmodel.h"
-#include "src/track.h"
+
 #include "utils.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
-
+#include <time.h>
 enum TRACK_ROLES_t
 {
   NAME_t = Qt::UserRole,
@@ -14,30 +14,33 @@ enum TRACK_ROLES_t
   LENGTH_t
 };
 
+extern QObject* g_pTheMap;
 
 TrackModel::TrackModel(QObject *)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
   m_nLastId = 0;
   QDir oDir(sDataFilePath);
-  oDir.setNameFilters(QStringList() << "*.gpx");
+  oDir.setNameFilters(QStringList() << "*.dat");
   oDir.setFilter(QDir::Files);
 
   for (auto &oI : oDir.entryList() )
   {
     ModelDataNode tNode;
     tNode.sName = JustFileNameNoExt(oI);
-    QString sGpxDatFileName = GpxDatFullName(tNode.sName);
+    MarkData tData = GetMarkData(tNode.sName);
 
-    QFile oDat;
-    oDat.setFileName(sGpxDatFileName);
-    oDat.open(QIODevice::ReadOnly);
-    double fLen = 0;
-    oDat.read((char*)&fLen,sizeof fLen);
-    oDat.close();
     ++m_nLastId;
 
-    tNode.sLength = FormatKm(fLen/1000.0);
+    if (tData.nType == 1)
+      tNode.sLength = "x";
+    else
+      tNode.sLength = FormatKm(tData.len/1000.0) + " km";
+
+    tNode.la = tData.la;
+    tNode.lo = tData.lo;
+    tNode.nType = tData.nType;
+    tNode.nTime = time(0);
     tNode.nId = m_nLastId;
     m_oc.append(tNode);
   }
@@ -48,6 +51,22 @@ TrackModel::~TrackModel()
 {
 
 }
+
+
+void TrackModel::trackCenter(int nId)
+{
+  std::find_if(m_oc.begin(),m_oc.end(), [&] (const ModelDataNode &t)
+  {
+    if (t.nId == nId)
+    {
+      QMetaObject::invokeMethod(g_pTheMap, "centerTrack", Q_ARG(QString, t.sName));
+      return true;
+    }
+    else
+      return false;
+  });
+}
+
 
 void TrackModel::trackUnloaded(int nId)
 {
@@ -104,13 +123,10 @@ void TrackModel::loadSelected()
   {
     if (oJ.bSelected == true)
     {
-
       oJ.bIsLoaded = true;
       QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName),  Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
-
       emit dataChanged(oMI, oMI, oc) ;
-
     }
   }
 }
@@ -136,22 +152,24 @@ void TrackModel::deleteSelected()
 {
   for (;;)
   {
-    int nRow = -1;
-    for (auto& oJ : m_oc)
+    auto oI = std::find_if(m_oc.begin(),m_oc.end(), [&] (const ModelDataNode &t)
     {
-      if (oJ.bSelected == true)
+      if (t.bSelected == true)
       {
-        nRow = IndexOf(oJ,m_oc);
-        QFile::remove(GpxFullName(oJ.sName));
-        break;
+        int nRow = IndexOf(t,m_oc);
+        if (t.nType == 0)
+          QFile::remove(GpxFullName(t.sName));
+        QFile::remove(GpxDatFullName(t.sName));
+        beginRemoveRows(QModelIndex(), nRow, nRow);
+        m_oc.remove(nRow, 1);
+        endRemoveRows();
+        return true;
       }
-    }
-    if (nRow<0)
-      return;
+      return false;
+    });
 
-    beginRemoveRows(QModelIndex(), nRow, nRow);
-    m_oc.remove(nRow, 1);
-    endRemoveRows();
+    if (oI == m_oc.end())
+      return;
   }
 }
 
@@ -194,16 +212,30 @@ void TrackModel::trackRename(QString sTrackName, int nId)
 
 }
 
+int TrackModel::nextId()
+{
+  return m_nLastId + 1;
+}
 
-void TrackModel::trackAdd(const QString&sTrack, double fLengthM)
+void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
   int nRow = m_oc.size();
   beginInsertRows(QModelIndex(), nRow, nRow);
   ModelDataNode tNode;
-  tNode.sName = sTrack;
+  MarkData t = GetMarkData(sTrackName);
+  tNode.sName = sTrackName;
   tNode.nId = m_nLastId;
-  tNode.sLength = FormatKm(fLengthM / 1000.0);
+  tNode.la = t.la;
+  tNode.lo = t.lo;
+  tNode.nType = t.nType;
+  tNode.nTime = t.nTime;
+
+  if (t.nType == 0)
+    tNode.sLength = FormatKm(t.len / 1000.0) + " km";
+  else
+    tNode.sLength = "x";
+
   m_oc.append(tNode);
   endInsertRows();
 }

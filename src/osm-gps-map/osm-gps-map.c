@@ -540,6 +540,7 @@ osm_gps_map_free_images (OsmGpsMap *map)
     {
       image_t *im = list->data;
       cairo_surface_destroy(im->image);
+      g_free(im->sz);
       g_free(im);
     }
     g_slist_free(priv->images);
@@ -618,6 +619,34 @@ osm_gps_map_print_images (OsmGpsMap *map)
 
   map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
   map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
+
+  cairo_set_source_rgb(priv->cr, 0.9, 0.2, 0.2);
+  cairo_select_font_face(priv->cr, "Purisa",
+                         CAIRO_FONT_SLANT_NORMAL,
+                         CAIRO_FONT_WEIGHT_NORMAL);
+
+  cairo_set_font_size(priv->cr, 30);
+
+  for(list = priv->images; list != NULL; list = list->next)
+  {
+    image_t *im = list->data;
+
+    // pixel_x,y, offsets
+    pixel_x = lon2pixel(priv->map_zoom, im->pt.rlon);
+    pixel_y = lat2pixel(priv->map_zoom, im->pt.rlat);
+
+    x = pixel_x - map_x0;
+    y = pixel_y - map_y0;
+
+
+    if (im->sz != 0)
+    {
+      cairo_move_to(priv->cr, x +10, y );
+      cairo_show_text(priv->cr,im->sz);
+    }
+
+  }
+
   for(list = priv->images; list != NULL; list = list->next)
   {
     image_t *im = list->data;
@@ -2929,7 +2958,7 @@ osm_gps_map_clear_track (OsmGpsMap *map, int nId)
 }
 
 void
-osm_gps_map_add_image_with_alignment (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image, float xalign, float yalign)
+osm_gps_map_add_image_with_alignment (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image, float xalign, float yalign, const char* szName)
 {
   g_return_if_fail (OSM_IS_GPS_MAP (map));
 
@@ -2939,6 +2968,11 @@ osm_gps_map_add_image_with_alignment (OsmGpsMap *map, float latitude, float long
 
     //cache w/h for speed, and add image to list
     im = g_new0(image_t,1);
+    if (szName != 0)
+      im->sz = g_strdup(szName);
+    else
+      im->sz = 0;
+
     im->w = cairo_image_surface_get_width(image);
     im->h = cairo_image_surface_get_height(image);
     im->pt.rlat = deg2rad(latitude);
@@ -2961,7 +2995,7 @@ osm_gps_map_add_image_with_alignment (OsmGpsMap *map, float latitude, float long
 void
 osm_gps_map_add_image (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image)
 {
-  osm_gps_map_add_image_with_alignment (map, latitude, longitude, image, 0.5, 0.5);
+  osm_gps_map_add_image_with_alignment (map, latitude, longitude, image, 0.5, 0.5,0);
 }
 
 gboolean
@@ -2977,6 +3011,7 @@ osm_gps_map_remove_image (OsmGpsMap *map, cairo_surface_t *image)
       {
         priv->images = g_slist_remove_link(priv->images, list);
         cairo_surface_destroy(im->image);
+        g_free(im->sz);
         g_free(im);
         if (!priv->idle_map_redraw)
           priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
@@ -2985,6 +3020,28 @@ osm_gps_map_remove_image (OsmGpsMap *map, cairo_surface_t *image)
     }
   }
   return FALSE;
+}
+
+void
+osm_gps_map_rename_image (OsmGpsMap *map, cairo_surface_t *image, const char* sz)
+{
+  OsmGpsMapPrivate *priv = map->priv;
+  if (priv->images) {
+    GSList *list;
+    for(list = priv->images; list != NULL; list = list->next)
+    {
+      image_t *im = list->data;
+      if (im->image == image)
+      {
+
+        g_free(im->sz);
+        im->sz = g_strdup(sz);
+        if (!priv->idle_map_redraw)
+          priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
+        return ;
+      }
+    }
+  }
 }
 
 void

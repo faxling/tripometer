@@ -1,5 +1,6 @@
 #include "Utils.h"
 
+#include <QFile>
 #include <QBasicTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
@@ -59,13 +60,6 @@ void MssTimer::timerEvent(QTimerEvent *)
     m_pTimer->stop();
 }
 
-QString PointFullName(const QString& sTrackName)
-{
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-  QString sFileName;
-  sFileName.sprintf("%ls/%ls.pt",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
-  return sFileName;
-}
 
 
 QString GpxDatFullName(const QString& sTrackName)
@@ -179,6 +173,18 @@ QString Ext(const QString & sFileName) {
   return sFileName.right(sFileName.size() - sFileName.lastIndexOf('.') -1 );
 }
 
+
+MarkData GetMarkData(const QString& sTrackName)
+{
+  QString sGpxDatFileName = GpxDatFullName(sTrackName);
+  QFile oDat;
+  oDat.setFileName(sGpxDatFileName);
+  oDat.open(QIODevice::ReadOnly);
+  MarkData tData = {0};
+  oDat.read((char*)&tData,sizeof tData);
+  oDat.close();
+  return tData;
+}
 
 void ScreenOn(bool b)
 {

@@ -33,7 +33,7 @@ SilicaListView {
     menu: contextMenu
     Rectangle
     {
-      color: Theme.highlightColor
+      color: "chartreuse"
       x:2
       y:21
       width:25
@@ -44,7 +44,7 @@ SilicaListView {
     Row
     {
 
-     // x:20
+      // x:20
 
       TextField   {
         id:idEditText
@@ -63,6 +63,7 @@ SilicaListView {
             return
 
           idTrackModel.trackRename(text,nId)
+          mainMap.renameTrack(text,nId);
         }
 
         readOnly: true
@@ -77,7 +78,7 @@ SilicaListView {
       {
         color: "black"
         y:10
-        text: sLength + " km"
+        text: sLength
       }
 
     }
@@ -121,14 +122,19 @@ SilicaListView {
           }
         }
         MenuItem {
-
+          height: 50
           text: "Rename"
           onClicked: {
-            idEditText.readOnly = false
-
+            idEditText.readOnly = !idEditText.readOnly
           }
         }
-
+        MenuItem {
+          height: 50
+          text: "Center"
+          onClicked: {
+            idTrackModel.trackCenter(nId)
+          }
+        }
       }
     }
   }

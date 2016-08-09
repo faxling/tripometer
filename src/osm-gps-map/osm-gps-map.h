@@ -151,7 +151,8 @@ void        osm_gps_map_add_track                   (OsmGpsMap *map, MaepGeodata
 void        osm_gps_map_clear_tracks                (OsmGpsMap *map);
 void        osm_gps_map_clear_track                 (OsmGpsMap *map, int nId );
 void        osm_gps_map_add_image                   (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image);
-void        osm_gps_map_add_image_with_alignment    (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image, float xalign, float yalign);
+void        osm_gps_map_add_image_with_alignment    (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image, float xalign, float yalign,const char* szName);
+void        osm_gps_map_rename_image                (OsmGpsMap *map, cairo_surface_t *image, const char* sz);
 gboolean    osm_gps_map_remove_image                (OsmGpsMap *map, cairo_surface_t *image);
 void        osm_gps_map_clear_images                (OsmGpsMap *map);
 void        osm_gps_map_set_gps                     (OsmGpsMap *map, float latitude, float longitude, float heading);

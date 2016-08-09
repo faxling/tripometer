@@ -222,6 +222,15 @@ typedef struct {
   track_point_t *cur;
 } MaepGeodataTrackIter;
 
+struct MarkData
+{
+  double lo;
+  double la;
+  double len;
+  int nTime;
+  int nType;
+};
+
 #define TRACK_POINT_START ( 1 << 0)
 #define TRACK_POINT_STOP  ( 1 << 1)
 

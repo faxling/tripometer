@@ -27,12 +27,7 @@ Page {
           idListModel.klicked2(5)
         }
       }
-      MenuItem {
-        text: "Reset Max Speed"
-        onClicked: {
-          idListModel.klicked2(2)
-        }
-      }
+
 
       MenuItem {
         text: bScreenallwaysOn ? "Turn On Screensaver" : "Turn Off Screensaver"
@@ -41,14 +36,6 @@ Page {
 
         }
       }
-
-      MenuItem {
-        text: "Reset"
-        onClicked: {
-          idListModel.klicked2(3)
-        }
-      }
-
       MenuItem {
         text: bIsPause ? "Resume" : "Pause"
         onClicked: {
@@ -56,9 +43,15 @@ Page {
         }
       }
       MenuItem {
-        text: "Tracks"
+        text: "Reset Max Speed"
         onClicked: {
-          idTrackPanel.open = !idTrackPanel.open
+          idListModel.klicked2(2)
+        }
+      }
+      MenuItem {
+        text: "Reset"
+        onClicked: {
+          idListModel.klicked2(3)
         }
       }
     }
