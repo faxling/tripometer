@@ -230,6 +230,7 @@ void TrackModel::trackAdd(const QString& sTrackName)
   tNode.lo = t.lo;
   tNode.nType = t.nType;
   tNode.nTime = t.nTime;
+  tNode.bIsLoaded = true;
 
   if (t.nType == 0)
     tNode.sLength = FormatKm(t.len / 1000.0) + " km";

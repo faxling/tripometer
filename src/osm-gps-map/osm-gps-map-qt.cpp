@@ -870,7 +870,7 @@ void Maep::GpsMap::renameTrack(const QString& sTrackName, int nId)
   auto oI = m_ocMarkers.find(nId);
   if (oI != m_ocMarkers.end())
   {
-    osm_gps_map_rename_image (map, *oI, sTrackName.toLatin1().data());
+    osm_gps_map_rename_image (map, *oI, sTrackName.toUtf8().data());
   }
 }
 
@@ -883,7 +883,7 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
     QString sGpxFileName = GpxFullName(sTrackName);
 
     GError *error = 0;
-    MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toLatin1().data(), &error);
+    MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
 
     if (track != 0)
       osm_gps_map_add_track(map,track,nId);
@@ -894,7 +894,7 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
     cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
     m_ocMarkers[nId] = pSurface;
     g_free(szSymName);
-    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0, sTrackName.toLatin1().data());
+    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0, sTrackName.toUtf8().data());
   }
 }
 
