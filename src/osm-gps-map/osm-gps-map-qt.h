@@ -571,6 +571,8 @@ class GpsMap : public QQuickPaintedItem
   {
     double lo;
     double la;
+    double len;
+    int nTime;
     int nType;
   };
 };

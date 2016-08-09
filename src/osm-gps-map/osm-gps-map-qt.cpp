@@ -207,7 +207,6 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
   
-  qDebug() << "zoom" << zoom;
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
@@ -881,31 +880,28 @@ void Maep::GpsMap::unloadTrack(int nId)
 void Maep::GpsMap::saveMark()
 {
 
+  coord_t tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
 
+  QDateTime oNow(QDateTime::currentDateTime());
+  QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
 
-  if (lastGps.isValid())
-  {
-    QDateTime oNow(QDateTime::currentDateTime());
-    QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sPointFileName = GpxDatFullName(sShortFileName);
+  char* szSymName = find_file("qml/symFia.png");
+  cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
+  g_free(szSymName);
 
-    QString sPointFileName = PointFullName(sShortFileName);
-    char* szSymName = find_file("qml/symFia.png");
-    cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
-    g_free(szSymName);
-    QGeoCoordinate oPos = lastGps.coordinate();
-    MarkData t;
-    t.la = oPos.latitude();
-    t.lo = oPos.longitude();
-    t.nType = 0;
-    QFile oDat;
-    oDat.setFileName(sPointFileName);
-    oDat.open(QIODevice::ReadWrite);
-    oDat.write((char*)&t,sizeof t);
-    oDat.close();
+  MarkData t;
+  t.la = rad2deg(tPos.rlat);
+  t.lo = rad2deg(tPos.rlon);
+  t.nType = 1;
+  QFile oDat;
+  oDat.setFileName(sPointFileName);
+  oDat.open(QIODevice::ReadWrite);
+  oDat.write((char*)&t,sizeof t);
+  oDat.close();
 
-    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0);
+  osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0);
 
-  }
 
 }
 

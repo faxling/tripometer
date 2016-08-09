@@ -151,7 +151,6 @@ ApplicationWindow {
 
       DockedPanel {
         id: idTrackPanel
-        open : bShowPanel
         width: parent.width
         height: 700
         dock: Dock.Bottom
