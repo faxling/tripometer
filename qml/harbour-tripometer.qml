@@ -96,10 +96,15 @@ ApplicationWindow {
           icon.source: "btnMinus.png"
           onClicked: { idMap.zoomOut() }
         }
-        IconButton {
+        IconButton  {
           id: zoomin
           icon.source: "btnPlus.png"
           onClicked: { idMap.zoomIn() }
+          onDoubleClicked: {
+            if (idMap.source == 1)
+            idMap.setSource(11)
+          else
+            idMap.setSource(1)}
         }
         IconButton {
           id: idCenter
