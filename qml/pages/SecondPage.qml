@@ -3,18 +3,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 
-/*
-
-  idTrackModel
-ListModel {
-          ListElement { fruit: "jackfruit" }
-          ListElement { fruit: "orange" }
-          ListElement { fruit: "lemon" }
-          ListElement { fruit: "lychee" }
-          ListElement { fruit: "apricots" }
-      }
-*/
-
 
 SilicaListView {
 
@@ -86,7 +74,6 @@ SilicaListView {
       id: contextMenu
       ContextMenu {
         MenuItem {
-          height: 50
           text: "Delete"
           onClicked: {
             var idx = nId
@@ -101,7 +88,6 @@ SilicaListView {
           }
         }
         MenuItem {
-          height: 50
           text: "Load/Unload"
           onClicked: {
             if (bLoaded===false)
@@ -122,14 +108,12 @@ SilicaListView {
           }
         }
         MenuItem {
-          height: 50
           text: "Rename"
           onClicked: {
             idEditText.readOnly = !idEditText.readOnly
           }
         }
         MenuItem {
-          height: 50
           text: "Center"
           onClicked: {
             idTrackModel.trackCenter(nId)

@@ -9,7 +9,6 @@ import "pages"
 ApplicationWindow {
 
   id:idApp
- //  property alias idMap : idMap.id
   property string sDur
   property string sDirname : "track name"
   property bool bIsPause : false
@@ -168,31 +167,32 @@ ApplicationWindow {
           id:idButtonRow
           x:30
           y:30
-
           spacing: 10
           Button {
-            width: 150
+            width: 110
             text: "Delete"
-
+            color: "black"
             onClicked:
             {
               idTrackModel.unloadSelected()
               idTrackModel.deleteSelected()
-
             }
           }
           Button {
-            width: 150
+            color: "black"
+            width: 110
             text: "Load"
             onClicked: idTrackModel.loadSelected()
           }
           Button {
-            width: 150
+            color: "black"
+            width: 110
             text: "Unload"
             onClicked: idTrackModel.unloadSelected()
           }
           Button {
-            width: 150
+            color: "black"
+            width: 110
             text: "Save"
             onClicked:  idMap.saveTrack(idTrackModel.nextId())
           }

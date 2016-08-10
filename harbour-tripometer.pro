@@ -31,6 +31,7 @@ OTHER_FILES += \
     qml/btnMinus.png \
     qml/btnTrack.png \
     qml/btnTrackOff.png \
+    qml/btnCenter.png \
     qml/btnBack.png \
     qml/btnBackDis.png \
     qml/btnClearTrack.png \
@@ -65,7 +66,7 @@ DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += APP=\"\\\"\"$${TARGET}\"\\\"\"
 DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += SAILFISH
-DEFINES += VERSION=\"\\\"\"0.5.3\"\\\"\"
+DEFINES += VERSION=\"\\\"\"2.0.1\"\\\"\"
 
 # Input
 HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/osm-gps-map-osd-classic.h src/osm-gps-map/layer-wiki.h src/osm-gps-map/layer-gps.h

@@ -12,4 +12,5 @@
 * Oct 6  2015 Fredrik Axling <faxling@home.se> 0.0.5-1 
 - Changed min precition to 20
 
-
+* Aug 10  2016 Fredrik Axling <faxling@home.se> 2.0-1
+- Added map page and storage of tracks and marker points

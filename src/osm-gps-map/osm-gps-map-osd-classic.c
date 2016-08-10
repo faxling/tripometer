@@ -1852,26 +1852,34 @@ osd_render_scale(osm_gps_map_osd_t *osd)
   // pink for testing:    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.2);
   cairo_paint(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  float r = 10;
-  int nPos = 150;
 
-  cairo_move_to (cr,nPos+ -r*cos(priv->scale.compass_azimuth),nPos+ r*sin(priv->scale.compass_azimuth));
-  cairo_line_to (cr, nPos+-14.0*r*sin(priv->scale.compass_azimuth),nPos+ -14.0*r*cos(priv->scale.compass_azimuth));
-  cairo_line_to (cr,nPos+ r*cos(priv->scale.compass_azimuth),nPos+ -r*sin(priv->scale.compass_azimuth));
-  cairo_close_path (cr);
 
-  cairo_set_source_rgba (cr, 1.0, 0.3, 0.3, 0.5);
 
-  cairo_fill_preserve (cr);
-  cairo_set_source_rgba (cr, 0.0, 0.5, 0.0, 0.5);
-  cairo_set_line_width (cr, 1.0);
+// Compass
+  if (!isnan(priv->scale.compass_azimuth))
+  {
+    float r = 10;
+    int nPos = 150;
 
-  cairo_stroke (cr);
+    cairo_move_to (cr,nPos+ -r*cos(priv->scale.compass_azimuth),nPos+ r*sin(priv->scale.compass_azimuth));
+    cairo_line_to (cr, nPos+-14.0*r*sin(priv->scale.compass_azimuth),nPos+ -14.0*r*cos(priv->scale.compass_azimuth));
+    cairo_line_to (cr,nPos+ r*cos(priv->scale.compass_azimuth),nPos+ -r*sin(priv->scale.compass_azimuth));
+    cairo_close_path (cr);
 
-  cairo_move_to (cr, nPos+r*cos(priv->scale.compass_azimuth), nPos+-r*sin(priv->scale.compass_azimuth));
-  cairo_line_to (cr, nPos+14.0*r*sin(priv->scale.compass_azimuth), nPos+14.0*r*cos(priv->scale.compass_azimuth));
-  cairo_line_to (cr, nPos+-r*cos(priv->scale.compass_azimuth), nPos+r*sin(priv->scale.compass_azimuth));
-  cairo_close_path (cr);
+    cairo_set_source_rgba (cr, 1.0, 0.3, 0.3, 0.5);
+
+    cairo_fill_preserve (cr);
+    cairo_set_source_rgba (cr, 0.0, 0.5, 0.0, 0.5);
+    cairo_set_line_width (cr, 1.0);
+
+    cairo_stroke (cr);
+
+    cairo_move_to (cr, nPos+r*cos(priv->scale.compass_azimuth), nPos+-r*sin(priv->scale.compass_azimuth));
+    cairo_line_to (cr, nPos+14.0*r*sin(priv->scale.compass_azimuth), nPos+14.0*r*cos(priv->scale.compass_azimuth));
+    cairo_line_to (cr, nPos+-r*cos(priv->scale.compass_azimuth), nPos+r*sin(priv->scale.compass_azimuth));
+    cairo_close_path (cr);
+  }
+
 
   cairo_set_source_rgba (cr, 0.3, 1.0, 0.3, 0.5);
 
@@ -2168,7 +2176,6 @@ osd_draw(osm_gps_map_osd_t *osd, cairo_t *cr)
                                    300,300);
     priv->scale.zoom = -1;
     priv->scale.factor = 0.f;
-    priv->scale.compass_azimuth = 2;
     osd_render_scale(osd);
   }
 
@@ -2390,7 +2397,7 @@ osm_gps_map_osd_classic_init(OsmGpsMap *map)
   osd_classic->map = NULL;
   osd_classic->gps_enabled = FALSE;
   osd_classic->priv   = priv;
-
+  priv->scale.compass_azimuth = NAN;
   osd_classic->draw       = osd_draw,
       osd_classic->check      = osd_check,
       osd_classic->render     = osd_render,

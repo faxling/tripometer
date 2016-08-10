@@ -1227,6 +1227,8 @@ void Maep::GpsMap::enableCompass(bool enable)
   if (compassEnabled_ == enable)
     return;
   
+
+
   compassEnabled_ = enable;
   if (!enable)
   {
