@@ -16,7 +16,7 @@ Name: harbour-tripometer
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Tripometer with Map
-Version: 2.0
+Version: 2.1
 Release: 1
 Group: Applications/Engineering
 License: GPLv2

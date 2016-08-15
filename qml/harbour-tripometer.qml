@@ -12,7 +12,7 @@ ApplicationWindow {
   property string sDur
   property string sDirname : "track name"
   property bool bIsPause : false
-  property bool bScreenallwaysOn : true
+  property bool bScreenallwaysOn : false
   // 0 = km/h 1 kts
   property int nUnit : 0
   property GpsMap mainMap

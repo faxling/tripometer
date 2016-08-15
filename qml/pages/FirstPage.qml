@@ -30,7 +30,7 @@ Page {
 
 
       MenuItem {
-        text: bScreenallwaysOn ? "Turn On Screensaver" : "Turn Off Screensaver"
+        text: bScreenallwaysOn ? "Turn On Powersaver" : "Turn Off Powersaver"
         onClicked: {
           bScreenallwaysOn = !bScreenallwaysOn
 
