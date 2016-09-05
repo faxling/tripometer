@@ -47,12 +47,19 @@ SilicaListView {
         onTextChanged:{
           if (readOnly===true)
             return
-          if (text == aValue)
+          if (text === aValue)
             return
 
           idTrackModel.trackRename(text,nId)
           mainMap.renameTrack(text,nId);
         }
+
+        Keys.onPressed: {
+          if (event.key === Qt.Key_Return) {
+            idEditText.readOnly = true
+          }
+        }
+
 
         readOnly: true
         //font.italic: bSelected
@@ -111,12 +118,15 @@ SilicaListView {
           text: "Rename"
           onClicked: {
             idEditText.readOnly = !idEditText.readOnly
+            idEditText.selectAll()
+            idEditText.forceActiveFocus()
           }
         }
         MenuItem {
           text: "Center"
           onClicked: {
             idTrackModel.trackCenter(nId)
+             mainMap.loadTrack(aValue, nId)
           }
         }
       }

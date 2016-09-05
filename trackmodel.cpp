@@ -173,6 +173,19 @@ void TrackModel::deleteSelected()
   }
 }
 
+QModelIndex TrackModel::IndexFromId(int nId) const
+{
+  for (auto& oJ : m_oc)
+  {
+    if (nId == oJ.nId)
+    {
+      return index(IndexOf(oJ,m_oc),0, QModelIndex());
+      break;
+    }
+  }
+  return QModelIndex();
+}
+
 void TrackModel::trackDelete(int nId)
 {
   int nRow = -1;
@@ -195,17 +208,36 @@ void TrackModel::trackDelete(int nId)
   endRemoveRows();
 }
 
-void TrackModel::trackRename(QString sTrackName, int nId)
+void TrackModel::trackRename(QString _sTrackName, int nId)
 {
+  QString sTrackName = _sTrackName;
   for (auto& oJ : m_oc)
   {
     if (nId == oJ.nId)
     {
       if (oJ.sName == sTrackName)
         return;
+      int nCount=0;
+
+      bool bNameChanged = false;
+
+      while(QFile::exists(GpxDatFullName(sTrackName))== true)
+      {
+        bNameChanged = true;
+        sTrackName.sprintf("%ls(%d)",(wchar_t*)_sTrackName.utf16(),++nCount);
+      }
+
       QFile::rename(GpxFullName(oJ.sName),GpxFullName(sTrackName));
       QFile::rename(GpxDatFullName(oJ.sName),GpxDatFullName(sTrackName));
       oJ.sName = sTrackName;
+      if ( bNameChanged==true )
+      {
+        QVector<int> oc;
+        oc.push_back(NAME_t);
+        QModelIndex oMI = IndexFromId(nId);
+        emit dataChanged(oMI, oMI, oc);
+      }
+
       break;
     }
   }

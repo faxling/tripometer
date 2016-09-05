@@ -40,6 +40,7 @@ public:
     
   };
   QModelIndex index(int, int, const QModelIndex&) const;
+  QModelIndex IndexFromId(int nId) const;
   int rowCount(const QModelIndex &parent) const;
   int columnCount(const QModelIndex &parent) const;
   QModelIndex parent(const QModelIndex&) const;
