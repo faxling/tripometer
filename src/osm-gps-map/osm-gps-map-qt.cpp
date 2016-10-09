@@ -933,6 +933,7 @@ void Maep::GpsMap::saveMark(int nId)
   t.lo = rad2deg(tPos.rlon);
   t.speed = lastGps.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
   t.nType = 1;
+  t.nTime = time(0);
   QFile oDat;
   oDat.setFileName(sPointFileName);
   oDat.open(QIODevice::ReadWrite);
@@ -973,6 +974,7 @@ void Maep::GpsMap::saveTrack(int nId)
   t.la = lastGps.coordinate().latitude();
   t.lo = lastGps.coordinate().longitude();
   t.speed = g_fMaxSpeed;
+  t.nTime = time(0);
   oDat.write((char*)&t,sizeof t);
   oDat.close();
 
@@ -1292,7 +1294,9 @@ void Maep::GpsMap::setTrackCapture(bool status)
   
   track_capture = status;
   emit trackCaptureChanged(track_capture);
-  
+  if (status == true)
+     g_fMaxSpeed = 0;
+
   if (status && lastGps.isValid())
   {
     //   setTrack(0);

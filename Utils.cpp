@@ -115,9 +115,9 @@ QString FormatDuration(unsigned int nTime)
   wchar_t szStr[20];
   time_t now = nTime;
 
-  tm *tmNow = localtime(&now);
+  tm *tmNow = gmtime(&now);
 
-  if (nTime < 0)
+  if (nTime <= 0)
     wcscpy(szStr, L"-");
   else if (tmNow->tm_hour > 0)
     wcsftime(szStr, 20, L"%H:%M:%S", tmNow);
@@ -134,12 +134,10 @@ QString FormatDateTime(unsigned int nTime)
 
   wchar_t szStr[20];
   time_t now = nTime;
-  wchar_t* szFormat = 0;
-  szFormat = L"%Y-%m-%d %H:%M:%S";
 
-  wcsftime(szStr, 20, szFormat, localtime(&now));
+  wcsftime(szStr, 20, L"%Y-%m-%d %H:%M:%S", localtime(&now));
 
-  QString sRet =   QString::fromWCharArray(szStr );
+  QString sRet = QString::fromWCharArray(szStr );
 
   return  sRet;
 }
@@ -216,7 +214,7 @@ MarkData GetMarkData(const QString& sTrackName)
   QFile oDat;
   oDat.setFileName(sGpxDatFileName);
   oDat.open(QIODevice::ReadOnly);
-  MarkData tData = {0};
+  MarkData tData = {0,0,0,0,0,0};
   oDat.read((char*)&tData,sizeof tData);
   oDat.close();
   return tData;

@@ -68,6 +68,8 @@ private:
     int nTime;
   };
 
+  ModelDataNode GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded);
+
   QVector<ModelDataNode> m_oc;
   int m_nLastId;
 

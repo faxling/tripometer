@@ -14,6 +14,7 @@ SilicaListView {
     Rectangle
     {
       y:40
+      x:20
       property alias sName: idNametext1.text
       property alias sDuration: idNametext2.text
       property alias sLength: idNametext3.text
@@ -22,7 +23,7 @@ SilicaListView {
       property alias sType: idNametext6.text
       id: idDetails
       radius: 5
-      width: idObjectList.width
+      width: idObjectList.width -40
       height:200
       color:"steelblue"
 
@@ -99,7 +100,7 @@ SilicaListView {
         }
       }
       Button {
-        y:120
+        y:100
         anchors.right: parent.right
         anchors.rightMargin: 20
         color: "black"

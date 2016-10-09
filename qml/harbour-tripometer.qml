@@ -171,7 +171,7 @@ ApplicationWindow {
         {
           id:idButtonRow
           x:30
-          y:30
+          y:10
           spacing: 10
           Button {
             width: 110

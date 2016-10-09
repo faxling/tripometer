@@ -21,6 +21,40 @@ enum TRACK_ROLES_t
 extern QObject* g_pTheMap;
 
 
+TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded)
+{
+  ModelDataNode tNode;
+  MarkData t = GetMarkData(sTrackName);
+  tNode.sName = sTrackName;
+  tNode.nId = m_nLastId;
+  tNode.la = t.la;
+  tNode.lo = t.lo;
+  tNode.nType = t.nType;
+  tNode.nTime = t.nTime;
+  tNode.bIsLoaded = bIsLoaded;
+  tNode.sDateTime = FormatDateTime(t.nTime);
+  tNode.sMaxSpeed = FormatKmH(t.speed*3.6) + " km/h";
+
+
+
+  if (t.nType == 0)
+  {
+    QString sGpxFileName = GpxFullName(sTrackName);
+    MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
+    tNode.sDuration = FormatDuration(maep_geodata_track_get_duration(track)) ;
+    tNode.sLength = FormatKm(t.len/1000.0) + " km";
+    tNode.sLength = FormatKm(t.len / 1000.0) + " km";
+    g_object_unref(G_OBJECT(track));
+  }
+  else
+  {
+    tNode.sLength = "x";
+    tNode.sDuration = "x";
+  }
+
+  return tNode;
+}
+
 TrackModel::TrackModel(QObject *)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
@@ -31,34 +65,8 @@ TrackModel::TrackModel(QObject *)
 
   for (auto &oI : oDir.entryList() )
   {
-    ModelDataNode tNode;
-    tNode.sName = JustFileNameNoExt(oI);
-    MarkData tData = GetMarkData(tNode.sName);
-
     ++m_nLastId;
-
-    if (tData.nType == 1)
-      tNode.sLength = "x";
-    else
-    {
-      QString sGpxFileName = GpxFullName(tNode.sName);
-      GError *error = 0;
-      MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
-      tNode.sLength = FormatKm(tData.len/1000.0) + " km";
-
-      int nStartTime = maep_geodata_track_get_start_timestamp(track);
-      tNode.sDateTime = FormatDateTime(nStartTime);
-      tNode.sMaxSpeed = FormatKmH(tData.speed) + " km/h";
-      tNode.sDuration = FormatDuration(maep_geodata_track_get_duration(track)) ;
-      g_object_unref(G_OBJECT(track));
-
-    }
-
-    tNode.la = tData.la;
-    tNode.lo = tData.lo;
-    tNode.nType = tData.nType;
-    tNode.nTime = time(0);
-    tNode.nId = m_nLastId;
+    ModelDataNode tNode =  GetNodeFromTrack(JustFileNameNoExt(oI),false);
     m_oc.append(tNode);
   }
 
@@ -266,26 +274,13 @@ int TrackModel::nextId()
   return m_nLastId + 1;
 }
 
+
 void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
   int nRow = m_oc.size();
   beginInsertRows(QModelIndex(), nRow, nRow);
-  ModelDataNode tNode;
-  MarkData t = GetMarkData(sTrackName);
-  tNode.sName = sTrackName;
-  tNode.nId = m_nLastId;
-  tNode.la = t.la;
-  tNode.lo = t.lo;
-  tNode.nType = t.nType;
-  tNode.nTime = t.nTime;
-  tNode.bIsLoaded = true;
-
-  if (t.nType == 0)
-    tNode.sLength = FormatKm(t.len / 1000.0) + " km";
-  else
-    tNode.sLength = "x";
-
+  ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
   m_oc.append(tNode);
   endInsertRows();
 }

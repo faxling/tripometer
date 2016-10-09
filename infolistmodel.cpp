@@ -339,9 +339,14 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   {
     fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
 
+    if (g_fMaxSpeed < fSpeed)
+    {
+        g_fMaxSpeed = fSpeed;
+    }
+
     if (p.m_fMaxSpeed < fSpeed)
     {
-      g_fMaxSpeed = fSpeed;
+
       p.m_fMaxSpeed = fSpeed;
     }
   }
