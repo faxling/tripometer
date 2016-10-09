@@ -86,18 +86,7 @@ QString FormatDurationSec(unsigned int nTime)
   return szStr;
 }
 
-QString FormatDuration(unsigned int nTime)
-{
-  char szStr[20];
-  time_t now = nTime / 10;
 
-  strftime(szStr, 20, "%H:%M:%S", gmtime(&now));
-  char szStr2[20];
-  sprintf(szStr2,"%s.%d",szStr,nTime%10);
-
-
-  return szStr2;
-}
 
 QString FormatAcc(double f)
 {
@@ -115,12 +104,7 @@ QString FormatPos(double f)
 }
 
 
-QString FormatKmH(double f)
-{
-  char szStr[20];
-  sprintf(szStr, "%.1f",f);
-  return szStr;
-}
+
 QString FormatM(double f)
 {
   if (f != f)
@@ -296,6 +280,8 @@ void InfoListModel::CompassReadingChanged()
   emit dataChanged(index(COMPASS), index(COMPASS),oc);
 }
 
+// Share for maep
+double g_fMaxSpeed = 0;
 void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
   QVector<int> oc;
@@ -354,7 +340,10 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
 
     if (p.m_fMaxSpeed < fSpeed)
+    {
+      g_fMaxSpeed = fSpeed;
       p.m_fMaxSpeed = fSpeed;
+    }
   }
   double fStep = m_oLastPos.distanceTo(o.coordinate());
 
@@ -522,8 +511,6 @@ void InfoListModel::klicked2(int nCmd)
   }
   if (nCmd == 3)
   {
-
-
     p.m_oStartPosLat = 0;
     p.m_oStartPosLong = 0;
     p.m_fDist = 0;

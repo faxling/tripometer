@@ -8,8 +8,8 @@
 
 MssTimer::MssTimer()
 {
-    m_pTimer = new QBasicTimer();
-    m_bIsSingleShot = false;
+  m_pTimer = new QBasicTimer();
+  m_bIsSingleShot = false;
 }
 
 MssTimer::MssTimer(std::function<void ()> pfnTimeOut)
@@ -17,13 +17,12 @@ MssTimer::MssTimer(std::function<void ()> pfnTimeOut)
   m_pTimer = new QBasicTimer;
   m_pfnTimeOut =  pfnTimeOut;
   m_bIsSingleShot = false;
-  // connect(m_pTimer,SIGNAL(timeout()),this,SLOT(TimeOut()));
 }
 
 
 MssTimer::~MssTimer()
 {
-    delete m_pTimer;
+  delete m_pTimer;
 }
 
 void MssTimer::Start(int nMilliSec)
@@ -109,11 +108,48 @@ QString FormatLatitude(double fLatitude)
   char szStr[20];
   sprintf(szStr, "%c%02d\xb0 %.2f'",cLat,nDegrees,fMinutes);
   return QString::fromLatin1(szStr);
-
-  //   return QString(QLatin1String("%1%2\xB0%3'")).arg(cLat).arg(nDegrees, 2, 10, QChar('0')).arg(fMinutes, 5, 'f', 2, QChar('0'));
 }
 
+QString FormatDuration(unsigned int nTime)
+{
+  wchar_t szStr[20];
+  time_t now = nTime;
 
+  tm *tmNow = localtime(&now);
+
+  if (nTime < 0)
+    wcscpy(szStr, L"-");
+  else if (tmNow->tm_hour > 0)
+    wcsftime(szStr, 20, L"%H:%M:%S", tmNow);
+  else
+    wcsftime(szStr, 20, L"%M:%S", tmNow);
+
+  return  QString::fromWCharArray(szStr);
+}
+
+QString FormatDateTime(unsigned int nTime)
+{
+  if (nTime == 0)
+    return "-";
+
+  wchar_t szStr[20];
+  time_t now = nTime;
+  wchar_t* szFormat = 0;
+  szFormat = L"%Y-%m-%d %H:%M:%S";
+
+  wcsftime(szStr, 20, szFormat, localtime(&now));
+
+  QString sRet =   QString::fromWCharArray(szStr );
+
+  return  sRet;
+}
+
+QString FormatKmH(double f)
+{
+  char szStr[20];
+  sprintf(szStr, "%.1f",f);
+  return szStr;
+}
 
 QString FormatLongitude(double fLongitude)
 {
@@ -186,25 +222,28 @@ MarkData GetMarkData(const QString& sTrackName)
   return tData;
 }
 
+
+
+
 void ScreenOn(bool b)
 {
-    QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
-                                                           "system");
-    QDBusInterface interface("com.nokia.mce",
-                             "/com/nokia/mce/request",
-                             "com.nokia.mce.request",
-                             system);
+  QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
+                                                         "system");
+  QDBusInterface interface("com.nokia.mce",
+                           "/com/nokia/mce/request",
+                           "com.nokia.mce.request",
+                           system);
 
 
-    if (b == true)
-    {
+  if (b == true)
+  {
 
-      // interface.call( "req_display_state_dim");
-        interface.call("req_display_state_on");
-        interface.call("req_display_blanking_pause");
-    }
-    else
-        interface.call("req_display_cancel_blanking_pause");
+    // interface.call( "req_display_state_dim");
+    interface.call("req_display_state_on");
+    interface.call("req_display_blanking_pause");
+  }
+  else
+    interface.call("req_display_cancel_blanking_pause");
 
   //   QDBusConnection::disconnectFromBus("system");
 }

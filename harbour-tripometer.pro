@@ -98,3 +98,5 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 
 #QT += qml-private core-private
 
+DISTFILES += \
+    qml/pages/SmallText.qml

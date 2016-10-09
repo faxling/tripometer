@@ -229,6 +229,7 @@ struct MarkData
   double len;
   int nTime;
   int nType;
+  double speed;
 };
 
 #define TRACK_POINT_START ( 1 << 0)

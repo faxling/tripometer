@@ -56,6 +56,9 @@ private:
     ModelDataNode() {bSelected=false; nId = -1; bIsLoaded = false;}
     QString sName;
     QString sLength;
+    QString sDateTime;
+    QString sDuration;
+    QString sMaxSpeed;
     bool bIsLoaded;
     int nId;
     bool bSelected;

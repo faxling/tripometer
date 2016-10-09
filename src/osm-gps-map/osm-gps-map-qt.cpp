@@ -913,11 +913,12 @@ void Maep::GpsMap::unloadTrack(int nId)
 
   osm_gps_map_clear_track(map, nId);
 }
-
+extern double g_fMaxSpeed;
 void Maep::GpsMap::saveMark(int nId)
 {
 
   coord_t tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
+
 
   QDateTime oNow(QDateTime::currentDateTime());
   QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
@@ -930,6 +931,7 @@ void Maep::GpsMap::saveMark(int nId)
   MarkData t;
   t.la = rad2deg(tPos.rlat);
   t.lo = rad2deg(tPos.rlon);
+  t.speed = lastGps.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
   t.nType = 1;
   QFile oDat;
   oDat.setFileName(sPointFileName);
@@ -970,6 +972,7 @@ void Maep::GpsMap::saveTrack(int nId)
   t.len = fLen;
   t.la = lastGps.coordinate().latitude();
   t.lo = lastGps.coordinate().longitude();
+  t.speed = g_fMaxSpeed;
   oDat.write((char*)&t,sizeof t);
   oDat.close();
 

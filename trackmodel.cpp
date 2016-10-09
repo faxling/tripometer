@@ -5,16 +5,21 @@
 #include <QDir>
 #include <QDebug>
 #include <time.h>
+
 enum TRACK_ROLES_t
 {
   NAME_t = Qt::UserRole,
   ISLOADED_t,
   ID_t ,
   SELECTED_t,
-  LENGTH_t
+  LENGTH_t,
+  DATETIME_t,
+  DURATION_t,
+  MAX_SPEED_t
 };
 
 extern QObject* g_pTheMap;
+
 
 TrackModel::TrackModel(QObject *)
 {
@@ -35,7 +40,19 @@ TrackModel::TrackModel(QObject *)
     if (tData.nType == 1)
       tNode.sLength = "x";
     else
+    {
+      QString sGpxFileName = GpxFullName(tNode.sName);
+      GError *error = 0;
+      MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
       tNode.sLength = FormatKm(tData.len/1000.0) + " km";
+
+      int nStartTime = maep_geodata_track_get_start_timestamp(track);
+      tNode.sDateTime = FormatDateTime(nStartTime);
+      tNode.sMaxSpeed = FormatKmH(tData.speed) + " km/h";
+      tNode.sDuration = FormatDuration(maep_geodata_track_get_duration(track)) ;
+      g_object_unref(G_OBJECT(track));
+
+    }
 
     tNode.la = tData.la;
     tNode.lo = tData.lo;
@@ -322,6 +339,12 @@ QVariant TrackModel::data(const QModelIndex &index, int nRole) const
     return m_oc[index.row()].nId;
   case LENGTH_t:
     return m_oc[index.row()].sLength;
+  case DATETIME_t:
+    return m_oc[index.row()].sDateTime;
+  case DURATION_t:
+    return m_oc[index.row()].sDuration;
+  case MAX_SPEED_t:
+    return m_oc[index.row()].sMaxSpeed;
   }
 
   return QVariant();
@@ -335,5 +358,8 @@ QHash<int, QByteArray> TrackModel::roleNames() const
   roleNames.insert(ID_t, "nId");
   roleNames.insert(SELECTED_t, "bSelected");
   roleNames.insert(LENGTH_t, "sLength");
+  roleNames.insert(DURATION_t, "sDuration");
+  roleNames.insert(DATETIME_t, "sDateTime");
+  roleNames.insert(MAX_SPEED_t, "sMaxSpeed");
   return roleNames;
 }

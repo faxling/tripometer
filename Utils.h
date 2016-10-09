@@ -8,7 +8,9 @@
 #include "src/track.h"
 
 void ScreenOn(bool b);
-
+QString FormatKmH(double f);
+QString FormatDuration(unsigned int nTime);
+QString FormatDateTime(unsigned int nTime);
 QString FormatLatitude(double fLatitude);
 QString FormatLongitude(double fLongitude);
 QString FormatKm(double f);
