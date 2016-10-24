@@ -59,6 +59,7 @@ private:
     QString sDateTime;
     QString sDuration;
     QString sMaxSpeed;
+    QString sDiskSize;
     bool bIsLoaded;
     int nId;
     bool bSelected;

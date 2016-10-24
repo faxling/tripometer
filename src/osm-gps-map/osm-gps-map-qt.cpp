@@ -929,16 +929,15 @@ void Maep::GpsMap::saveMark(int nId)
   g_free(szSymName);
 
   MarkData t;
+  t.nSize = 0;
+  t.nDuration = 0;
   t.la = rad2deg(tPos.rlat);
   t.lo = rad2deg(tPos.rlon);
   t.speed = lastGps.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
   t.nType = 1;
   t.nTime = time(0);
-  QFile oDat;
-  oDat.setFileName(sPointFileName);
-  oDat.open(QIODevice::ReadWrite);
-  oDat.write((char*)&t,sizeof t);
-  oDat.close();
+  WriteMarkData(sPointFileName,  t );
+
 
   osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0,sShortFileName.toLatin1().data());
   m_ocMarkers[nId] = pSurface;
@@ -960,23 +959,29 @@ void Maep::GpsMap::saveTrack(int nId)
     return;
   
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
+
+
+
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
 
 
   QString sGpxDatFileName = GpxDatFullName(sShortFileName);
 
-  QFile oDat;
-  oDat.setFileName(sGpxDatFileName);
-  oDat.open(QIODevice::ReadWrite);
+
   MarkData t;
+  t.nDuration = maep_geodata_track_get_duration(track_current->get());
+  QFile oF(sGpxFileName);
+  oF.open(QIODevice::ReadWrite);
+  t.nSize = oF.size();
+  oF.close();
   t.nType = 0;
   t.len = fLen;
   t.la = lastGps.coordinate().latitude();
   t.lo = lastGps.coordinate().longitude();
   t.speed = g_fMaxSpeed;
   t.nTime = time(0);
-  oDat.write((char*)&t,sizeof t);
-  oDat.close();
+
+  WriteMarkData(sGpxDatFileName, t );
 
   if (InfoListModel::m_pRoot != 0)
     InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
@@ -1295,7 +1300,7 @@ void Maep::GpsMap::setTrackCapture(bool status)
   track_capture = status;
   emit trackCaptureChanged(track_capture);
   if (status == true)
-     g_fMaxSpeed = 0;
+    g_fMaxSpeed = 0;
 
   if (status && lastGps.isValid())
   {

@@ -15,7 +15,8 @@ enum TRACK_ROLES_t
   LENGTH_t,
   DATETIME_t,
   DURATION_t,
-  MAX_SPEED_t
+  MAX_SPEED_t,
+  DISKSIZE_t
 };
 
 extern QObject* g_pTheMap;
@@ -34,17 +35,28 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
   tNode.bIsLoaded = bIsLoaded;
   tNode.sDateTime = FormatDateTime(t.nTime);
   tNode.sMaxSpeed = FormatKmH(t.speed*3.6) + " km/h";
-
-
+  tNode.sDuration = FormatDuration(t.nDuration*10);
+  tNode.sLength = FormatKm(t.len / 1000.0) + " km";
+  tNode.sDiskSize = FormatNrBytes(t.nSize );
 
   if (t.nType == 0)
   {
-    QString sGpxFileName = GpxFullName(sTrackName);
-    MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
-    tNode.sDuration = FormatDuration(maep_geodata_track_get_duration(track)) ;
-    tNode.sLength = FormatKm(t.len/1000.0) + " km";
-    tNode.sLength = FormatKm(t.len / 1000.0) + " km";
-    g_object_unref(G_OBJECT(track));
+    if (t.nDuration == 0)
+    {
+      QString sGpxFileName = GpxFullName(sTrackName);
+      QFile oF(sGpxFileName);
+      oF.open(QIODevice::ReadWrite);
+      t.nSize = oF.size();
+      oF.close();
+      tNode.sDiskSize = FormatNrBytes(t.nSize );
+      MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
+      t.nDuration = maep_geodata_track_get_duration(track);
+      tNode.sDuration = FormatDuration(t.nDuration* 10);
+      t.len = maep_geodata_track_get_metric_length(track);
+
+      WriteMarkData(sGpxFileName,  t );
+      g_object_unref(G_OBJECT(track));
+    }
   }
   else
   {
@@ -340,6 +352,8 @@ QVariant TrackModel::data(const QModelIndex &index, int nRole) const
     return m_oc[index.row()].sDuration;
   case MAX_SPEED_t:
     return m_oc[index.row()].sMaxSpeed;
+  case DISKSIZE_t:
+    return m_oc[index.row()].sDiskSize;
   }
 
   return QVariant();
@@ -356,5 +370,6 @@ QHash<int, QByteArray> TrackModel::roleNames() const
   roleNames.insert(DURATION_t, "sDuration");
   roleNames.insert(DATETIME_t, "sDateTime");
   roleNames.insert(MAX_SPEED_t, "sMaxSpeed");
+  roleNames.insert(DISKSIZE_t, "sDiskSize");
   return roleNames;
 }

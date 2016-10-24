@@ -113,18 +113,23 @@ QString FormatLatitude(double fLatitude)
 QString FormatDuration(unsigned int nTime)
 {
   wchar_t szStr[20];
-  time_t now = nTime;
+  time_t now = nTime / 10;
 
   tm *tmNow = gmtime(&now);
 
   if (nTime <= 0)
-    wcscpy(szStr, L"-");
-  else if (tmNow->tm_hour > 0)
+    return  "x";
+
+  if (tmNow->tm_hour > 0)
     wcsftime(szStr, 20, L"%H:%M:%S", tmNow);
   else
     wcsftime(szStr, 20, L"%M:%S", tmNow);
 
-  return  QString::fromWCharArray(szStr);
+  wchar_t szStr2[20];
+
+  swprintf(szStr2,20,L"%ls.%d",szStr,nTime%10);
+
+  return  QString::fromWCharArray(szStr2);
 }
 
 QString FormatDateTime(unsigned int nTime)
@@ -208,13 +213,52 @@ QString Ext(const QString & sFileName) {
 }
 
 
+const int kb = 1024;
+const int mb = 1024 * kb;
+const int gb = 1024 * mb;
+
+
+
+QString FormatNrBytes(int nBytes) {
+
+  double fBytes = nBytes;
+  wchar_t  szStr[30];
+
+  if (nBytes == 0)
+    return "-";
+
+  if (nBytes >= gb)
+    swprintf(szStr,30, L"%.2f GB", fBytes / gb);
+  else if (nBytes >= kb)
+    swprintf(szStr,30, L"%.1f MB", fBytes / mb);
+  else if (nBytes >= kb)
+    swprintf(szStr,30, L"%d KB", nBytes / kb);
+  else
+    swprintf(szStr,30, L"%d byte(s)", nBytes);
+
+  return QString::fromWCharArray(szStr);
+}
+
+
+void WriteMarkData(const QString& sTrackName, MarkData& t )
+{
+  QString sGpxDatFileName = GpxDatFullName(sTrackName);
+  QFile oDat;
+  oDat.setFileName(sGpxDatFileName);
+  oDat.open(QIODevice::WriteOnly);
+  oDat.write((char*)&t,sizeof t);
+  oDat.close();
+  return ;
+}
+
 MarkData GetMarkData(const QString& sTrackName)
 {
   QString sGpxDatFileName = GpxDatFullName(sTrackName);
   QFile oDat;
   oDat.setFileName(sGpxDatFileName);
   oDat.open(QIODevice::ReadOnly);
-  MarkData tData = {0,0,0,0,0,0};
+  MarkData tData;
+  memset((void*)&tData,0,sizeof tData);
   oDat.read((char*)&tData,sizeof tData);
   oDat.close();
   return tData;

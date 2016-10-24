@@ -14,6 +14,7 @@ QString FormatDateTime(unsigned int nTime);
 QString FormatLatitude(double fLatitude);
 QString FormatLongitude(double fLongitude);
 QString FormatKm(double f);
+QString FormatNrBytes(int nBytes);
 // C:/user/foo.txt
 // C:/user
 QString DirName(const QString & sFileName);
@@ -31,7 +32,7 @@ QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
 
 MarkData GetMarkData(const QString& sTrackName);
-
+void WriteMarkData(const QString& sTrackName, MarkData& t );
 
 template <class T>
 int IndexOf(const T& o, const QVector<T>& oc)

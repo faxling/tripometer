@@ -21,10 +21,12 @@ SilicaListView {
       property alias sDateTime: idNametext4.text
       property alias sMaxSpeed: idNametext5.text
       property alias sType: idNametext6.text
+      property alias sDiskSize: idNametext7.text
+
       id: idDetails
       radius: 5
       width: idObjectList.width -40
-      height:200
+      height:215
       color:"steelblue"
 
       Column
@@ -85,6 +87,17 @@ SilicaListView {
           SmallText
           {
             id : idNametext5
+          }
+        }
+        Row
+        {
+          SmallText
+          {
+            text: "Size:"
+          }
+          SmallText
+          {
+            id : idNametext7
           }
         }
         Row
@@ -250,6 +263,7 @@ SilicaListView {
             o.sDuration = sDuration
             o.sDateTime = sDateTime
             o.sMaxSpeed = sMaxSpeed
+            o.sDiskSize = sDiskSize
             o.sType = sLength === "x" ? "point" : "track"
           }
         }
