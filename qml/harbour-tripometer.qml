@@ -74,15 +74,6 @@ ApplicationWindow {
         anchors.fill: parent
       }
 
-      Text
-      {
-        font.pixelSize: 15
-        text: sDirname
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 90
-        anchors.leftMargin: 10
-      }
-
       Row {
         id: map_controls
         anchors.bottom: parent.bottom
@@ -149,7 +140,7 @@ ApplicationWindow {
           id: idBack
           icon.source: idMapPage.backNavigation ? "btnBackDis.png": "btnBack.png"
           onClicked: {
-            idMapPage.backNavigation =   !idMapPage.backNavigation
+            idMapPage.backNavigation = !idMapPage.backNavigation
           }
         }
       }
@@ -159,6 +150,7 @@ ApplicationWindow {
         width: parent.width
         height: 700
         dock: Dock.Bottom
+        RemorseItem { id: remorse }
 
         SecondPage
         {
@@ -179,10 +171,15 @@ ApplicationWindow {
             color: "black"
             onClicked:
             {
-              idTrackModel.unloadSelected()
-              idTrackModel.deleteSelected()
+              var oM = idTrackModel
+              remorse.execute(idTrackPanel, "Deleting Selected", function()
+              {
+                oM.unloadSelected()
+                oM.deleteSelected()
+              })
             }
           }
+
           Button {
             color: "black"
             width: 110
