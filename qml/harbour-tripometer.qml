@@ -102,9 +102,9 @@ ApplicationWindow {
           onClicked: { idMap.zoomIn() }
           onDoubleClicked: {
             if (idMap.source == 1)
-            idMap.setSource(11)
-          else
-            idMap.setSource(1)}
+              idMap.setSource(11)
+            else
+              idMap.setSource(1)}
         }
         IconButton {
           id: idCenter
@@ -215,10 +215,41 @@ ApplicationWindow {
   initialPage: Component {
 
     FirstPage  {
+      Rectangle
+      {
+        id:idStartMsgBox
+        width: parent.width - 40
+        height: 300
+        radius: 5
+        anchors.centerIn:  parent
 
+        color: Theme.highlightBackgroundColor
+        opacity:0.9
+        Button {
+          y:100
+          anchors.left: parent.left
+          anchors.leftMargin: 20
 
-
-
+          width: 200
+          text: "New"
+          onClicked:
+          {
+            idListModel.klicked2(3)
+            idStartMsgBox.visible = false
+          }
+        }
+        Button {
+          y:100
+          anchors.right: parent.right
+          anchors.rightMargin: 20
+          width: 200
+          text: "Resume"
+          onClicked:
+          {
+            idStartMsgBox.visible = false
+          }
+        }
+      }
 
     }
   }
