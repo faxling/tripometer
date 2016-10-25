@@ -218,6 +218,8 @@ ApplicationWindow {
 
 
 
+
+
     }
   }
   cover: blueCover

@@ -921,9 +921,8 @@ void Maep::GpsMap::saveMark(int nId)
 
 
   QDateTime oNow(QDateTime::currentDateTime());
-  QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
 
-  QString sPointFileName = GpxDatFullName(sShortFileName);
   char* szSymName = find_file("qml/symFia.png");
   cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);
   g_free(szSymName);
@@ -936,12 +935,12 @@ void Maep::GpsMap::saveMark(int nId)
   t.speed = lastGps.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
   t.nType = 1;
   t.nTime = time(0);
-  WriteMarkData(sPointFileName,  t );
+  WriteMarkData(sTrackName,  t );
 
+  osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0,sTrackName.toLatin1().data());
 
-  osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0,sShortFileName.toLatin1().data());
   m_ocMarkers[nId] = pSurface;
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 }
 
 void Maep::GpsMap::saveTrack(int nId)
@@ -949,8 +948,8 @@ void Maep::GpsMap::saveTrack(int nId)
 
   QDateTime oNow(QDateTime::currentDateTime());
 
-  QString sShortFileName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-  QString sGpxFileName = GpxFullName(sShortFileName);
+  QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sGpxFileName = GpxFullName(sTrackName);
 
 
   GError *error;
@@ -960,13 +959,7 @@ void Maep::GpsMap::saveTrack(int nId)
   
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
 
-
-
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
-
-
-  QString sGpxDatFileName = GpxDatFullName(sShortFileName);
-
 
   MarkData t;
   t.nDuration = maep_geodata_track_get_duration(track_current->get());
@@ -981,12 +974,12 @@ void Maep::GpsMap::saveTrack(int nId)
   t.speed = g_fMaxSpeed;
   t.nTime = time(0);
 
-  WriteMarkData(sGpxDatFileName, t );
+  WriteMarkData(sTrackName, t );
 
   if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",sShortFileName);
+    InfoListModel::m_pRoot->setProperty("sDirname",sTrackName);
 
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sShortFileName));
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 
 }
 

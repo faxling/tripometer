@@ -54,7 +54,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
       tNode.sDuration = FormatDuration(t.nDuration* 10);
       t.len = maep_geodata_track_get_metric_length(track);
 
-      WriteMarkData(sGpxFileName,  t );
+      WriteMarkData(sTrackName,  t );
       g_object_unref(G_OBJECT(track));
     }
   }

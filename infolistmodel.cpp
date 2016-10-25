@@ -310,7 +310,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
     if (bHasSpeed == true)
     {
-        m_oLastPos = o.coordinate();
+      m_oLastPos = o.coordinate();
     }
 
     if (p.m_oStartPosLat == 0 && bHasSpeed == true)
@@ -341,7 +341,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
     if (g_fMaxSpeed < fSpeed)
     {
-        g_fMaxSpeed = fSpeed;
+      g_fMaxSpeed = fSpeed;
     }
 
     if (p.m_fMaxSpeed < fSpeed)
@@ -350,10 +350,13 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
       p.m_fMaxSpeed = fSpeed;
     }
   }
-  double fStep = m_oLastPos.distanceTo(o.coordinate());
 
-  p.m_fDist+=fStep;
 
+  if (m_pRoot->property("bIsPause").toBool() == false)
+  {
+    double fStep = m_oLastPos.distanceTo(o.coordinate());
+    p.m_fDist+=fStep;
+  }
 
   for (int i = 0; i < 2;++i)
   {
