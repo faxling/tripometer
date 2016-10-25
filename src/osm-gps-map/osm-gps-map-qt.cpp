@@ -65,9 +65,7 @@ bool Maep::Track::set(const QString &filename)
   GError *error;
   
   error = NULL;
-  if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",filename);
-  
+
   t = maep_geodata_new_from_file(filename.toLocal8Bit().data(), &error);
   if (t)
   {
@@ -90,8 +88,7 @@ bool Maep::Track::toFile(const QString &filename)
   bool res;
   
   error = NULL;
-  if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",filename);
+
   res = maep_geodata_to_file(track, filename.toLocal8Bit().data(), &error);
   if (error)
   {
@@ -138,10 +135,6 @@ bool Maep::Track::setAutosavePeriod(unsigned int value)
 {
   bool ret;
   
-  
-  if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",maep_geodata_get_autosave_path(track));
-  
   autosavePeriod = value;
   ret = maep_geodata_set_autosave_period(track, (guint)value);
   if (ret)
@@ -149,6 +142,7 @@ bool Maep::Track::setAutosavePeriod(unsigned int value)
   
   return ret;
 }
+
 bool Maep::Track::setMetricAccuracy(qreal value)
 {
   bool ret;
@@ -975,9 +969,6 @@ void Maep::GpsMap::saveTrack(int nId)
   t.nTime = time(0);
 
   WriteMarkData(sTrackName, t );
-
-  if (InfoListModel::m_pRoot != 0)
-    InfoListModel::m_pRoot->setProperty("sDirname",sTrackName);
 
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 
