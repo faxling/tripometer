@@ -24,7 +24,6 @@ SOURCES += src/harbour-tripometer.cpp \
     Utils.cpp
 
 OTHER_FILES += \
-    rpm/harbour-tripometer.changes.in \
     rpm/harbour-tripometer.spec \
     qml/harbour-tripometer.qml \
     qml/btnPlus.png \
@@ -66,7 +65,7 @@ DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += APP=\"\\\"\"$${TARGET}\"\\\"\"
 DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += SAILFISH
-DEFINES += VERSION=\"\\\"\"2.0.1\"\\\"\"
+DEFINES += VERSION=\"\\\"\"2.2.0\"\\\"\"
 
 # Input
 HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/osm-gps-map-osd-classic.h src/osm-gps-map/layer-wiki.h src/osm-gps-map/layer-gps.h
@@ -99,4 +98,5 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 #QT += qml-private core-private
 
 DISTFILES += \
-    qml/pages/SmallText.qml
+    qml/pages/SmallText.qml \
+    rpm/harbour-tripometer.changes

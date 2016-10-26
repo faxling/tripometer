@@ -2,7 +2,7 @@ import QtQuick 2.0
 // import QtQuick.Controls 1.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
-import QtQml 2.2
+//import QtQml 2.2
 
 SilicaListView {
 

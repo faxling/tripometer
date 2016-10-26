@@ -8,12 +8,22 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
-* Sun Apr 13 2015 Fredrik Axling <faxling@home.se> 0.0.1-2
-* Oct 6  2015 Fredrik Axling <faxling@home.se> 0.0.5-1 
-- Changed min precition to 20
+* Wed Oct 26 2016 Fredrik Axling <faxling@home.se> 2.2-0
+- Start Screen with "New" and Resume
+- Details for tracks and points
 
-* Aug 10  2016 Fredrik Axling <faxling@home.se> 2.0-1
+* Mon Oct 10 2016 Fredrik Axling <faxling@home.se> 2.1-1
 - Added map page and storage of tracks and marker points
 
-* Aug 15  2016 Fredrik Axling <faxling@home.se> 2.1-1
+* Mon Aug 15 2016 Fredrik Axling <faxling@home.se> 2.0-1
 - Screen saver default on to save power
+
+* Tue Oct 6 2015 Fredrik Axling <faxling@home.se> 0.0.5-1
+- Changed min precition to 20
+
+* Sun Apr 13 2015 Fredrik Axling <faxling@home.se> 0.0.1-2
+- First release
+
+
+
+
