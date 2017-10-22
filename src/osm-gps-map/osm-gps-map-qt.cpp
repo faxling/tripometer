@@ -884,11 +884,14 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
   }
   else
   {
-    char* szSymName = find_file("qml/symFia.png");
-    cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
-    m_ocMarkers[nId] = pSurface;
-    g_free(szSymName);
-    osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0, sTrackName.toUtf8().data());
+    if (m_ocMarkers.contains(nId)==false)
+    {
+      char* szSymName = find_file("qml/symFia.png");
+      cairo_surface_t *pSurface =  cairo_image_surface_create_from_png(szSymName);
+      m_ocMarkers[nId] = pSurface;
+      g_free(szSymName);
+      osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0, sTrackName.toUtf8().data());
+    }
   }
 }
 

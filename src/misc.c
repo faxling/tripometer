@@ -280,7 +280,7 @@ static const char *data_paths[] = {
   NULL
 };
 
-char *find_file(char *name) {
+char *find_file(const char *name) {
   const char **path = data_paths;
   char *p = getenv("HOME");
 

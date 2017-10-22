@@ -74,8 +74,8 @@ TrackModel::TrackModel(QObject *)
   QDir oDir(sDataFilePath);
   oDir.setNameFilters(QStringList() << "*.dat");
   oDir.setFilter(QDir::Files);
-
-  for (auto &oI : oDir.entryList() )
+  QStringList oc = oDir.entryList();
+  for (auto &oI : oc )
   {
     ++m_nLastId;
     ModelDataNode tNode =  GetNodeFromTrack(JustFileNameNoExt(oI),false);
@@ -96,6 +96,7 @@ void TrackModel::trackCenter(int nId)
   {
     if (t.nId == nId)
     {
+      trackLoaded(nId);
       QMetaObject::invokeMethod(g_pTheMap, "centerTrack", Q_ARG(QString, t.sName));
       return true;
     }
@@ -207,9 +208,9 @@ void TrackModel::deleteSelected()
 
     if (oI == m_oc.end())
       return;
+
   }
 }
-
 QModelIndex TrackModel::IndexFromId(int nId) const
 {
   for (auto& oJ : m_oc)

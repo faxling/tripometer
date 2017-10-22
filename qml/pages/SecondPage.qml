@@ -139,16 +139,17 @@ SilicaListView {
 
   delegate: ListItem {
 
-    contentHeight:50
+    contentHeight: Theme.iconSizeSmall + Theme.paddingMedium
     width: ListView.view.width
     menu: contextMenu
     Rectangle
     {
+
       color: "chartreuse"
-      x:2
-      y:21
-      width:25
-      height:25
+     // x:2
+      y:Theme.paddingMedium
+      width:Theme.iconSizeSmall
+      height:Theme.iconSizeSmall
       radius:3
       visible: bSelected
     }
@@ -160,7 +161,7 @@ SilicaListView {
 
       TextField   {
         id:idEditText
-        width:400
+        width:Theme.itemSizeLarge*3
 
         color:  "black"
         onClicked: {
@@ -249,8 +250,8 @@ SilicaListView {
         MenuItem {
           text: "Center"
           onClicked: {
-            idTrackModel.trackCenter(nId)
             mainMap.loadTrack(aValue, nId)
+            idTrackModel.trackCenter(nId)
           }
         }
         MenuItem {

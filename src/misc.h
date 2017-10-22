@@ -24,7 +24,7 @@
 
 G_BEGIN_DECLS
 
-char *find_file(char *name);
+char *find_file(const char *name);
 
 void gconf_set_string(const char *key, const char *str);
 char *gconf_get_string(const char *key);

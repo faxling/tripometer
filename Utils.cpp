@@ -81,8 +81,8 @@ QString GpxFullName(const QString& sTrackName)
 
 QString FormatKm(double f)
 {
-  char szStr[20];
-  sprintf(szStr, "%.3f",f);
+  char szStr[21];
+  snprintf(szStr,20, "%.3f",f);
   return szStr;
 }
 
@@ -105,7 +105,7 @@ QString FormatLatitude(double fLatitude)
     cLat = 'S';
   }
 
-  char szStr[20];
+  char szStr[40];
   sprintf(szStr, "%c%02d\xb0 %.2f'",cLat,nDegrees,fMinutes);
   return QString::fromLatin1(szStr);
 }
@@ -149,7 +149,7 @@ QString FormatDateTime(unsigned int nTime)
 
 QString FormatKmH(double f)
 {
-  char szStr[20];
+  char szStr[60];
   sprintf(szStr, "%.1f",f);
   return szStr;
 }
@@ -256,9 +256,11 @@ MarkData GetMarkData(const QString& sTrackName)
   QString sGpxDatFileName = GpxDatFullName(sTrackName);
   QFile oDat;
   oDat.setFileName(sGpxDatFileName);
-  oDat.open(QIODevice::ReadOnly);
+  bool bRet = oDat.open(QIODevice::ReadOnly);
   MarkData tData;
   memset((void*)&tData,0,sizeof tData);
+  if (bRet==false)
+    return tData;
   oDat.read((char*)&tData,sizeof tData);
   oDat.close();
   return tData;

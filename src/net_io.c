@@ -376,7 +376,7 @@ static gboolean net_io_do_async(net_io_request_t *request) {
 
   /* create worker thread */
   request->refcount = 2;   // master and worker hold a reference
-  if(!g_thread_create(&worker_thread, request, FALSE, NULL) != 0) {
+  if(!g_thread_new("worker_thread", &worker_thread, request) != 0) {
     g_warning("failed to create the worker thread");
 
     /* free request and return error */

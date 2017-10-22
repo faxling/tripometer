@@ -70,15 +70,13 @@ Page {
   ListView {
     clip: true
     id: listView
-
-
     model: idListModel
     anchors.fill: parent
     anchors.topMargin: 120
 
     delegate: ListItem {
       id: delegate
-      height: 100
+      height: Theme.itemSizeMedium
       Text {
         font.family: Theme.fontFamilyHeading
         text: aLabel

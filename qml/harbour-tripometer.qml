@@ -148,7 +148,7 @@ ApplicationWindow {
       DockedPanel {
         id: idTrackPanel
         width: parent.width
-        height: 700
+        height: Theme.itemSizeLarge * 5
         dock: Dock.Bottom
         RemorseItem { id: remorse }
 
@@ -166,7 +166,7 @@ ApplicationWindow {
           y:10
           spacing: 10
           Button {
-            width: 110
+            width: Theme.itemSizeLarge
             text: "Delete"
             color: "black"
             onClicked:
@@ -182,19 +182,19 @@ ApplicationWindow {
 
           Button {
             color: "black"
-            width: 110
+            width: Theme.itemSizeLarge
             text: "Load"
             onClicked: idTrackModel.loadSelected()
           }
           Button {
             color: "black"
-            width: 110
+            width: Theme.itemSizeLarge
             text: "Unload"
             onClicked: idTrackModel.unloadSelected()
           }
           Button {
             color: "black"
-            width: 110
+            width: Theme.itemSizeLarge
             text: "Save"
             onClicked:  idMap.saveTrack(idTrackModel.nextId())
           }

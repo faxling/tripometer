@@ -189,7 +189,7 @@ InfoListModel::InfoListModel(QObject *parent) :
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
   QString sDataFileName;
-  sDataFileName.sprintf("%ls/%ls",(wchar_t*)sDataFilePath.utf16(),L"fraxtrip.dat");
+  sDataFileName.sprintf("%ls/%s",(wchar_t*)sDataFilePath.utf16(),"fraxtrip");
   m_pDataFile.setFileName(sDataFileName);
   m_pDataFile.open(QIODevice::ReadOnly);
 
