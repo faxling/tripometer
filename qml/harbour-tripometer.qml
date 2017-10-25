@@ -74,13 +74,31 @@ ApplicationWindow {
         anchors.fill: parent
       }
 
+      Column
+      {
+        id: map_controls2
+        anchors.bottom:  map_controls.top
+        anchors.right: parent.right
+        z: idMap.z + 1
+        IconButton {
+          id: idAddDbPoint
+          icon.source: "btnDB.png"
+          onClicked: {
+            idMap.addDbPoint()
+          }
+          onPressAndHold: {
+            idMap.noDbPoint()
+          }
+        }
+      }
+
       Row {
         id: map_controls
         anchors.bottom: parent.bottom
         width: parent.width
         height: Theme.itemSizeMedium
         z: idMap.z + 1
-        anchors.bottomMargin: -Theme.paddingMedium
+        anchors.bottomMargin: - Theme.paddingMedium
         //  visible: !Qt.inputMethod.visible
         IconButton {
           id: zoomout
@@ -109,8 +127,6 @@ ApplicationWindow {
             idMap.saveMark(idTrackModel.nextId())
           }
         }
-
-
         IconButton {
           id: idTrack
           icon.source: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
@@ -127,7 +143,6 @@ ApplicationWindow {
 
           }
         }
-
         IconButton {
           id: idClearTrack
           icon.source: "btnTracks.png"
@@ -135,7 +150,6 @@ ApplicationWindow {
             idTrackPanel.open =  !idTrackPanel.open
           }
         }
-
         IconButton {
           id: idBack
           icon.source: idMapPage.backNavigation ? "btnBackDis.png": "btnBack.png"

@@ -99,7 +99,7 @@
 #define OSD_FONT_SIZE             (28.0)
 #define OSD_DIAMETER              (60)
 #define OSD_SCALE_FONT_SIZE       (20.0)
-#define OSD_COORDINATES_FONT_SIZE (20.0)
+#define OSD_COORDINATES_FONT_SIZE (30.0)
 #endif
 
 #ifdef SAILFISH

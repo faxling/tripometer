@@ -871,6 +871,23 @@ guint maep_geodata_track_get_length(const MaepGeodata *track_state) {
   return len;
 }
 
+
+
+coord_t maep_geodata_track_get_lastpoint(const MaepGeodata *track_state) {
+  track_t *track = track_state->priv->track;
+  track_seg_t *seg = 0;
+  coord_t tRet = {0};
+  while(track) {
+    seg = track->track_seg;
+    track = track->next;
+  }
+  int nLast = seg->track_points->len -1;
+  if (nLast < 0)
+    return tRet;
+  return g_array_index(seg->track_points, track_point_t, nLast).coord;
+}
+
+
 gfloat maep_geodata_track_get_metric_length(const MaepGeodata *track_state) {
   g_return_val_if_fail(MAEP_IS_GEODATA(track_state), 0.f);
   

@@ -318,6 +318,7 @@ class GpsMap : public QQuickPaintedItem
   Q_PROPERTY(QString authors READ authors CONSTANT)
   Q_PROPERTY(QString license READ license CONSTANT)
 
+
  public:
 
   enum Source {
@@ -423,6 +424,8 @@ class GpsMap : public QQuickPaintedItem
     }
   }
 
+  Q_INVOKABLE void addDbPoint();
+  Q_INVOKABLE void noDbPoint();
   Q_INVOKABLE void saveMark(int nId);
   Q_INVOKABLE void saveTrack(int nId);
   Q_INVOKABLE void clearTrack();
@@ -535,6 +538,7 @@ class GpsMap : public QQuickPaintedItem
   QCompass compass;
   bool compassEnabled_;
   qreal lastAzimuth;
+  MaepGeodata *m_DBtrack_state;
 
   osm_gps_map_osd_t *osd;
 

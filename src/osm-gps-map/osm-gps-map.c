@@ -509,6 +509,42 @@ osm_gps_map_free_tracks (OsmGpsMap *map)
   }
 }
 
+static float get_distance(float lat1, float lon1, float lat2, float lon2) {
+  float aob = acos(CLAMP(cos(lat1) * cos(lat2) * cos(lon2 - lon1) +
+                         sin(lat1) * sin(lat2), -1.f, +1.f));
+
+  return(aob * 6371000.0);     /* great circle radius in meters */
+}
+
+float osm_db_last_dist(OsmGpsMap *map,float la, float lo)
+{
+  OsmGpsMapPrivate *priv = map->priv;
+  if (priv->tracks)
+  {
+    GSList* tmp = priv->tracks;
+    while (tmp != NULL)
+    {
+      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
+      if (pNode->m_nId == -1)
+      {
+        coord_t tLast = maep_geodata_track_get_lastpoint(pNode->track);
+        if (tLast.rlat==0)
+          return 0;
+        float dist = get_distance(deg2rad(la),deg2rad(lo),
+                                  tLast.rlat, tLast.rlon);
+
+
+        dist+=maep_geodata_track_get_metric_length(pNode->track);
+
+        return dist;
+      }
+      tmp = g_slist_next(tmp);
+    }
+  }
+  return 0;
+}
+
+
 void osm_gps_map_free_track (OsmGpsMap *map,int nId)
 {
   OsmGpsMapPrivate *priv = map->priv;
@@ -800,11 +836,15 @@ static cairo_surface_t* osm_gps_map_from_file(const char *filename, const char *
 
   return surf;
 }
+
+#define UNUSED(x) (void)(x)
+
 static cairo_surface_t* osm_gps_map_from_mem(const unsigned char *buffer,
                                              size_t len, const char *ext)
 {
   cairo_surface_t *surf = NULL;
-
+  UNUSED(buffer);
+  UNUSED(len);
   if (!strcmp(ext, "png")) {
     g_warning("PNG load from memory not implemented!");
   } else {
@@ -3265,13 +3305,23 @@ struct _OsmGpsMapSource
 
   guint min_zoom, max_zoom;
 };
-
+#define UNUSED(x) (void)(x)
 const OsmGpsMapSource* osm_gps_map_source_new(const gchar *name,
                                               const gchar repo_uri,
                                               const gchar *image_format,
                                               const gchar *copyright_notice,
                                               const gchar *copyright_url,
-                                              guint min_zoom, guint max_zoom)
+                                              guint min_zoom,
+                                              guint max_zoom)
 {
+
+  UNUSED(name);
+  UNUSED(repo_uri);
+  UNUSED(image_format);
+  UNUSED(copyright_notice);
+  UNUSED(copyright_url);
+  UNUSED(min_zoom);
+  UNUSED(max_zoom);
+  return 0;
 
 }

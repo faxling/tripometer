@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.5.0, 2017-10-21T23:52:58. -->
+<!-- Written by QtCreator 3.5.0, 2017-10-25T00:22:29. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -345,7 +345,7 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Clone of MerSDK-SailfishOS-i486</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Clone of MerSDK-SailfishOS-i486</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{85ac3ceb-4e30-4ed0-9548-e20d0c867dd5}</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{c8a4f6fe-b5f6-467c-9fbe-edd4453e154a}</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">1</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
@@ -516,11 +516,136 @@
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Upload files via SFTP</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinux.DirectUploadStep</value>
-      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedFiles"/>
-      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedHosts"/>
-      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedRemotePaths"/>
-      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedSysroots"/>
-      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedTimes"/>
+      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedFiles">
+       <value type="QString">C:/Users/fax/Documents/qt/build-harbour-tripometer-Clone_of_MerSDK_SailfishOS_i486-Release/harbour-tripometer</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnNoDB.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnDB.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnClearTrack.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/pages/FirstPage.qml</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/symFiabtn.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/pages/SmallText.qml</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnPlus.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnTrackOff.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnMinus.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/symFia.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/harbour-tripometer.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/harbour-tripometer.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/harbour-tripometer.qml</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/icon-camera-zoom-tele.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/icon-camera-zoom-wide.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnMarker.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnTracks.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/pages/SecondPage.qml</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnTrack.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnCenter.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnBack.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/qml/btnBackDis.png</value>
+       <value type="QString">C:/Users/fax/Documents/qt/harbour-tripometer/harbour-tripometer.desktop</value>
+      </valuelist>
+      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedHosts">
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+       <value type="QString">192.168.2.15</value>
+      </valuelist>
+      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedRemotePaths">
+       <value type="QString">/usr/bin</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml/pages</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml/pages</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/icons/hicolor/86x86/apps</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml/pages</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/harbour-tripometer/qml</value>
+       <value type="QString">/usr/share/applications</value>
+      </valuelist>
+      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedSysroots">
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+       <value type="QString">C:/SailfishOS/mersdk/targets/SailfishOS-armv7hl</value>
+      </valuelist>
+      <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.LastDeployedTimes">
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:51</value>
+       <value type="QDateTime">2017-10-25T00:07:52</value>
+      </valuelist>
       <value type="bool" key="RemoteLinux.GenericDirectUploadStep.IgnoreMissingFiles">false</value>
       <value type="bool" key="RemoteLinux.GenericDirectUploadStep.Incremental">true</value>
      </valuemap>
@@ -574,7 +699,7 @@
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">harbour-tripometer (on Remote Device)</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">harbour-tripometer (on Remote Device)2</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinuxRunConfiguration:harbour-tripometer</value>
     <valuelist type="QVariantList" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments"/>
     <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.TargetName">harbour-tripometer</value>

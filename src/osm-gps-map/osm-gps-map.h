@@ -172,6 +172,9 @@ void        osm_gps_map_set_viewport                (OsmGpsMap *map, guint width
 void        osm_gps_map_blit                        (OsmGpsMap *map, cairo_t *cr,
                                                      cairo_operator_t op);
 
+
+float       osm_db_last_dist(OsmGpsMap *map,float la, float lo );
+
 #ifdef ENABLE_OSD
 coord_t *osm_gps_map_get_gps (OsmGpsMap *map);
 #endif

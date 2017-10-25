@@ -19,7 +19,7 @@
 
 #include "../config.h" 
 #include "../converter.h"
-
+#include <stdio.h>
 #include <stdlib.h>  // abs
 #include <string.h>
 #include <math.h>    // M_PI/cos()
@@ -590,12 +590,13 @@ osd_shape(cairo_t *cr) {
 }
 #endif
 #endif
-
+/*
 static gboolean
 osm_gps_map_in_circle(gint x, gint y, gint cx, gint cy, gint rad) 
 {
   return( pow(cx - x, 2) + pow(cy - y, 2) < rad * rad);
 }
+*/
 
 #ifndef OSD_NO_DPAD
 /* check whether x/y is within the dpad */
@@ -1176,7 +1177,7 @@ osd_zoom_labels(cairo_t *cr, gint x, gint y) {
 #define OSD_COORDINATES_OFFSET (OSD_COORDINATES_FONT_SIZE/6)
 
 #define OSD_COORDINATES_W  (8*OSD_COORDINATES_FONT_SIZE+2*OSD_COORDINATES_OFFSET)
-#define OSD_COORDINATES_H  (2*OSD_COORDINATES_FONT_SIZE+2*OSD_COORDINATES_OFFSET+OSD_COORDINATES_FONT_SIZE/4)
+#define OSD_COORDINATES_H  (3*OSD_COORDINATES_FONT_SIZE+2*OSD_COORDINATES_OFFSET+OSD_COORDINATES_FONT_SIZE/4)
 
 /* these can be overwritten with versions that support */
 /* localization */
@@ -1324,6 +1325,15 @@ osd_render_coordinates(osm_gps_map_osd_t *osd)
   int y = OSD_COORDINATES_OFFSET;
   y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, latitude);
   y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, longitude);
+
+// Render distance tool
+  float fDist = osm_db_last_dist(osd->map,lat,lon);
+  if (fDist > 0)
+  {
+    gchar* dist_str = g_strdup_printf("Dist %.3f km", fDist/1000);
+    y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, dist_str);
+    g_free(dist_str);
+  }
 
   g_free(latitude);
   g_free(longitude);
@@ -2371,8 +2381,9 @@ osd_free(osm_gps_map_osd_t *osd)
 }
 
 static gboolean
-osd_busy(osm_gps_map_osd_t *osd) 
+osd_busy(G_GNUC_UNUSED osm_gps_map_osd_t* osd)
 {
+
 #ifdef OSD_SOURCE_SEL
   osd_priv_t *priv = (osd_priv_t *)(osd->priv);
   return (priv->source_sel.handler_id != 0);

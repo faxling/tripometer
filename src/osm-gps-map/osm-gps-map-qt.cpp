@@ -194,7 +194,7 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   , compassEnabled_(FALSE)
 {
   char *path, *oldPath;
-
+  m_DBtrack_state = 0;
   g_pTheMap = this;
 
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
@@ -911,6 +911,27 @@ void Maep::GpsMap::unloadTrack(int nId)
   osm_gps_map_clear_track(map, nId);
 }
 extern double g_fMaxSpeed;
+
+
+void Maep::GpsMap::noDbPoint()
+{
+  osm_gps_map_clear_track (map,-1);
+  g_object_unref(G_OBJECT(m_DBtrack_state));
+  m_DBtrack_state = 0;
+}
+
+void Maep::GpsMap::addDbPoint()
+{
+  if (m_DBtrack_state == 0)
+  {
+    m_DBtrack_state = maep_geodata_new();
+    osm_gps_map_add_track (map,m_DBtrack_state, -1); // -1 The Distance tool
+  }
+  coord_t tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
+  maep_geodata_add_trackpoint(m_DBtrack_state,rad2deg(tPos.rlat),rad2deg(tPos.rlon),G_MAXFLOAT,0,0,NAN, NAN );
+
+}
+
 void Maep::GpsMap::saveMark(int nId)
 {
 
@@ -940,7 +961,7 @@ void Maep::GpsMap::saveMark(int nId)
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 }
 
-void Maep::GpsMap::saveTrack(int nId)
+void Maep::GpsMap::saveTrack(G_GNUC_UNUSED  int nId)
 {
 
   QDateTime oNow(QDateTime::currentDateTime());
@@ -970,6 +991,7 @@ void Maep::GpsMap::saveTrack(int nId)
   t.lo = lastGps.coordinate().longitude();
   t.speed = g_fMaxSpeed;
   t.nTime = time(0);
+
 
   WriteMarkData(sTrackName, t );
 
