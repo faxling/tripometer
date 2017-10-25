@@ -1326,8 +1326,16 @@ osd_render_coordinates(osm_gps_map_osd_t *osd)
   y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, latitude);
   y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, longitude);
 
-// Render distance tool
-  float fDist = osm_db_last_dist(osd->map,lat,lon);
+  // Render distance tool
+
+  guint nwidth;
+  guint nheight;
+
+  g_object_get(G_OBJECT(osd->map), "viewport-width", &nwidth,"viewport-height", &nheight,NULL);
+  float fx,fy;
+
+  osm_gps_map_screen_to_geographic(osd->map,nwidth/2,nheight/2,&fy,&fx);
+  float fDist = osm_db_last_dist(osd->map,fy,fx);
   if (fDist > 0)
   {
     gchar* dist_str = g_strdup_printf("Dist %.3f km", fDist/1000);
@@ -2148,6 +2156,7 @@ osd_draw(osm_gps_map_osd_t *osd, cairo_t *cr)
 {
   osd_priv_t *priv = (osd_priv_t*)osd->priv;
 
+// osd_render_coordinates(osd);
   /* OSD itself uses some off-screen rendering, so check if the */
   /* offscreen buffer is present and create it if not */
   /* create overlay ... */
@@ -2210,8 +2219,10 @@ osd_draw(osm_gps_map_osd_t *osd, cairo_t *cr)
                                    OSD_COORDINATES_W, OSD_COORDINATES_H);
 
     priv->coordinates.lat = priv->coordinates.lon = OSM_GPS_MAP_INVALID;
-    osd_render_coordinates(osd);
+
   }
+ osd_render_coordinates(osd);
+
 #endif
 
   cairo_set_operator (cr, CAIRO_OPERATOR_OVER);

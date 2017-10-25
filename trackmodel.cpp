@@ -169,6 +169,21 @@ void TrackModel::loadSelected()
   }
 }
 
+void TrackModel::markAllUnload()
+{
+  QVector<int> oc;
+  oc.push_back(ISLOADED_t);
+  for (auto& oJ : m_oc)
+  {
+    if (oJ.bSelected == true)
+    {
+      oJ.bIsLoaded = false;
+      QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
+      emit dataChanged(oMI, oMI, oc) ;
+    }
+  }
+}
+
 void TrackModel::unloadSelected()
 {
   QVector<int> oc;

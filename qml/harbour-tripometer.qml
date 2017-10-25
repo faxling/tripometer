@@ -138,7 +138,9 @@ ApplicationWindow {
               var o = Qt.createQmlObject("import harbour.tripometer 1.0; Track {}",
                                          idMapPage, "track1");
 
+              idTrackModel.markAllUnload()
               idMap.setTrack(o)
+
             }
 
           }
@@ -170,7 +172,7 @@ ApplicationWindow {
         {
           anchors.fill: parent
           anchors.topMargin: 100
-          anchors.bottomMargin: 100
+          anchors.bottomMargin: Theme.itemSizeLarge
           clip: true
         }
         Row

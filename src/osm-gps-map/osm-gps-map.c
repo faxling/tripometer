@@ -48,6 +48,10 @@
 
 struct _OsmGpsMapPrivate
 {
+
+  int drag_mouse_dx;
+  int drag_mouse_dy;
+
   GHashTable *tile_queue;
   GHashTable *missing_tiles;
   GHashTable *tile_cache;
@@ -501,7 +505,8 @@ osm_gps_map_free_tracks (OsmGpsMap *map)
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
-      track_ref_free((OsmTrackRef*)tmp->data);
+      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
+      track_ref_free(pNode);
       tmp = g_slist_next(tmp);
     }
     g_slist_free(priv->tracks);
@@ -1318,7 +1323,7 @@ void osm_gps_map_get_tile_xy_at(OsmGpsMap *map, float lat, float lon,
 
 static void
 osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
-                         int *max_x, int *min_x, int *max_y, int *min_y)
+                         int *max_x, int *min_x, int *max_y, int *min_y, int nType)
 {
   MaepGeodataTrackIter iter;
   const way_point_t *wpt;
@@ -1331,7 +1336,13 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
   map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
 
   /* Draw all segments. */
-  cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.0, 0.6);
+
+// -1 Distance tool
+  if (nType != -1)
+    cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.5, 0.6);
+  else
+    cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.0, 0.6);
+
   cairo_set_line_cap (priv->cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_join (priv->cr, CAIRO_LINE_JOIN_ROUND);
   maep_geodata_track_iter_new(&iter, track);
@@ -1404,12 +1415,13 @@ osm_gps_map_print_tracks (OsmGpsMap *map)
 
     if (priv->show_trip_history)
       osm_gps_map_print_track(priv, priv->trip_history, lw,
-                              &max_x, &min_x, &max_y, &min_y);
+                              &max_x, &min_x, &max_y, &min_y,1 );
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
+      int nT = ((OsmTrackRef*)(tmp->data))->m_nId;
       osm_gps_map_print_track(priv, ((OsmTrackRef*)tmp->data)->track, lw,
-                              &max_x, &min_x, &max_y, &min_y);
+                              &max_x, &min_x, &max_y, &min_y, nT);
       tmp = g_slist_next(tmp);
     }
 
@@ -2950,6 +2962,25 @@ _on_track_dirty (G_GNUC_UNUSED MaepGeodata *track_state, OsmGpsMap *map)
     priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 }
 
+MaepGeodata* osm_get_track(OsmGpsMap *map, int nId)
+{
+  OsmGpsMapPrivate *priv = map->priv;
+  if (priv->tracks)
+  {
+    GSList* tmp = priv->tracks;
+    while (tmp != NULL)
+    {
+      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
+      if (pNode->m_nId == nId)
+      {
+        return pNode->track ;
+      }
+      tmp = g_slist_next(tmp);
+    }
+  }
+   return 0;
+}
+
 void
 osm_gps_map_add_track (OsmGpsMap *map, MaepGeodata *track, int nId)
 {
@@ -3201,9 +3232,9 @@ osm_gps_map_screen_to_geographic (OsmGpsMap *map, gint pixel_x, gint pixel_y,
   priv = map->priv;
 
   if (latitude)
-    *latitude = rad2deg(pixel2lat(priv->map_zoom, priv->map_y + pixel_y));
+    *latitude = rad2deg(pixel2lat(priv->map_zoom, priv->map_y + pixel_y - priv->drag_mouse_dy));
   if (longitude)
-    *longitude = rad2deg(pixel2lon(priv->map_zoom, priv->map_x + pixel_x));
+    *longitude = rad2deg(pixel2lon(priv->map_zoom, priv->map_x + pixel_x - priv->drag_mouse_dx));
 }
 
 void
@@ -3222,16 +3253,32 @@ osm_gps_map_geographic_to_screen (OsmGpsMap *map,
     *pixel_y = lat2pixel(priv->map_zoom, deg2rad(latitude)) - priv->map_y;
 }
 
-void
-osm_gps_map_scroll (OsmGpsMap *map, gint dx, gint dy)
+void osm_gps_map_uppdate_offset(OsmGpsMap *map,int pixel_x, int pixel_y)
+{
+  OsmGpsMapPrivate *priv= priv = map->priv;
+  priv->drag_mouse_dx = pixel_x;
+  priv->drag_mouse_dy = pixel_y;
+}
+
+
+void osm_gps_map_get_offset(OsmGpsMap *map,int* pixel_x, int* pixel_y)
+{
+  OsmGpsMapPrivate *priv= priv = map->priv;
+  *pixel_x = priv->drag_mouse_dx ;
+  *pixel_y = priv->drag_mouse_dy ;
+}
+
+
+void osm_gps_map_scroll (OsmGpsMap *map)
 {
   OsmGpsMapPrivate *priv;
+  g_return_if_fail (OSM_IS_GPS_MAP (map));
+  priv = map->priv;
+  gint dx = -priv->drag_mouse_dx;
+  gint dy = -priv->drag_mouse_dy;
 
   if (dx == 0 && dy == 0)
     return;
-
-  g_return_if_fail (OSM_IS_GPS_MAP (map));
-  priv = map->priv;
 
   /* g_message("scroll of %dx%d %g.", dx, dy, priv->map_factor); */
   priv->map_x += dx / priv->map_factor;

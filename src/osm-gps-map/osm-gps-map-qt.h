@@ -538,7 +538,6 @@ class GpsMap : public QQuickPaintedItem
   QCompass compass;
   bool compassEnabled_;
   qreal lastAzimuth;
-  MaepGeodata *m_DBtrack_state;
 
   osm_gps_map_osd_t *osd;
 
@@ -547,7 +546,6 @@ class GpsMap : public QQuickPaintedItem
   guint searchFinished;
 
   gboolean dragging;
-  int drag_mouse_dx, drag_mouse_dy;
   float factor0;
 
   /* Wiki entry. */

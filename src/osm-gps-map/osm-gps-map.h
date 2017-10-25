@@ -148,8 +148,11 @@ void        osm_gps_map_get_tile_xy_at              (OsmGpsMap *map,
                                                      float lat, float lon,
                                                      int *zoom, int *x, int *y);
 void        osm_gps_map_add_track                   (OsmGpsMap *map, MaepGeodata *track, int nId);
+void        osm_gps_map_uppdate_offset              (OsmGpsMap *map, int pixel_x, int pixel_y);
+void        osm_gps_map_get_offset                  (OsmGpsMap *map, int *pixel_x, int *pixel_y);
 void        osm_gps_map_clear_tracks                (OsmGpsMap *map);
 void        osm_gps_map_clear_track                 (OsmGpsMap *map, int nId );
+MaepGeodata* osm_get_track                          (OsmGpsMap *map, int nId);
 void        osm_gps_map_add_image                   (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image);
 void        osm_gps_map_add_image_with_alignment    (OsmGpsMap *map, float latitude, float longitude, cairo_surface_t *image, float xalign, float yalign,const char* szName);
 void        osm_gps_map_rename_image                (OsmGpsMap *map, cairo_surface_t *image, const char* sz);
@@ -162,7 +165,7 @@ void        osm_gps_map_from_co_ordinates           (OsmGpsMap *map, coord_t *co
                                                      int *pixel_x, int *pixel_y);
 void        osm_gps_map_screen_to_geographic        (OsmGpsMap *map, gint pixel_x, gint pixel_y, gfloat *latitude, gfloat *longitude);
 void        osm_gps_map_geographic_to_screen        (OsmGpsMap *map, gfloat latitude, gfloat longitude, gint *pixel_x, gint *pixel_y);
-void        osm_gps_map_scroll                      (OsmGpsMap *map, gint dx, gint dy);
+void        osm_gps_map_scroll                      (OsmGpsMap *map);
 float       osm_gps_map_get_scale                   (OsmGpsMap *map);
 void        osm_gps_map_add_layer                   (OsmGpsMap *map, OsmGpsMapLayer *layer);
 void        osm_gps_map_layer_changed               (OsmGpsMap *map, OsmGpsMapLayer *layer);
