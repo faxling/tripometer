@@ -15,7 +15,6 @@ PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl
 QT += qml quick positioning sensors dbus
 LIBS += -ljpeg
 
-
 QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
@@ -99,4 +98,7 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 
 DISTFILES += \
     qml/pages/SmallText.qml \
-    rpm/harbour-tripometer.changes
+    rpm/harbour-tripometer.changes \
+    qml/btnSat.png \
+    qml/btnWorld.png \
+    qml/pages/SearchPage.qml

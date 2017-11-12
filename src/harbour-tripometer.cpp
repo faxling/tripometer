@@ -54,8 +54,14 @@ int main(int argc, char *argv[])
 
   g_pTheTrackModel = new TrackModel;
   pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
+  MssListModel* pSearchResultModel = new MssListModel("name", "lat","lo");
+  pSearchResultModel->Init(1);
+  pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
+
+  qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
   qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
+  qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app , &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();

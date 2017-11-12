@@ -1098,29 +1098,54 @@ static void osm_gps_map_qt_wiki(Maep::GpsMap *widget, MaepGeonamesEntry *entry, 
 
 void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList *places)
 {
+ //  searchRes.clear();
   g_message("hello got %d places", g_slist_length(places));
-  
+/*
   if (searchRes.count() == 0 || source == MaepSearchContextGeonames)
     for (; places; places = places->next)
     {
       Maep::GeonamesPlace *place =
           new Maep::GeonamesPlace((const MaepGeonamesPlace*)places->data);
+
+
+
       searchRes.append(place);
     }
   else
+    */
+
+  MssListModel* pResultModel =  MssListModel::Instance(1);
+  pResultModel->clearAll();
     for (; places; places = places->next)
     {
+
+      const MaepGeonamesPlace*p =  (const MaepGeonamesPlace*)places->data;
+      // rad2deg(p->pos.rlat)
+      pResultModel->AddRow({p->name,rad2deg(p->pos.rlat),rad2deg(p->pos.rlon)});
+      /*
       Maep::GeonamesPlace *place =
           new Maep::GeonamesPlace((const MaepGeonamesPlace*)places->data);
-      searchRes.prepend(place);
+      searchRes.append(place);
+
+      */
     }
+/*
+
   searchFinished |= source;
   
-  if (searchFinished == (MaepSearchContextGeonames | MaepSearchContextNominatim))
+  // if (searchFinished == (MaepSearchContextGeonames | MaepSearchContextNominatim))
   {
+    MssListModel* pResultModel =  MssListModel::Instance(1);
+    pResultModel->clearAll();
+    for (auto oI : searchRes)
+    {
+      pResultModel->AddRow({oI->getName(),oI->lat(),oI->lo()});
+    }
+
     g_message("search finished !");
-    emit searchResults();
+    //emit searchResults();
   }
+  */
 }
 static void osm_gps_map_qt_places(Maep::GpsMap *widget, MaepSearchContextSource source,
                                   GSList *places, MaepSearchContext *wiki)
@@ -1147,8 +1172,8 @@ void Maep::GpsMap::setSearchRequest(const QString &request)
   
   searchFinished = 0;
   maep_search_context_request(search, request.toLocal8Bit().data(),
-                              MaepSearchContextGeonames |
-                              MaepSearchContextNominatim);
+                              MaepSearchContextNominatim
+                             );
 }
 
 void Maep::GpsMap::setLookAt(float lat, float lon)

@@ -291,5 +291,123 @@ void ScreenOn(bool b)
 
   //   QDBusConnection::disconnectFromBus("system");
 }
+namespace msslistmodel{
+  QMap<int, MssListModel*> g_ocIntances;
+}
+
+void MssListModel::Init(int nInstanceId)
+{
+  msslistmodel::g_ocIntances[nInstanceId] = this;
+}
+
+MssListModel* MssListModel::Instance(int nInstanceId)
+{
+  if (msslistmodel::g_ocIntances.contains(nInstanceId) == false)
+    return 0;
+  return msslistmodel::g_ocIntances[nInstanceId];
+}
+void MssListModel::Reset(InitFunc pfInit)
+{
+  if (m_ocRows.size() > 0)
+  {
+    beginRemoveRows(QModelIndex(), 0, m_ocRows.size() - 1);
+    m_ocRows.erase(m_ocRows.begin(), m_ocRows.end());
+    endRemoveRows();
+  }
+
+  pfInit(&m_ocRows);
+  if (m_ocRows.size() < 1)
+    return;
+
+  beginInsertRows(QModelIndex(), 0, m_ocRows.size() - 1);
+  endInsertRows();
+}
+
+int MssListModel::FindRow(const QVariant& oValToFind, int nCol)
+{
+  for (auto& oI : m_ocRows)
+  {
+    if (oI[nCol] == oValToFind)
+      return mssutils::IndexOf(oI, m_ocRows);
+  }
+  return -1;
+}
 
 
+QHash<int, QByteArray> MssListModel::roleNames() const
+{
+  return m_ocRole;
+}
+
+int MssListModel::columnCount(const QModelIndex &) const
+{
+  return 1;
+}
+
+int MssListModel::rowCount(const QModelIndex &) const
+{
+  return m_ocRows.size();
+}
+
+QModelIndex MssListModel::index(int row, int column, const QModelIndex &) const
+{
+  QModelIndex o = createIndex(row, column);
+  return o;
+}
+
+QModelIndex  MssListModel::parent(const QModelIndex &) const
+{
+  return QModelIndex();
+}
+
+QVariant MssListModel::data(const QModelIndex &oIndex, int role) const
+{
+  int roleIdx = role - Qt::UserRole;
+  int nRow = oIndex.row();
+  if (m_ocRows.size() <= nRow || nRow < 0)
+    return QVariant();
+
+  return  m_ocRows[nRow][roleIdx];
+}
+
+void MssListModel::updateItem(int nRow, int nCol, const QVariant &value)
+{
+  if (nRow < 0)
+    return;
+  if (m_ocRows[nRow][nCol] == value)
+    return;
+
+  QVector<int> oc;
+  oc.push_back(Qt::UserRole + nCol);
+  m_ocRows[nRow][nCol] = value;
+  emit dataChanged(index(nRow, 0), index(nRow, 0), oc);
+}
+
+void MssListModel::clearAll()
+{
+  if (m_ocRows.size() <= 1)
+    return;
+
+  beginRemoveRows(QModelIndex(), 0, m_ocRows.size() - 1);
+  m_ocRows.erase(m_ocRows.begin(), m_ocRows.end());
+  endRemoveRows();
+}
+
+void MssListModel::removeRow(int nRow)
+{
+  if (m_ocRows.size() <= 1)
+    return;
+
+  beginRemoveRows(QModelIndex(), nRow, nRow);
+  m_ocRows.remove(nRow, 1);
+  endRemoveRows();
+}
+
+int MssListModel::AddRow(const QVector<QVariant>& ocRow)
+{
+  int nIndex = m_ocRows.size();
+  beginInsertRows(QModelIndex(), nIndex, nIndex);
+  m_ocRows.append(ocRow);
+  endInsertRows();
+  return nIndex;
+}

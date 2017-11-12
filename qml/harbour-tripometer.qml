@@ -16,6 +16,7 @@ ApplicationWindow {
   // 0 = km/h 1 kts
   property int nUnit : 0
   property GpsMap mainMap
+
   CoverBackground {
     id: blueCover
 
@@ -55,6 +56,8 @@ ApplicationWindow {
 
       GpsMap
       {
+        id:idMap
+        // onSearchResults: idSearchPage.searchResults(search_results)
         Component.onDestruction:
         {
 
@@ -69,7 +72,7 @@ ApplicationWindow {
           mainMap = idMap
         }
 
-        id:idMap
+
         enable_compass : true
         anchors.fill: parent
       }
@@ -80,13 +83,43 @@ ApplicationWindow {
         anchors.bottom:  map_controls.top
         anchors.right: parent.right
         z: idMap.z + 1
+
+        IconButton {
+          id: idSearch
+          icon.source: "btnSearch.png"
+          onClicked: {
+            idSearchPageDockedPanel.open =  !idSearchPageDockedPanel.open
+          }
+        }
+
+        IconButton {
+          id: idWorld
+          icon.source: "btnWorld.png"
+          onClicked: {
+            idMap.setSource(10)
+          }
+          onDoubleClicked: {
+            idMap.setSource(1)
+          }
+        }
+
+        IconButton {
+          id: idSat
+          icon.source: "btnSat.png"
+          onClicked: {
+            idMap.setSource(11)
+          }
+          onDoubleClicked: {
+            idMap.setSource(1)}
+        }
+
         IconButton {
           id: idAddDbPoint
           icon.source: "btnDB.png"
           onClicked: {
             idMap.addDbPoint()
           }
-          onPressAndHold: {
+          onDoubleClicked: {
             idMap.noDbPoint()
           }
         }
@@ -109,11 +142,7 @@ ApplicationWindow {
           id: zoomin
           icon.source: "btnPlus.png"
           onClicked: { idMap.zoomIn() }
-          onDoubleClicked: {
-            if (idMap.source == 1)
-              idMap.setSource(11)
-            else
-              idMap.setSource(1)}
+
         }
         IconButton {
           id: idCenter
@@ -149,6 +178,13 @@ ApplicationWindow {
           id: idClearTrack
           icon.source: "btnTracks.png"
           onClicked: {
+            /*
+              if (idTrackPanel.open === false)
+              idTrackPanel.show();
+              else
+                  idTrackPanel.hide();*/
+
+            // idTrackPanel.
             idTrackPanel.open =  !idTrackPanel.open
           }
         }
@@ -157,6 +193,65 @@ ApplicationWindow {
           icon.source: idMapPage.backNavigation ? "btnBackDis.png": "btnBack.png"
           onClicked: {
             idMapPage.backNavigation = !idMapPage.backNavigation
+          }
+        }
+      }
+
+      DockedPanel
+      {
+        height :idMapPage.width + Theme.itemSizeLarge
+        width:idMapPage.width + Theme.itemSizeLarge
+        id: idSearchPageDockedPanel
+        dock: Dock.Right
+
+        SearchPage
+        {
+          model: idSearchResultModel
+          id:idSearchPage
+          anchors.fill: parent
+          anchors.leftMargin:Theme.itemSizeLarge+Theme.paddingMedium
+          anchors.topMargin:Theme.itemSizeLarge
+          onSelection:{
+            idMap.setLookAt(lat, lon)
+          }
+        }
+        Rectangle
+        {
+          id:idSearchBgRect
+          width:parent.width
+          height:Theme.itemSizeLarge
+          color:Theme.highlightBackgroundColor
+        }
+        Row
+        {
+
+          id:idSearchRow
+          x: Theme.itemSizeLarge
+          TextField
+          {
+            id: idSearchText
+            color:"black"
+            placeholderText: "Enter a place name"
+            label: "Place search"
+            width: Theme.itemSizeLarge*4+Theme.paddingMedium*3
+            height: Theme.itemSizeLarge
+
+            EnterKey.text: "search"
+            EnterKey.onClicked:
+            {
+              idSearchPage.currentIndex = -1
+              idMap.setSearchRequest(idSearchText.text)
+            }
+          }
+          Button {
+            color: "black"
+            anchors.verticalCenter: parent.verticalCenter
+            width: Theme.itemSizeLarge
+            text: "Clear"
+            onClicked:
+            {
+              idSearchText.text = ""
+            }
           }
         }
       }
@@ -268,3 +363,4 @@ ApplicationWindow {
   }
   cover: blueCover
 }
+
