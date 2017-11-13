@@ -93,11 +93,22 @@ public:
   inline QString getName() const
   {
     return this->name;
-  }    
+  }
   inline QString getCountry() const
   {
     return this->country;
-  }     
+  }
+
+  inline double lat() const
+  {
+    return m_coordinate.latitude();
+  }
+
+  inline double lo() const
+  {
+    return m_coordinate.longitude();
+  }
+
   inline QGeoCoordinate coordinate() const
   {
     return this->m_coordinate;
@@ -303,7 +314,7 @@ class GpsMap : public QQuickPaintedItem
   Q_PROPERTY(bool wiki_status READ wikiStatus WRITE setWikiStatus NOTIFY wikiStatusChanged)
   Q_PROPERTY(Maep::GeonamesEntry *wiki_entry READ getWikiEntry NOTIFY wikiEntryChanged)
 
-  Q_PROPERTY(QQmlListProperty<Maep::GeonamesPlace> search_results READ getSearchResults)
+  // Q_PROPERTY(QQmlListProperty<Maep::GeonamesPlace> search_results READ getSearchResults)
 
   Q_PROPERTY(bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
   Q_PROPERTY(Maep::Track *track READ getTrack WRITE setTrack NOTIFY trackChanged)
@@ -364,11 +375,13 @@ class GpsMap : public QQuickPaintedItem
   inline Maep::GeonamesEntry* getWikiEntry() const {
     return wiki_entry;
   }
+  /*
   inline QQmlListProperty<Maep::GeonamesPlace> getSearchResults() {
     return QQmlListProperty<Maep::GeonamesPlace>(this, NULL,
                                                  GpsMap::countSearchResults,
                                                  GpsMap::atSearchResults);
   }
+  */
   void mapUpdate();
   void paintTo(QPainter *painter, int width, int height);
   inline bool trackCapture() {

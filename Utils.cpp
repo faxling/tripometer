@@ -385,7 +385,7 @@ void MssListModel::updateItem(int nRow, int nCol, const QVariant &value)
 
 void MssListModel::clearAll()
 {
-  if (m_ocRows.size() <= 1)
+  if (m_ocRows.isEmpty() == true)
     return;
 
   beginRemoveRows(QModelIndex(), 0, m_ocRows.size() - 1);
@@ -395,7 +395,7 @@ void MssListModel::clearAll()
 
 void MssListModel::removeRow(int nRow)
 {
-  if (m_ocRows.size() <= 1)
+  if (m_ocRows.size() <= nRow)
     return;
 
   beginRemoveRows(QModelIndex(), nRow, nRow);

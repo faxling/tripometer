@@ -57,7 +57,7 @@ ApplicationWindow {
       GpsMap
       {
         id:idMap
-        // onSearchResults: idSearchPage.searchResults(search_results)
+
         Component.onDestruction:
         {
 
