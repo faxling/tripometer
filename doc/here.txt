@@ -1,0 +1,9 @@
+zOUCOCKEXLUDBKlvZUNuWw
+jYp3fkwDy2jviMy605Tp
+
+
+http://autocomplete.geocoder.cit.api.here.com/6.2/suggest.json?app_id={zOUCOCKEXLUDBKlvZUNuWw}&app_code={jYp3fkwDy2jviMy605Tp}&query=Pariser+1+Berl&beginHighlight=<b>&endHighlight=</b> 
+
+
+
+setSearchRequest

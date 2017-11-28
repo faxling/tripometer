@@ -235,13 +235,21 @@ ApplicationWindow {
             label: "Place search"
             width: Theme.itemSizeLarge*4+Theme.paddingMedium*3
             height: Theme.itemSizeLarge
+            onTextChanged:
+            {
+              idSearchPage.currentIndex = -1
+              idMap.setSearchRequest(idSearchText.text)
+            }
 
+
+/*
             EnterKey.text: "search"
             EnterKey.onClicked:
             {
               idSearchPage.currentIndex = -1
               idMap.setSearchRequest(idSearchText.text)
             }
+            */
           }
           Button {
             color: "black"

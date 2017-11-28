@@ -1101,15 +1101,44 @@ void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList *plac
   Q_UNUSED(source);
   g_message("hello got %d places", g_slist_length(places));
 
-                                         // 1 is the id no of the result model
+  // 1 is the id no of the result model
   MssListModel* pResultModel =  MssListModel::Instance(1);
-  pResultModel->clearAll();
+  // pResultModel->clearAll();
+  // MssListModel::updateItem
+  // Do this for both  MaepSearchContextGeonames | MaepSearchContextNominatim
+  int nCount = pResultModel->rowCount(QModelIndex());
 
- // Do this for both  MaepSearchContextGeonames | MaepSearchContextNominatim
+  GSList *placeshead = places;
+  int iCount = 0;
+  for (; places; places = places->next)
+    iCount++;
+
+
+  if (nCount < iCount)
+  {
+    int n = iCount - nCount;
+    for (int i = 0; i < n;++i)
+      pResultModel->AddRow({0,0,0,0});
+  }
+
+  if (nCount > iCount)
+  {
+    int n = nCount - iCount;
+    for (int i = 0; i < n;++i)
+      pResultModel->removeRow(--nCount);
+  }
+
+
+  places = placeshead;
+  int nRow = 0;
   for (; places; places = places->next)
   {
     const MaepGeonamesPlace*p =  (const MaepGeonamesPlace*)places->data;
-    pResultModel->AddRow({p->name,rad2deg(p->pos.rlat),rad2deg(p->pos.rlon)});
+    pResultModel->updateItem(nRow,0,p->name);
+    pResultModel->updateItem(nRow,1,rad2deg(p->pos.rlat));
+    pResultModel->updateItem(nRow,2,rad2deg(p->pos.rlon));
+    pResultModel->updateItem(nRow,3,p->country);
+    ++nRow;
   }
 }
 
@@ -1134,6 +1163,9 @@ static void osm_gps_map_qt_places_failure(Maep::GpsMap *widget,
 void Maep::GpsMap::setSearchRequest(const QString &request)
 {
   qDeleteAll(searchRes);
+  if (request.size() < 3)
+    return;
+
   searchRes.clear();
   
   searchFinished = 0;
@@ -1144,7 +1176,7 @@ void Maep::GpsMap::setSearchRequest(const QString &request)
 
 void Maep::GpsMap::setLookAt(float lat, float lon)
 {
-  g_message("move to %fx%f", lat, lon);
+  g_message("move to %fx%fe", lat, lon);
   osm_gps_map_set_center(map, lat, lon);
   // We're not updating coordinate since the signal of map will do it.
   

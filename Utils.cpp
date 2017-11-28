@@ -398,6 +398,8 @@ void MssListModel::removeRow(int nRow)
   if (m_ocRows.size() <= nRow)
     return;
 
+  if (nRow < 0)
+    return;
   beginRemoveRows(QModelIndex(), nRow, nRow);
   m_ocRows.remove(nRow, 1);
   endRemoveRows();

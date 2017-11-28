@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
   g_pTheTrackModel = new TrackModel;
   pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
-  MssListModel* pSearchResultModel = new MssListModel("name", "lat","lo");
+  MssListModel* pSearchResultModel = new MssListModel("name", "lat","lo","type");
   pSearchResultModel->Init(1);
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
 
@@ -68,6 +68,8 @@ int main(int argc, char *argv[])
   InfoListModel::m_pRoot = pU->rootObject();
 
   MssTimer oTimer([] {
+    if (InfoListModel::m_pRoot==0)
+      return;
     if (InfoListModel::m_pRoot->property("bScreenallwaysOn").toBool()==true)
       ScreenOn(true);
   });

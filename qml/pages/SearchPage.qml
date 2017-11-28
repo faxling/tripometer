@@ -20,7 +20,7 @@ SilicaListView
       anchors.fill : parent
       font.bold: idSearchResulView.currentIndex === index
       color:  "black"
-      text: model.name
+      text: "[" + model.type + "]" + model.name
     }
 
     onClicked: {
