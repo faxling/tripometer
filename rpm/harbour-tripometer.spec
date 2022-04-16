@@ -10,13 +10,13 @@ Name: harbour-tripometer
 
 # Harbour requirements.
 %define __provides_exclude_from ^%{_datadir}/.*$
-%define __requires_exclude ^libjpeg.*|libcairo.*|libpng15.*|libsoup-2.4.*|libdconf.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicui18n.*|libicuuc.*|libicudata.*|libc.*$
+%define __requires_exclude ^libjpeg.*|libcairo.*|libpng15.*|libpsl.*|libsoup-2.4.*|libdconf.*|libicui18n.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicuuc.*|libicudata.*|libc.*$
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Tripometer with Map
-Version: 2.4
+Version: 2.5
 Release: 0
 Group: Applications/Engineering
 License: GPLv2
@@ -63,6 +63,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf %{buildroot}
 %qmake5_install
 # Copy here the blacklisted libraries
+
 install -d %{buildroot}/usr/share/%{name}/lib
 install -m 644 -p /usr/lib/libjpeg.so.62 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p /usr/lib/libcairo.so.2 %{buildroot}/usr/share/%{name}/lib/
@@ -71,9 +72,10 @@ install -m 644 -p /usr/lib/libdconf.so.1 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p /usr/lib/libsqlite3.so.0 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p /usr/lib/libpixman-1.so.0 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p /usr/lib/libfreetype.so.6 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicui18n.so.52 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicuuc.so.52 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicudata.so.52 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p /usr/lib/libicui18n.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p /usr/lib/libicuuc.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p /usr/lib/libicudata.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p /usr/lib/libpsl.so %{buildroot}/usr/share/%{name}/lib/
 %files
 %defattr(644,root,root,-)
 #/usr/share/applications

@@ -26,7 +26,8 @@
 #include <QPainterPath>
 #include <QDebug>
 #include <Utils.h>
-
+#include <float.h>
+#define G_MAXFLOAT FLT_MAX
 //#include <cmath>
 #define GCONF_KEY_ZOOM       "zoom"
 #define GCONF_KEY_SOURCE     "source"
@@ -579,22 +580,14 @@ void Maep::GpsMap::paint(QPainter *painter)
 
 void Maep::GpsMap::zoomIn()
 {
-  gfloat factor;
-  
-  g_object_get(G_OBJECT(map), "factor", &factor, NULL);
-  osm_gps_map_set_factor(map, 4.f);
-  // if (factor >= 4.)
   osm_gps_map_zoom_in(map);
 }
 
 void Maep::GpsMap::zoomOut()
 {
-  gfloat factor;
   
-  g_object_get(G_OBJECT(map), "factor", &factor, NULL);
-  osm_gps_map_set_factor(map, 4.f);
-  //  if (factor <= 4.)
   osm_gps_map_zoom_out(map);
+
 }
 
 #define OSM_GPS_MAP_SCROLL_STEP     (10)
@@ -739,7 +732,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
 {
   qreal factor;
   int zoom;
-  
+  static int nTDistLast = 0;
   switch (touchEvent->type()) {
   case QEvent::TouchBegin:
   {
@@ -750,6 +743,16 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
                  !osm_gps_map_layer_button(OSM_GPS_MAP_LAYER(wiki),
                                            touchPoints.first().pos().x(),
                                            touchPoints.first().pos().y(), TRUE)));
+
+    if (touchPoints.count() == 2) {
+      // Zoom and drag case
+      const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+      const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+
+      nTDistLast = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
+
+
+    }
     factor0 = 0.f;
     // g_message("touch begin %d", dragging);
     return;
@@ -764,19 +767,20 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
       // Zoom and drag case
       const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
       const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
-      factor =
-          QLineF(touchPoint0.pos(), touchPoint1.pos()).length()
-          / QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
-      if (factor0 == 0.f)
-        factor0 = osm_gps_map_get_factor(map);
-      osm_gps_map_set_factor(map, factor0 * factor);
-      QPointF delta = (touchPoint0.pos() + touchPoint1.pos() -
-                       touchPoint0.startPos() - touchPoint1.startPos()) * 0.5;
 
-      osm_gps_map_uppdate_offset(map, delta.x(),delta.y());
 
-      mapUpdate();
-      update();
+      int nTDistNew = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
+      int nZoomL = osm_gps_map_get_zoom (map);
+      int nZoom = 0;
+      if (abs(nTDistNew - nTDistLast) > 50)
+      {
+        if (nTDistNew > nTDistLast)
+          nZoom = osm_gps_map_zoom_in (map);
+        else
+          osm_gps_map_zoom_out (map);
+        nTDistLast = nTDistNew;
+      }
+
     }
     else if (touchPoints.count() == 1) {
       // Drag case only
@@ -794,6 +798,11 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
   {
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     // g_message("touch end %d", dragging);
+    if (touchPoints.count() == 2)
+    {
+      mapUpdate();
+      update();
+    }
     if (dragging)
     {
       dragging = FALSE;
@@ -876,7 +885,7 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
 {
   MarkData t = GetMarkData(sTrackName);
 
-  if (t.nType == 0 )
+  if (t.nType == 0 || t.nType == 2)
   {
     QString sGpxFileName = GpxFullName(sTrackName);
 
@@ -884,7 +893,7 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
     MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
 
     if (track != 0)
-      osm_gps_map_add_track(map,track,nId);
+      osm_gps_map_add_track(map,track,nId,t.nType);
   }
   else
   {
@@ -928,7 +937,7 @@ void Maep::GpsMap::addDbPoint()
   if (pDBTrack == 0)
   {
     pDBTrack = maep_geodata_new();
-    osm_gps_map_add_track (map,pDBTrack, -1); // -1 The Distance tool
+    osm_gps_map_add_track (map,pDBTrack, -1,-1); // -1 The Distance tool
   }
   coord_t tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
   maep_geodata_add_trackpoint(pDBTrack,rad2deg(tPos.rlat),rad2deg(tPos.rlon),G_MAXFLOAT,0,0,NAN, NAN );
@@ -1376,7 +1385,7 @@ void Maep::GpsMap::setTrack(Maep::Track *track)
     coord_t top_left, bottom_right;
     
     /* Set track for map. */
-    osm_gps_map_add_track(map, track->get(),0);
+    osm_gps_map_add_track(map, track->get(),0,0);
     
     /* Adjust map zoom and location according to track bounding box. */
     if (maep_geodata_get_bounding_box(track->get(), &top_left, &bottom_right))

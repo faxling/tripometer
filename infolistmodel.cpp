@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include "Utils.h"
 #include "time.h"
+#include "math.h"
+
 
 QString FormatBearing(double direction )
 {

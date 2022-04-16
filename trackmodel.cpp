@@ -1,6 +1,6 @@
 #include "trackmodel.h"
 
-#include "utils.h"
+#include "Utils.h"
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
@@ -16,7 +16,8 @@ enum TRACK_ROLES_t
   DATETIME_t,
   DURATION_t,
   MAX_SPEED_t,
-  DISKSIZE_t
+  DISKSIZE_t,
+  TYPE_t
 };
 
 extern QObject* g_pTheMap;
@@ -28,41 +29,60 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
   MarkData t = GetMarkData(sTrackName);
   tNode.sName = sTrackName;
   tNode.nId = m_nLastId;
-  tNode.la = t.la;
-  tNode.lo = t.lo;
-  tNode.nType = t.nType;
-  tNode.nTime = t.nTime;
-  tNode.bIsLoaded = bIsLoaded;
-  tNode.sDateTime = FormatDateTime(t.nTime);
-  tNode.sMaxSpeed = FormatKmH(t.speed*3.6) + " km/h";
-  tNode.sDuration = FormatDuration(t.nDuration*10);
-  tNode.sLength = FormatKm(t.len / 1000.0) + " km";
-  tNode.sDiskSize = FormatNrBytes(t.nSize );
-
-  if (t.nType == 0)
+  // -1
+  if (tNode.nType >= 0)
   {
-    if (t.nDuration == 0)
+    tNode.la = t.la;
+    tNode.lo = t.lo;
+    tNode.nType = t.nType;
+    tNode.nTime = t.nTime;
+    tNode.bIsLoaded = bIsLoaded;
+    tNode.sDateTime = FormatDateTime(t.nTime);
+    tNode.sMaxSpeed = FormatKmH(t.speed*3.6) + " km/h";
+    tNode.sDuration = FormatDuration(t.nDuration*10);
+    if (tNode.nType == 1 )
+      tNode.sLength = "x";
+    else
+      tNode.sLength = FormatKm(t.len / 1000.0) + " km";
+
+    tNode.sDiskSize = FormatNrBytes(t.nSize );
+  }
+
+  if (t.nType <= 0)
+  {
+    if (t.nSize == 0)
     {
+      if (t.nType == -1)
+        t.nType = 2;
+      qDebug() << sTrackName << " Len " <<  t.len;
+      tNode.nType = t.nType;
       QString sGpxFileName = GpxFullName(sTrackName);
-      QFile oF(sGpxFileName);
-      oF.open(QIODevice::ReadWrite);
-      t.nSize = oF.size();
-      oF.close();
+      QFileInfo oFI(sGpxFileName);
+      t.nSize = oFI.size();
       tNode.sDiskSize = FormatNrBytes(t.nSize );
       MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
+      MaepGeodataTrackIter iter;
+      maep_geodata_track_iter_new(&iter, track);
+      int status = 0;
+
+      maep_geodata_track_iter_next(&iter, &status);
+      t.la = rad2deg(iter.cur->coord.rlat);
+      t.lo = rad2deg(iter.cur->coord.rlon);
+      tNode.la = t.la;
+      tNode.lo = t.lo;
+      t.nTime = oFI.lastModified().toTime_t();
+      tNode.bIsLoaded = false;
+      tNode.sDateTime = FormatDateTime(t.nTime);
       t.nDuration = maep_geodata_track_get_duration(track);
       tNode.sDuration = FormatDuration(t.nDuration* 10);
       t.len = maep_geodata_track_get_metric_length(track);
-
+      tNode.sLength = FormatKm(t.len / 1000.0) + " km";
+      tNode.bSelected = true;
       WriteMarkData(sTrackName,  t );
       g_object_unref(G_OBJECT(track));
     }
   }
-  else
-  {
-    tNode.sLength = "x";
-    tNode.sDuration = "x";
-  }
+
 
   return tNode;
 }
@@ -186,6 +206,7 @@ void TrackModel::markAllUnload()
 
 void TrackModel::unloadSelected()
 {
+
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
   for (auto& oJ : m_oc)
@@ -263,34 +284,23 @@ void TrackModel::trackDelete(int nId)
 
 void TrackModel::trackRename(QString _sTrackName, int nId)
 {
-  QString sTrackName = _sTrackName;
   for (auto& oJ : m_oc)
   {
     if (nId == oJ.nId)
     {
-      if (oJ.sName == sTrackName)
+      if (oJ.sName == _sTrackName)
         return;
-      int nCount=0;
 
-      bool bNameChanged = false;
-
-      while(QFile::exists(GpxDatFullName(sTrackName))== true)
-      {
-        bNameChanged = true;
-        sTrackName.sprintf("%ls(%d)",(wchar_t*)_sTrackName.utf16(),++nCount);
-      }
+      QString sTrackName = GpxNewName(_sTrackName);
 
       QFile::rename(GpxFullName(oJ.sName),GpxFullName(sTrackName));
       QFile::rename(GpxDatFullName(oJ.sName),GpxDatFullName(sTrackName));
       oJ.sName = sTrackName;
-      if ( bNameChanged==true )
-      {
-        QVector<int> oc;
-        oc.push_back(NAME_t);
-        QModelIndex oMI = IndexFromId(nId);
-        emit dataChanged(oMI, oMI, oc);
-      }
 
+      QVector<int> oc;
+      oc.push_back(NAME_t);
+      QModelIndex oMI = IndexFromId(nId);
+      emit dataChanged(oMI, oMI, oc);
       break;
     }
   }
@@ -302,14 +312,22 @@ int TrackModel::nextId()
   return m_nLastId + 1;
 }
 
+void TrackModel::trackImport(const QString& sPath)
+{
+  QString sTrackName = GpxNewName(JustFileNameNoExt(sPath));
+  QString s = GpxFullName(sTrackName);
+  QFile::copy(sPath, s);
+  trackAdd(sTrackName);
+}
+
 
 void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
-  int nRow = m_oc.size();
-  beginInsertRows(QModelIndex(), nRow, nRow);
+  beginInsertRows(QModelIndex(), 0, 0);
   ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
-  m_oc.append(tNode);
+  tNode.bSelected = true;
+  m_oc.push_front(tNode);
   endInsertRows();
 }
 
@@ -346,7 +364,25 @@ bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nR
   }
   return true;
 
+
 }
+
+QString FormatType(int nType)
+{
+  switch(nType)
+  {
+  case 0:
+    return "track";
+  case 1:
+    return "point";
+  case 2:
+    return "gpxTrack";
+
+  }
+  return "-";
+
+}
+
 
 QVariant TrackModel::data(const QModelIndex &index, int nRole) const
 {
@@ -370,6 +406,8 @@ QVariant TrackModel::data(const QModelIndex &index, int nRole) const
     return m_oc[index.row()].sMaxSpeed;
   case DISKSIZE_t:
     return m_oc[index.row()].sDiskSize;
+  case TYPE_t:
+    return FormatType(m_oc[index.row()].nType);
   }
 
   return QVariant();
@@ -387,5 +425,6 @@ QHash<int, QByteArray> TrackModel::roleNames() const
   roleNames.insert(DATETIME_t, "sDateTime");
   roleNames.insert(MAX_SPEED_t, "sMaxSpeed");
   roleNames.insert(DISKSIZE_t, "sDiskSize");
+  roleNames.insert(TYPE_t, "sType");
   return roleNames;
 }

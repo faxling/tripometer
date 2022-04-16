@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "Utils.h"
 
 #include <QFile>
@@ -60,6 +62,17 @@ void MssTimer::timerEvent(QTimerEvent *)
 }
 
 
+QString GpxNewName(const QString& _sTrackName)
+{
+  int nCount=0;
+  QString sTrackName = _sTrackName;
+
+  while(QFile::exists(GpxDatFullName(sTrackName))== true)
+  {
+    sTrackName.sprintf("%ls(%d)",(wchar_t*)sTrackName.utf16(),++nCount);
+  }
+  return sTrackName;
+}
 
 QString GpxDatFullName(const QString& sTrackName)
 {
@@ -75,7 +88,6 @@ QString GpxFullName(const QString& sTrackName)
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
   QString sGpxFileName;
   sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
-
   return sGpxFileName;
 }
 
@@ -229,7 +241,7 @@ QString FormatNrBytes(int nBytes) {
 
   if (nBytes >= gb)
     swprintf(szStr,30, L"%.2f GB", fBytes / gb);
-  else if (nBytes >= kb)
+  else if (nBytes >= mb)
     swprintf(szStr,30, L"%.1f MB", fBytes / mb);
   else if (nBytes >= kb)
     swprintf(szStr,30, L"%d KB", nBytes / kb);
@@ -243,8 +255,7 @@ QString FormatNrBytes(int nBytes) {
 void WriteMarkData(const QString& sTrackName, MarkData& t )
 {
   QString sGpxDatFileName = GpxDatFullName(sTrackName);
-  QFile oDat;
-  oDat.setFileName(sGpxDatFileName);
+  QFile oDat(sGpxDatFileName);
   oDat.open(QIODevice::WriteOnly);
   oDat.write((char*)&t,sizeof t);
   oDat.close();
@@ -259,6 +270,7 @@ MarkData GetMarkData(const QString& sTrackName)
   bool bRet = oDat.open(QIODevice::ReadOnly);
   MarkData tData;
   memset((void*)&tData,0,sizeof tData);
+  tData.nType = -1;
   if (bRet==false)
     return tData;
   oDat.read((char*)&tData,sizeof tData);

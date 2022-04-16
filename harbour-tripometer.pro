@@ -10,10 +10,12 @@ INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\cai
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++\4.8.3
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libsoup-2.4
 
-CONFIG +=  link_pkgconfig hide_symbols sailfishapp
+CONFIG +=  sailfishapp
 PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl
 QT += qml quick positioning sensors dbus
 LIBS += -ljpeg
+LIBS += -lpng
+
 
 QMAKE_CXXFLAGS += -std=c++0x
 
@@ -97,6 +99,7 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 #QT += qml-private core-private
 
 DISTFILES += \
+    qml/TrippBtn.qml \
     qml/pages/SmallText.qml \
     rpm/harbour-tripometer.changes \
     qml/btnSat.png \

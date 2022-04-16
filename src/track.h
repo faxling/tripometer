@@ -186,6 +186,9 @@ int maep_geodata_track_get_contents(const MaepGeodata *track_state);
 guint maep_geodata_track_get_length(const MaepGeodata *track_state);
 gfloat maep_geodata_track_get_metric_length(const MaepGeodata *track_state);
 
+gfloat maep_get_dist_in_track_metric(MaepGeodata *track_state, const coord_t* tP1 , const coord_t* tP2 );
+
+
 coord_t maep_geodata_track_get_lastpoint(const MaepGeodata *track_state);
 
 
@@ -232,6 +235,7 @@ struct MarkData
   double la;
   double len;
   int nTime;
+  // 0 track 1 point 2 imported gpx
   int nType;
   double speed;
   int nSize;

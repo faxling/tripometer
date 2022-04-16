@@ -41,6 +41,7 @@
 
 #include "osm-gps-map-types.h"
 #include "osm-gps-map.h"
+#define G_MAXFLOAT FLT_MAX
 
 #define ENABLE_DEBUG                (0)
 /* #define USER_AGENT                  "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11" */
@@ -147,6 +148,7 @@ typedef struct
   MaepGeodata *track;
   gulong dirty_sig, nwp_prop, iwp_prop;
   int m_nId;
+  int m_nType;
 } OsmTrackRef;
 
 enum
@@ -1337,15 +1339,21 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
 
   /* Draw all segments. */
 
-// -1 Distance tool
-  if (nType != -1)
-    cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.5, 0.6);
-  else
+  // -1 Distance tool
+  if (nType == -1)
     cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.0, 0.6);
+  else if (nType == 1)
+    cairo_set_source_rgba (priv->cr, 0, 0.9, 0, 0.6);
+  else if (nType == 0)
+    cairo_set_source_rgba (priv->cr, 60000.0/65535.0, 0.0, 0.5, 0.6);
+  else if (nType == 2)
+    cairo_set_source_rgba (priv->cr, 1, 0.5, 0.01, 0.6);
 
   cairo_set_line_cap (priv->cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_line_join (priv->cr, CAIRO_LINE_JOIN_ROUND);
   maep_geodata_track_iter_new(&iter, track);
+
+
   while (maep_geodata_track_iter_next(&iter, &st))
   {
     x = lon2pixel(priv->map_zoom, iter.cur->coord.rlon) - map_x0;
@@ -1419,7 +1427,7 @@ osm_gps_map_print_tracks (OsmGpsMap *map)
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
-      int nT = ((OsmTrackRef*)(tmp->data))->m_nId;
+      int nT = ((OsmTrackRef*)(tmp->data))->m_nType;
       osm_gps_map_print_track(priv, ((OsmTrackRef*)tmp->data)->track, lw,
                               &max_x, &min_x, &max_y, &min_y, nT);
       tmp = g_slist_next(tmp);
@@ -1618,7 +1626,7 @@ osm_gps_map_init (OsmGpsMap *object)
   /* memory cache for most recently used tiles */
   priv->tile_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
                                             g_free, (GDestroyNotify)cached_tile_free);
-  priv->max_tile_cache_size = 20;
+  priv->max_tile_cache_size = 80;
 
   g_log_set_handler (G_LOG_DOMAIN, G_LOG_LEVEL_MASK, my_log_handler, NULL);
 }
@@ -2795,6 +2803,7 @@ static gboolean _set_zoom(OsmGpsMap *map, int zoom)
   zoom = CLAMP(zoom, priv->min_zoom, priv->max_zoom);
   if (zoom == priv->map_zoom)
     return FALSE;
+  g_print("Set zoom %d", zoom);
 
   priv->map_zoom = zoom;
   g_object_notify_by_pspec(G_OBJECT(map), properties[PROP_ZOOM]);
@@ -2814,9 +2823,17 @@ int
 osm_gps_map_set_zoom (OsmGpsMap *map, int zoom)
 {
   g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-
   if (_set_zoom(map, zoom))
     _update_screen_pos(map);
+
+  return map->priv->map_zoom;
+}
+
+
+int
+osm_gps_map_get_zoom (OsmGpsMap *map)
+{
+  g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
 
   return map->priv->map_zoom;
 }
@@ -2825,13 +2842,32 @@ int
 osm_gps_map_zoom_in (OsmGpsMap *map)
 {
   g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
-  return osm_gps_map_set_zoom(map, map->priv->map_zoom+1);
+
+  int nLZoom = map->priv->map_zoom;
+  int nRZoom = osm_gps_map_set_zoom(map, map->priv->map_zoom+1);
+
+  if (nRZoom == nLZoom)
+  {
+
+    if (map->priv->map_factor == 1 )
+    {
+      osm_gps_map_set_factor (map, 2);
+    }
+    else if (map->priv->map_factor == 2 )
+    {
+      osm_gps_map_set_factor (map, 4);
+
+    }
+
+  }
+  return nRZoom;
 }
 
 int
 osm_gps_map_zoom_out (OsmGpsMap *map)
 {
   g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
+
   return osm_gps_map_set_zoom(map, map->priv->map_zoom-1);
 }
 
@@ -2840,7 +2876,7 @@ osm_gps_map_set_factor (OsmGpsMap *map, gfloat factor)
 {
   g_return_if_fail (OSM_IS_GPS_MAP (map));
 
-  factor = CLAMP(factor, 0.4, 2.8);
+  factor = CLAMP(factor, 0.4, 4);
   if (factor == map->priv->map_factor)
     return;
   map->priv->map_factor = factor;
@@ -2978,11 +3014,11 @@ MaepGeodata* osm_get_track(OsmGpsMap *map, int nId)
       tmp = g_slist_next(tmp);
     }
   }
-   return 0;
+  return 0;
 }
 
 void
-osm_gps_map_add_track (OsmGpsMap *map, MaepGeodata *track, int nId)
+osm_gps_map_add_track (OsmGpsMap *map, MaepGeodata *track, int nId, int nType)
 {
   OsmGpsMapPrivate *priv;
   OsmTrackRef *st;
@@ -2994,6 +3030,7 @@ osm_gps_map_add_track (OsmGpsMap *map, MaepGeodata *track, int nId)
   st = g_slice_new (OsmTrackRef);
   st->track = track;
   st->m_nId = nId;
+  st->m_nType = nType;
   st->nwp_prop =
       g_signal_connect(G_OBJECT(track), "notify::n-waypoints",
                        G_CALLBACK(_on_track_changed), (gpointer)map);

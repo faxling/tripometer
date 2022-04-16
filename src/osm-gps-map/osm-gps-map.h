@@ -138,6 +138,7 @@ void        osm_gps_map_set_center                  (OsmGpsMap *map, float latit
 int         osm_gps_map_set_zoom                    (OsmGpsMap *map, int zoom);
 int         osm_gps_map_zoom_in                     (OsmGpsMap *map);
 int         osm_gps_map_zoom_out                    (OsmGpsMap *map);
+int         osm_gps_map_get_zoom                    (OsmGpsMap *map);
 void        osm_gps_map_set_factor                  (OsmGpsMap *map, gfloat factor);
 gfloat      osm_gps_map_get_factor                  (OsmGpsMap *map);
 void        osm_gps_map_auto_center_at              (OsmGpsMap *map,
@@ -146,8 +147,8 @@ void        osm_gps_map_auto_center_at              (OsmGpsMap *map,
 void        osm_gps_map_adjust_to                   (OsmGpsMap *map, coord_t *top_left, coord_t *bottom_right);
 void        osm_gps_map_get_tile_xy_at              (OsmGpsMap *map,
                                                      float lat, float lon,
-                                                     int *zoom, int *x, int *y);
-void        osm_gps_map_add_track                   (OsmGpsMap *map, MaepGeodata *track, int nId);
+                                                     int *zoom, int *x, int *y);      //      -1  = Db,        0 = track , 1 = point , 2 = imported
+void        osm_gps_map_add_track                   (OsmGpsMap *map, MaepGeodata *track, int nId, int nType);
 void        osm_gps_map_uppdate_offset              (OsmGpsMap *map, int pixel_x, int pixel_y);
 void        osm_gps_map_get_offset                  (OsmGpsMap *map, int *pixel_x, int *pixel_y);
 void        osm_gps_map_clear_tracks                (OsmGpsMap *map);

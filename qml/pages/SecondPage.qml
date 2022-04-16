@@ -2,19 +2,17 @@ import QtQuick 2.0
 // import QtQuick.Controls 1.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
-//import QtQml 2.2
 
+//import QtQml 2.2
 SilicaListView {
 
   id: idObjectList
 
-  Component
-  {
+  Component {
     id: idDetailsFactory
-    Rectangle
-    {
-      y:40
-      x:20
+    Rectangle {
+      y: 40
+      x: 20
       property alias sName: idNametext1.text
       property alias sDuration: idNametext2.text
       property alias sLength: idNametext3.text
@@ -25,158 +23,138 @@ SilicaListView {
 
       id: idDetails
       radius: 5
-      width: idObjectList.width -40
-      height:215
-      color:"steelblue"
+      width: idObjectList.width - 40
+      height: 215
+      color: "steelblue"
 
-      Column
-      {
-        y : 10
-        x : 20
-        Row
-        {
-          SmallText
-          {
-            text:"Name:"
+      Column {
+        y: 10
+        x: 20
+        Row {
+          SmallText {
+            text: "Name:"
           }
-          SmallText
-          {
-            id:idNametext1
+          SmallText {
+            id: idNametext1
           }
         }
 
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Duration:"
           }
-          SmallText
-          {
-            id : idNametext2
+          SmallText {
+            id: idNametext2
           }
         }
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Distance:"
           }
-          SmallText
-          {
-            id : idNametext3
+          SmallText {
+            id: idNametext3
           }
         }
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Date:"
           }
-          SmallText
-          {
-            id : idNametext4
+          SmallText {
+            id: idNametext4
           }
         }
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Max Speed:"
           }
-          SmallText
-          {
-            id : idNametext5
+          SmallText {
+            id: idNametext5
           }
         }
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Size:"
           }
-          SmallText
-          {
-            id : idNametext7
+          SmallText {
+            id: idNametext7
           }
         }
-        Row
-        {
-          SmallText
-          {
+        Row {
+          SmallText {
             text: "Type:"
           }
-          SmallText
-          {
-            id : idNametext6
+          SmallText {
+            id: idNametext6
           }
         }
       }
+         // @disable-check M301
       Button {
-        y:100
+        y: 100
         anchors.right: parent.right
         anchors.rightMargin: 20
         color: "black"
         width: 110
         text: "OK"
-        onClicked:
-        {
+        onClicked: {
           idDetails.destroy()
         }
       }
     }
-
   }
+
   // anchors.fill: parent
+
   /*
     x:100
     */
-
-  width: parent.width;
+  width: parent.width
   height: 800
 
   model: idTrackModel
-
+// @disable-check M301
   delegate: ListItem {
 
     contentHeight: Theme.iconSizeSmall + Theme.paddingMedium
     width: ListView.view.width
     menu: contextMenu
-    Rectangle
-    {
+    Rectangle {
 
       color: "chartreuse"
-     // x:2
-      y:Theme.paddingMedium
-      width:Theme.iconSizeSmall
-      height:Theme.iconSizeSmall
-      radius:3
+      // x:2
+      y: Theme.paddingMedium
+      width: Theme.iconSizeSmall
+      height: Theme.iconSizeSmall
+      radius: 3
       visible: bSelected
     }
-    Row
-    {
-      id:idRow
+    Row {
+      id: idRow
 
       // x:20
+      // @disable-check M301
+      TextField {
+        id: idEditText
+        width: Theme.itemSizeLarge * 3
 
-      TextField   {
-        id:idEditText
-        width:Theme.itemSizeLarge*3
-
-        color:  "black"
+        color: "black"
         onClicked: {
           bSelected = !bSelected
         }
-        RemorseItem { id: remorse }
+        // @disable-check M301
+        RemorseItem {
+          id: remorse
+        }
 
-        onTextChanged:{
-          if (readOnly===true)
+        onTextChanged: {
+          // @disable-check M325
+          if (readOnly === true)
             return
           if (text === aValue)
             return
 
-          idTrackModel.trackRename(text,nId)
-          mainMap.renameTrack(text,nId);
+          idTrackModel.trackRename(text, nId)
+          mainMap.renameTrack(text, nId)
         }
 
         Keys.onPressed: {
@@ -185,60 +163,55 @@ SilicaListView {
           }
         }
 
-
         readOnly: true
-        //font.italic: bSelected
 
+        //font.italic: bSelected
         font.bold: bLoaded
 
         text: aValue
       }
-
-      Label
-      {
+         // @disable-check M301
+      Label {
         color: "black"
-        y:10
+        y: 10
         text: sLength
       }
-
     }
     Component {
       id: contextMenu
+               // @disable-check M301
       ContextMenu {
+                 // @disable-check M301
         MenuItem {
           text: "Delete"
           onClicked: {
             var idx = nId
             var oT = idTrackModel
             var oM = mainMap
-            remorse.execute(idEditText, "Deleting", function()
-            {
+            remorse.execute(idEditText, "Deleting", function () {
               oT.trackDelete(idx)
               oM.unloadTrack(idx)
-            }  )
-
+            })
           }
         }
+                 // @disable-check M301
         MenuItem {
           text: "Load/Unload"
           onClicked: {
-            if (bLoaded===false)
-            {
+            if (!bLoaded) {
               idTrackModel.trackLoaded(nId)
 
               // invocable function
               mainMap.loadTrack(aValue, nId)
-            }
-            else
-            {
+            } else {
               idTrackModel.trackUnloaded(nId)
 
               // invocable function
               mainMap.unloadTrack(nId)
             }
-
           }
         }
+                 // @disable-check M301
         MenuItem {
           text: "Rename"
           onClicked: {
@@ -247,6 +220,7 @@ SilicaListView {
             idEditText.forceActiveFocus()
           }
         }
+                 // @disable-check M301
         MenuItem {
           text: "Center"
           onClicked: {
@@ -254,8 +228,9 @@ SilicaListView {
             idTrackModel.trackCenter(nId)
           }
         }
+                 // @disable-check M301
         MenuItem {
-          id:idMenue4
+          id: idMenue4
           text: "Details"
           onClicked: {
             var o = idDetailsFactory.createObject(idObjectList)
@@ -265,15 +240,12 @@ SilicaListView {
             o.sDateTime = sDateTime
             o.sMaxSpeed = sMaxSpeed
             o.sDiskSize = sDiskSize
-            o.sType = sLength === "x" ? "point" : "track"
+            o.sType = sType
           }
         }
       }
     }
   }
-
+         // @disable-check M301
   VerticalScrollDecorator {}
 }
-
-
-
