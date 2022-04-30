@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 //import harbour.maep.qt 1.0
-
 Page {
   id: page
 
@@ -10,7 +9,6 @@ Page {
     height: 120
     width: page.width
     PullDownMenu {
-
       MenuItem {
         text: "Nautical Units"
         font.bold: nUnit === 1
@@ -27,7 +25,6 @@ Page {
           idListModel.klicked2(5)
         }
       }
-
 
       MenuItem {
         text: bScreenallwaysOn ? "Turn On Powersaver" : "Turn Off Powersaver"
@@ -48,6 +45,7 @@ Page {
           idListModel.klicked2(2)
         }
       }
+
       MenuItem {
         text: "Reset"
         onClicked: {
@@ -73,7 +71,6 @@ Page {
     model: idListModel
     anchors.fill: parent
     anchors.topMargin: 120
-
     delegate: ListItem {
       id: delegate
       height: Theme.itemSizeMedium

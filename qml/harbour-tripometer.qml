@@ -23,7 +23,6 @@ ApplicationWindow {
     //CoverBackground  {
     //  anchors.fill: parent
     // color: Qt.rgba(0, 0, 1, 0.4)
-    // @disable-check M301
     Label {
       anchors.topMargin: 30
       anchors.horizontalCenter: parent.horizontalCenter
@@ -34,7 +33,6 @@ ApplicationWindow {
       anchors.centerIn: parent
       source: "harbour-tripometer.png"
     }
-    // @disable-check M301
     Label {
       anchors.top: idIcon.bottom
       anchors.horizontalCenter: parent.horizontalCenter
@@ -45,7 +43,7 @@ ApplicationWindow {
   Component {
 
     id: idMapComponent
-    // @disable-check M301
+
     Page {
       id: idMapPage
       backNavigation: false
@@ -143,11 +141,23 @@ ApplicationWindow {
           }
         }
         TrippBtn {
-          id: idCenter
+          id: idCenterde
           src: "btnCenter.png"
           onClicked: {
             idMap.auto_center = !idMap.auto_center
           }
+
+          Rectangle
+          {
+            visible: idMap.auto_center
+            anchors.centerIn : parent
+
+            color:"#f9535c"
+            height:17
+            width:17
+            radius:3
+          }
+
         }
         TrippBtn {
           id: idMarker
@@ -224,7 +234,7 @@ ApplicationWindow {
 
           id: idSearchRow
           x: Theme.itemSizeLarge
-          // @disable-check M301
+
           TextField {
             id: idSearchText
             color: "black"
@@ -247,7 +257,7 @@ ApplicationWindow {
             }
             */
           }
-          // @disable-check M301
+
           Button {
             color: "black"
             anchors.verticalCenter: parent.verticalCenter
@@ -262,7 +272,6 @@ ApplicationWindow {
 
       Component {
         id: idDownloadPickerPage
-        // @disable-check M301
         DownloadPickerPage {
           title: "Select gpx download"
 
@@ -291,7 +300,7 @@ ApplicationWindow {
         width: parent.width
         height: Theme.itemSizeLarge * 5
         dock: Dock.Bottom
-        // @disable-check M301
+
         RemorseItem {
           id: remorse
         }
@@ -308,7 +317,6 @@ ApplicationWindow {
           x: 30
           y: 10
           spacing: 10
-          // @disable-check M301
           Button {
             width: Theme.itemSizeLarge
             text: "Delete"
@@ -321,28 +329,28 @@ ApplicationWindow {
               })
             }
           }
-          // @disable-check M301
+
           Button {
             color: "black"
             width: Theme.itemSizeLarge
             text: "Load"
             onClicked: idTrackModel.loadSelected()
           }
-          // @disable-check M301
+
           Button {
             color: "black"
             width: Theme.itemSizeLarge
             text: "Unload"
             onClicked: idTrackModel.unloadSelected()
           }
-          // @disable-check M301
+
           Button {
             color: "black"
             width: Theme.itemSizeLarge
             text: "Save"
             onClicked: idMap.saveTrack(idTrackModel.nextId())
           }
-          // @disable-check M301
+
           Button {
             color: "black"
             width: Theme.itemSizeLarge
@@ -359,7 +367,7 @@ ApplicationWindow {
   }
 
   initialPage: Component {
-    // @disable-check M301
+
     FirstPage {
       Rectangle {
         id: idStartMsgBox
@@ -370,7 +378,7 @@ ApplicationWindow {
 
         color: Theme.highlightBackgroundColor
         opacity: 0.9
-        // @disable-check M301
+
         Button {
           y: 100
           anchors.left: parent.left
@@ -383,7 +391,7 @@ ApplicationWindow {
             idStartMsgBox.visible = false
           }
         }
-        // @disable-check M301
+
         Button {
           y: 100
           anchors.right: parent.right

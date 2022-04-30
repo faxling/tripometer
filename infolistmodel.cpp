@@ -57,7 +57,7 @@ QString FormatBearing(double direction )
   }
 
   char szStr[20];
-  sprintf(szStr, "%s %.1f",dirStr,direction);
+  sprintf(szStr, "%s %d",dirStr,(int)direction);
   return szStr;
 
 }
@@ -273,6 +273,17 @@ void InfoListModel::CompassReadingChanged()
 {
   double fAz = m_oCompass.reading()->azimuth();
   double fLevel = m_oCompass.reading()->calibrationLevel();
+
+  if (fLevel < 0.6)
+    return;
+
+  static double fLast = 0;
+
+  if (abs(fLast-fAz) < 1)
+    return;
+
+  fLast = fAz;
+
   for (int i = 0; i < 2;++i)
     m_nData[i][COMPASS].f = FormatBearing(fAz,fLevel);
 

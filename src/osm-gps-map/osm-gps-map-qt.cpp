@@ -24,6 +24,7 @@
 #include "infolistmodel.h"
 #include <QPainter>
 #include <QPainterPath>
+
 #include <QDebug>
 #include <Utils.h>
 #include <float.h>
@@ -196,7 +197,7 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
 {
   char *path, *oldPath;
   g_pTheMap = this;
-
+  m_oSynkTimer.start();
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
@@ -204,7 +205,7 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
-  bool wikipedia = gconf_get_bool(GCONF_KEY_WIKIPEDIA, FALSE);
+  bool wikipedia = FALSE ;// gconf_get_bool(GCONF_KEY_WIKIPEDIA, FALSE);
   bool track = gconf_get_bool(GCONF_KEY_TRACK_CAPTURE, FALSE);
   
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
@@ -538,7 +539,10 @@ void Maep::GpsMap::paintTo(QPainter *painter, int width, int height)
   
   if (!img || !surf)
     return;
-  
+
+
+
+
   w = cairo_image_surface_get_width(surf);
   h = cairo_image_surface_get_height(surf);
   // g_message("Paint to %dx%d from %fx%f - %fx%f.", width, height,
@@ -553,10 +557,20 @@ void Maep::GpsMap::paintTo(QPainter *painter, int width, int height)
 void Maep::GpsMap::paint(QPainter *painter)
 {
   int w;
+
+  bool bUpdate = true;
+  if (abs(m_oSynkTimer.elapsed() - m_nLastPaint) < 100)
+    bUpdate = false;
+
+  m_nLastPaint = m_oSynkTimer.elapsed();
+
   QPainterPath path;
-  
-  if (mapSized())
-    mapUpdate();
+  StopWatch  o("paint %1");
+  if (bUpdate)
+  {
+    if (mapSized())
+      mapUpdate();
+  }
   paintTo(painter, width(), height());
   
   return;
@@ -580,13 +594,13 @@ void Maep::GpsMap::paint(QPainter *painter)
 
 void Maep::GpsMap::zoomIn()
 {
-  osm_gps_map_zoom_in(map);
+  osm_gps_map_magnifye(map,1);
 }
 
 void Maep::GpsMap::zoomOut()
 {
   
-  osm_gps_map_zoom_out(map);
+  osm_gps_map_magnifye(map,-1);
 
 }
 
@@ -730,67 +744,62 @@ void Maep::GpsMap::keyPressEvent(QKeyEvent * event)
 // }
 void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
 {
-  qreal factor;
-  int zoom;
   static int nTDistLast = 0;
+  static int nLastDeltaX = 0;
+  static int nLastDeltaY = 0;
   switch (touchEvent->type()) {
   case QEvent::TouchBegin:
   {
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     // Drag/zoom if one or two finger and no wiki layer.
-    dragging = (touchPoints.count() == 2 ||
-                (touchPoints.count() == 1 &&
-                 !osm_gps_map_layer_button(OSM_GPS_MAP_LAYER(wiki),
-                                           touchPoints.first().pos().x(),
-                                           touchPoints.first().pos().y(), TRUE)));
+    dragging =  touchPoints.count() == 1;
+    zooming = false;
+    nLastDeltaX = 0;
+    nLastDeltaY = 0;
 
-    if (touchPoints.count() == 2) {
-      // Zoom and drag case
-      const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
-      const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
-
-      nTDistLast = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
-
-
-    }
-    factor0 = 0.f;
     // g_message("touch begin %d", dragging);
     return;
   }
   case QEvent::TouchUpdate:
   {
     // g_message("touch update %d", haveMouseEvent);
-    if (!dragging)
-      return;
+
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    if (touchPoints.count() == 2) {
+    if (touchPoints.count() == 2 && dragging) {
+      dragging = false;
+      zooming = true;;
+      const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+      const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+      nTDistLast = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
+    }
+    if (dragging) {
+      // Drag case only
+      const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+      QPointF delta = touchPoint0.pos() - touchPoint0.startPos();
+      osm_gps_map_uppdate_offset(map, delta.x() - nLastDeltaX ,delta.y() -nLastDeltaY);
+      nLastDeltaX = delta.x();
+      nLastDeltaY = delta.y();
+      osm_gps_map_scroll(map);
+      osm_gps_map_uppdate_offset(map,0,0);
+      /*
+      mapUpdate();
+      update();
+      */
+      // factor0 = 0.f;
+    } else if (zooming) {
       // Zoom and drag case
       const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
       const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
-
-
       int nTDistNew = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
-      int nZoomL = osm_gps_map_get_zoom (map);
-      int nZoom = 0;
       if (abs(nTDistNew - nTDistLast) > 50)
       {
         if (nTDistNew > nTDistLast)
-          nZoom = osm_gps_map_zoom_in (map);
+          osm_gps_map_zoom_in (map);
         else
           osm_gps_map_zoom_out (map);
         nTDistLast = nTDistNew;
       }
 
-    }
-    else if (touchPoints.count() == 1) {
-      // Drag case only
-      const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
-      QPointF delta = touchPoint0.pos() - touchPoint0.startPos();
-      osm_gps_map_uppdate_offset(map, delta.x(),delta.y());
-      mapUpdate();
-      update();
-      
-      factor0 = 0.f;
     }
     return;
   }
@@ -806,11 +815,11 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
     if (dragging)
     {
       dragging = FALSE;
-      osm_gps_map_scroll(map);
-      osm_gps_map_uppdate_offset(map,0,0);
+
+
 
       g_object_set(map, "auto-center", FALSE, NULL);
-      
+      /*
       // Adjust zoom and factor.
       factor = osm_gps_map_get_factor(map);
       if (factor >= 1.5) {
@@ -822,6 +831,9 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
         if (osm_gps_map_zoom_out(map) != zoom)
           osm_gps_map_set_factor(map, factor * 2.);
       }
+
+
+      */
     }
     else if (touchPoints.count() == 1)
       osm_gps_map_layer_button(OSM_GPS_MAP_LAYER(wiki),
@@ -1261,13 +1273,18 @@ void Maep::GpsMap::compassReadingChanged()
   if (compassEnabled() && compass.isActive())
   {
     QCompassReading *compass_reading = compass.reading();
+    double fLevel = compass_reading->calibrationLevel();
+
+    if (fLevel < 0.6)
+      return;
+
+
     if (compass_reading)
     {
       double azimuth = compass_reading->azimuth();
-      
       osm_gps_map_set_azimuth(osd,azimuth );
       osd_render_scale(osd) ;
-      if (lastAzimuth == -1. || std::abs(lastAzimuth - azimuth) > 2)
+      if (std::abs(lastAzimuth - azimuth) > 2)
       {
         maep_layer_gps_set_azimuth(lgps, static_cast<gfloat>(azimuth));
         lastAzimuth = azimuth;
@@ -1484,5 +1501,5 @@ void Maep::GpsMapCover::paint(QPainter *painter)
     return;
   
   g_message("repainting cover %fx%f!", width(), height());
-  map_->paintTo(painter, width(), height());
+  //  map_->paintTo(painter, width(), height());
 }

@@ -529,8 +529,8 @@ int main(int argc, char *argv[]) {
   gtk_box_pack_start_defaults(GTK_BOX(vbox), map);
 
   /* track_restore(map); */
-  if(gconf_get_bool("wikipedia", FALSE))
-    menu_check_set_active(window, "Wikipedia", TRUE);
+//  if(gconf_get_bool("wikipedia", FALSE))
+    menu_check_set_active(window, "Wikipedia", FALSE);
 
   /* heart rate data, disable by default */
   if(gconf_get_bool(HXM_ENABLED, FALSE)) 

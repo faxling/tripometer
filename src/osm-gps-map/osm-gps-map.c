@@ -2838,28 +2838,24 @@ osm_gps_map_get_zoom (OsmGpsMap *map)
   return map->priv->map_zoom;
 }
 
+void
+osm_gps_map_magnifye (OsmGpsMap *map, int nOrder)
+{
+
+  if (nOrder > 0)
+    osm_gps_map_set_factor (map, map->priv->map_factor + 0.5);
+  else
+    osm_gps_map_set_factor (map, map->priv->map_factor - 0.5);
+}
+
 int
 osm_gps_map_zoom_in (OsmGpsMap *map)
 {
   g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
 
-  int nLZoom = map->priv->map_zoom;
+//  int nLZoom = map->priv->map_zoom;
   int nRZoom = osm_gps_map_set_zoom(map, map->priv->map_zoom+1);
 
-  if (nRZoom == nLZoom)
-  {
-
-    if (map->priv->map_factor == 1 )
-    {
-      osm_gps_map_set_factor (map, 2);
-    }
-    else if (map->priv->map_factor == 2 )
-    {
-      osm_gps_map_set_factor (map, 4);
-
-    }
-
-  }
   return nRZoom;
 }
 
@@ -2876,7 +2872,7 @@ osm_gps_map_set_factor (OsmGpsMap *map, gfloat factor)
 {
   g_return_if_fail (OSM_IS_GPS_MAP (map));
 
-  factor = CLAMP(factor, 0.4, 4);
+  factor = CLAMP(factor, 2, 4);
   if (factor == map->priv->map_factor)
     return;
   map->priv->map_factor = factor;

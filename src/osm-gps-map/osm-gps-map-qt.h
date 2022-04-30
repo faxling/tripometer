@@ -27,6 +27,7 @@
 #include <QGeoPositionInfoSource>
 #include <QColor>
 #include <QCompass>
+#include <QElapsedTimer>
 #include <cairo.h>
 #include "../misc.h"
 #include "../search.h"
@@ -559,11 +560,12 @@ class GpsMap : public QQuickPaintedItem
   guint searchFinished;
 
   gboolean dragging;
-  float factor0;
+  gboolean zooming;
+  // float factor0;
 
   /* Wiki entry. */
   bool wiki_enabled;
-  MaepWikiContext *wiki;
+  MaepWikiContext *wiki ;
   GeonamesEntry *wiki_entry;
 
   /* Screen display. */
@@ -583,7 +585,8 @@ class GpsMap : public QQuickPaintedItem
   bool track_capture;
   Maep::Track *track_current;
 
-
+  QElapsedTimer m_oSynkTimer;
+  int m_nLastPaint = 0;
   /* Marker images */
   QMap<int, cairo_surface_t *> m_ocMarkers;
 };

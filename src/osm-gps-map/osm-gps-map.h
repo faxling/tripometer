@@ -137,6 +137,7 @@ void        osm_gps_map_set_mapcenter               (OsmGpsMap *map, float latit
 void        osm_gps_map_set_center                  (OsmGpsMap *map, float latitude, float longitude);
 int         osm_gps_map_set_zoom                    (OsmGpsMap *map, int zoom);
 int         osm_gps_map_zoom_in                     (OsmGpsMap *map);
+void        osm_gps_map_magnifye                    (OsmGpsMap *map, int nOrder);
 int         osm_gps_map_zoom_out                    (OsmGpsMap *map);
 int         osm_gps_map_get_zoom                    (OsmGpsMap *map);
 void        osm_gps_map_set_factor                  (OsmGpsMap *map, gfloat factor);

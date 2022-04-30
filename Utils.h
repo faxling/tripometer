@@ -43,6 +43,26 @@ int IndexOf(const T& o, const QVector<T>& oc)
 }
 
 class QBasicTimer;
+
+class QElapsedTimer;
+class StopWatch
+{
+public:
+  // Use %1 for time
+  StopWatch(const QString& sMsg);
+  StopWatch();
+  ~StopWatch();
+  void Pause();
+  void Continue();
+  void Stop();
+  double StopTimeSec();
+
+private:
+  bool m_bMsgPrinted = false;
+  QString m_sMsg;
+  QElapsedTimer* m_oTimer;
+};
+
 class MssTimer : public QObject
 {
 public:

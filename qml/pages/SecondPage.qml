@@ -88,7 +88,7 @@ SilicaListView {
           }
         }
       }
-         // @disable-check M301
+
       Button {
         y: 100
         anchors.right: parent.right
@@ -112,7 +112,7 @@ SilicaListView {
   height: 800
 
   model: idTrackModel
-// @disable-check M301
+
   delegate: ListItem {
 
     contentHeight: Theme.iconSizeSmall + Theme.paddingMedium
@@ -132,7 +132,7 @@ SilicaListView {
       id: idRow
 
       // x:20
-      // @disable-check M301
+
       TextField {
         id: idEditText
         width: Theme.itemSizeLarge * 3
@@ -141,15 +141,17 @@ SilicaListView {
         onClicked: {
           bSelected = !bSelected
         }
-        // @disable-check M301
+
         RemorseItem {
           id: remorse
         }
 
         onTextChanged: {
-          // @disable-check M325
+
           if (readOnly === true)
             return
+
+          // @disable-check M325
           if (text === aValue)
             return
 
@@ -170,7 +172,6 @@ SilicaListView {
 
         text: aValue
       }
-         // @disable-check M301
       Label {
         color: "black"
         y: 10
@@ -179,9 +180,7 @@ SilicaListView {
     }
     Component {
       id: contextMenu
-               // @disable-check M301
       ContextMenu {
-                 // @disable-check M301
         MenuItem {
           text: "Delete"
           onClicked: {
@@ -194,7 +193,6 @@ SilicaListView {
             })
           }
         }
-                 // @disable-check M301
         MenuItem {
           text: "Load/Unload"
           onClicked: {
@@ -211,7 +209,6 @@ SilicaListView {
             }
           }
         }
-                 // @disable-check M301
         MenuItem {
           text: "Rename"
           onClicked: {
@@ -220,7 +217,6 @@ SilicaListView {
             idEditText.forceActiveFocus()
           }
         }
-                 // @disable-check M301
         MenuItem {
           text: "Center"
           onClicked: {
@@ -228,7 +224,7 @@ SilicaListView {
             idTrackModel.trackCenter(nId)
           }
         }
-                 // @disable-check M301
+
         MenuItem {
           id: idMenue4
           text: "Details"
@@ -246,6 +242,6 @@ SilicaListView {
       }
     }
   }
-         // @disable-check M301
+
   VerticalScrollDecorator {}
 }

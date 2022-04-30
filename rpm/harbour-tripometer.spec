@@ -80,7 +80,6 @@ install -m 644 -p /usr/lib/libpsl.so %{buildroot}/usr/share/%{name}/lib/
 %defattr(644,root,root,-)
 #/usr/share/applications
 #/usr/share/icons
-#/usr/share/%{name}
 #/usr/bin
 
 # eg /usr/share/applications/harbour-tripometer.desktop
