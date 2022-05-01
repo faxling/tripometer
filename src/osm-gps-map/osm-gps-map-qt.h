@@ -557,7 +557,6 @@ class GpsMap : public QQuickPaintedItem
 
   MaepSearchContext *search;
   QList<GeonamesPlace*> searchRes;
-  guint searchFinished;
 
   gboolean dragging;
   gboolean zooming;
@@ -585,10 +584,8 @@ class GpsMap : public QQuickPaintedItem
   bool track_capture;
   Maep::Track *track_current;
 
-  QElapsedTimer m_oSynkTimer;
-  int m_nLastPaint = 0;
   /* Marker images */
-  QMap<int, cairo_surface_t *> m_ocMarkers;
+  QHash<int, cairo_surface_t *> m_ocMarkers;
 };
 
 class GpsMapCover : public QQuickPaintedItem

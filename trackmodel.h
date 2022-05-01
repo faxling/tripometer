@@ -73,6 +73,7 @@ private:
 
   ModelDataNode GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded);
 
+  void UpdateSelected();
   QVector<ModelDataNode> m_oc;
   int m_nLastId;
 

@@ -197,7 +197,6 @@ Maep::GpsMap::GpsMap(QQuickItem *parent)
 {
   char *path, *oldPath;
   g_pTheMap = this;
-  m_oSynkTimer.start();
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
@@ -437,7 +436,18 @@ void Maep::GpsMap::ensureOverlay(Source source)
 static void osm_gps_map_qt_repaint(Maep::GpsMap *widget, OsmGpsMap *map)
 {
   Q_UNUSED(map);
-  
+  static QElapsedTimer oLastCall;
+
+  if (oLastCall.isValid() == false)
+    oLastCall.start();
+
+  if (oLastCall.elapsed() < 100)
+  {
+    return;
+  }
+  oLastCall.start();
+
+
   // g_message("got dirty");
   widget->mapUpdate();
   widget->update();
@@ -480,7 +490,7 @@ void Maep::GpsMap::mapUpdate()
 {
   if (!cr)
     return;
-  
+
   cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(cr);
   
@@ -540,9 +550,6 @@ void Maep::GpsMap::paintTo(QPainter *painter, int width, int height)
   if (!img || !surf)
     return;
 
-
-
-
   w = cairo_image_surface_get_width(surf);
   h = cairo_image_surface_get_height(surf);
   // g_message("Paint to %dx%d from %fx%f - %fx%f.", width, height,
@@ -558,19 +565,12 @@ void Maep::GpsMap::paint(QPainter *painter)
 {
   int w;
 
-  bool bUpdate = true;
-  if (abs(m_oSynkTimer.elapsed() - m_nLastPaint) < 100)
-    bUpdate = false;
-
-  m_nLastPaint = m_oSynkTimer.elapsed();
-
   QPainterPath path;
-  StopWatch  o("paint %1");
-  if (bUpdate)
-  {
-    if (mapSized())
-      mapUpdate();
-  }
+
+
+  if (mapSized())
+    mapUpdate();
+
   paintTo(painter, width(), height());
   
   return;
@@ -905,7 +905,7 @@ void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
     MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
 
     if (track != 0)
-      osm_gps_map_add_track(map,track,nId,t.nType);
+      osm_gps_map_add_track(map,track,nId,2);
   }
   else
   {
@@ -1161,6 +1161,8 @@ void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList *plac
     pResultModel->updateItem(nRow,3,p->country);
     ++nRow;
   }
+
+  InfoListModel::m_pRoot->setProperty("nSearchBusy",false);
 }
 
 static void osm_gps_map_qt_places(Maep::GpsMap *widget, MaepSearchContextSource source,
@@ -1189,7 +1191,6 @@ void Maep::GpsMap::setSearchRequest(const QString &request)
 
   searchRes.clear();
   
-  searchFinished = 0;
   maep_search_context_request(search, request.toLocal8Bit().data(),
                               MaepSearchContextNominatim
                               );
@@ -1270,6 +1271,19 @@ void Maep::GpsMap::compassReadingChanged()
 {
   // Apparently this event fires spuriously once when the class is initialized, so double-check
   // if we're really activated.
+
+  static QElapsedTimer oLastCall;
+
+  if (oLastCall.isValid() == false)
+    oLastCall.start();
+
+  if (oLastCall.elapsed() < 100)
+    return;
+
+
+  oLastCall.start();
+
+
   if (compassEnabled() && compass.isActive())
   {
     QCompassReading *compass_reading = compass.reading();

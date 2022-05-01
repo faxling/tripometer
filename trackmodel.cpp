@@ -1,5 +1,5 @@
 #include "trackmodel.h"
-
+#include "infolistmodel.h"
 #include "Utils.h"
 #include <QStandardPaths>
 #include <QDir>
@@ -213,7 +213,6 @@ void TrackModel::unloadSelected()
   {
     if (oJ.bSelected == true)
     {
-
       oJ.bIsLoaded = false;
       QMetaObject::invokeMethod(g_pTheMap, "unloadTrack",  Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
@@ -246,6 +245,9 @@ void TrackModel::deleteSelected()
       return;
 
   }
+
+  UpdateSelected();
+
 }
 QModelIndex TrackModel::IndexFromId(int nId) const
 {
@@ -280,6 +282,7 @@ void TrackModel::trackDelete(int nId)
   beginRemoveRows(QModelIndex(), nRow, nRow);
   m_oc.remove(nRow, 1);
   endRemoveRows();
+  UpdateSelected();
 }
 
 void TrackModel::trackRename(QString _sTrackName, int nId)
@@ -329,6 +332,7 @@ void TrackModel::trackAdd(const QString& sTrackName)
   tNode.bSelected = true;
   m_oc.push_front(tNode);
   endInsertRows();
+  UpdateSelected();
 }
 
 QModelIndex TrackModel::index(int row , int column , const QModelIndex&) const
@@ -351,6 +355,14 @@ int TrackModel::rowCount(const QModelIndex &) const
   return m_oc.size();
 }
 
+void TrackModel::UpdateSelected()
+{
+  int nCount = 0;
+  for (auto& oJ : m_oc)
+    nCount += oJ.bSelected ? 1 :0;
+
+  InfoListModel::m_pRoot->setProperty("nSelectCount",nCount);
+}
 
 
 bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nRole)
@@ -361,10 +373,10 @@ bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nR
     QVector<int> oc;
     oc.push_back(SELECTED_t);
     emit dataChanged(index, index, oc);
+    UpdateSelected();
+
   }
   return true;
-
-
 }
 
 QString FormatType(int nType)

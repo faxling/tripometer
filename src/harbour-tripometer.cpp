@@ -21,7 +21,7 @@
 
 #include "infolistmodel.h"
 #include "trackmodel.h"
-#include "utils.h"
+#include "Utils.h"
 
 
 QObject* g_pTheTrackModel;
@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
   oTimer.Start(1000*30);
   pInfoListModel->klicked2(5);
   app->exec();
+
   ScreenOn(false);
   oTimer.Stop();
   delete pU;

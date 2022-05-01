@@ -174,6 +174,10 @@ void InfoListModel::UpdateOnTimer()
   m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
 
   emit dataChanged(index(DURATION), index(DURATION),oc);
+
+  // oc.push_back(ValueRole);
+
+  emit dataChanged(index(COMPASS), index(COMPASS),oc);
 }
 
 
@@ -277,20 +281,10 @@ void InfoListModel::CompassReadingChanged()
   if (fLevel < 0.6)
     return;
 
-  static double fLast = 0;
-
-  if (abs(fLast-fAz) < 1)
-    return;
-
-  fLast = fAz;
 
   for (int i = 0; i < 2;++i)
     m_nData[i][COMPASS].f = FormatBearing(fAz,fLevel);
 
-  QVector<int> oc;
-  oc.push_back(ValueRole);
-
-  emit dataChanged(index(COMPASS), index(COMPASS),oc);
 }
 
 // Share for maep

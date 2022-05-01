@@ -12,6 +12,8 @@ ApplicationWindow {
   property string sDur
   property string sDirname: "track name"
   property bool bIsPause: false
+  property int nSelectCount
+  property bool nSearchBusy
   property bool bScreenallwaysOn: false
   // 0 = km/h 1 kts
   property int nUnit: 0
@@ -151,7 +153,6 @@ ApplicationWindow {
           {
             visible: idMap.auto_center
             anchors.centerIn : parent
-
             color:"#f9535c"
             height:17
             width:17
@@ -180,6 +181,10 @@ ApplicationWindow {
 
               idTrackModel.markAllUnload()
               idMap.setTrack(o)
+            }
+            else
+            {
+              idMap.saveTrack(0)
             }
           }
         }
@@ -240,13 +245,8 @@ ApplicationWindow {
             color: "black"
             placeholderText: "Enter a place name"
             label: "Place search"
-            width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 3
+            width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 2
             height: Theme.itemSizeLarge
-            onTextChanged: {
-              idSearchPage.currentIndex = -1
-              idMap.setSearchRequest(idSearchText.text)
-            }
-
 
             /*
             EnterKey.text: "search"
@@ -256,13 +256,32 @@ ApplicationWindow {
               idMap.setSearchRequest(idSearchText.text)
             }
             */
-          }
 
-          Button {
-            color: "black"
+          }
+          IconButton {
+
             anchors.verticalCenter: parent.verticalCenter
-            width: Theme.itemSizeLarge
-            text: "Clear"
+            width: Theme.itemSizeSmall
+            height: Theme.itemSizeSmall
+            icon.source:  "image://theme/icon-m-search-on-page?" + (down ? Theme.highlightColor : Theme.primaryColor)
+            onClicked: {
+              idSearchPage.currentIndex = -1
+              idMap.setSearchRequest(idSearchText.text)
+              nSearchBusy = true
+            }
+
+            BusyIndicator {
+              running: nSearchBusy
+              size: BusyIndicatorSize.Medium
+              anchors.centerIn: parent
+            }
+          }
+          IconButton {
+
+            anchors.verticalCenter: parent.verticalCenter
+            width: Theme.itemSizeSmall
+            height: Theme.itemSizeSmall
+            icon.source:  "image://theme/icon-m-cancel?" + (down ? Theme.highlightColor : Theme.primaryColor)
             onClicked: {
               idSearchText.text = ""
             }
@@ -302,7 +321,7 @@ ApplicationWindow {
         dock: Dock.Bottom
 
         RemorseItem {
-          id: remorse
+          id: idDeleteRemorse
         }
 
         SecondPage {
@@ -323,7 +342,9 @@ ApplicationWindow {
             color: "black"
             onClicked: {
               var oM = idTrackModel
-              remorse.execute(idTrackPanel, "Deleting Selected", function () {
+              idDeleteRemorse._labels.children[1].font.pixelSize = Theme.fontSizeHuge
+              idDeleteRemorse._labels.children[1].palette.primaryColor = Theme.highlightColor
+              idDeleteRemorse.execute(idTrackPanel, "Deleting  " + nSelectCount + " Item(s)", function () {
                 oM.unloadSelected()
                 oM.deleteSelected()
               })

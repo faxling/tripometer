@@ -266,7 +266,7 @@ void maep_geonames_entry_list_free(GSList *list) {
 
 /* ------------- end of freeing ------------------ */
 
-#define MAX_RESULT 25
+#define MAX_RESULT 30
 #define GEONAMES  "http://api.geonames.org/"
 #define GEONAMES_SEARCH "geonames_search"
 
@@ -399,7 +399,7 @@ void maep_nominatim_address_request(const gchar *request,
   /* build search request */
   char *encoded_phrase = url_encode(request);
   char *url = g_strdup_printf(
-        NOMINATIM "search?q=%s&format=xml", encoded_phrase);
+        NOMINATIM "search?q=%s&format=xml&limit=%u", encoded_phrase,MAX_RESULT);
   g_free(encoded_phrase);
   
   /* request search results asynchronously */

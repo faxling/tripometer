@@ -351,19 +351,19 @@ void ScreenOn(bool b)
   //   QDBusConnection::disconnectFromBus("system");
 }
 namespace msslistmodel{
-  QMap<int, MssListModel*> g_ocIntances;
+  QHash<int, MssListModel*> g_ocInstance;
 }
 
 void MssListModel::Init(int nInstanceId)
 {
-  msslistmodel::g_ocIntances[nInstanceId] = this;
+  msslistmodel::g_ocInstance[nInstanceId] = this;
 }
 
 MssListModel* MssListModel::Instance(int nInstanceId)
 {
-  if (msslistmodel::g_ocIntances.contains(nInstanceId) == false)
+  if (msslistmodel::g_ocInstance.contains(nInstanceId) == false)
     return 0;
-  return msslistmodel::g_ocIntances[nInstanceId];
+  return msslistmodel::g_ocInstance[nInstanceId];
 }
 void MssListModel::Reset(InitFunc pfInit)
 {

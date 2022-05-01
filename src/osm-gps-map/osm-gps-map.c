@@ -668,7 +668,7 @@ osm_gps_map_print_images (OsmGpsMap *map)
                          CAIRO_FONT_SLANT_NORMAL,
                          CAIRO_FONT_WEIGHT_NORMAL);
 
-  cairo_set_font_size(priv->cr, 30);
+  cairo_set_font_size(priv->cr, 17);
 
   for(list = priv->images; list != NULL; list = list->next)
   {

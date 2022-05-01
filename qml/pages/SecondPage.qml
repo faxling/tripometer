@@ -7,7 +7,7 @@ import harbour.tripometer 1.0
 SilicaListView {
 
   id: idObjectList
-
+  cacheBuffer:500
   Component {
     id: idDetailsFactory
     Rectangle {
@@ -90,9 +90,10 @@ SilicaListView {
       }
 
       Button {
-        y: 100
-        anchors.right: parent.right
-        anchors.rightMargin: 20
+        y: 80
+        x: parent.width -25 -width
+        //anchors.right: parent.right
+        // anchors.rightMargin: 20
         color: "black"
         width: 110
         text: "OK"
@@ -143,7 +144,7 @@ SilicaListView {
         }
 
         RemorseItem {
-          id: remorse
+          id: idRemorse
         }
 
         onTextChanged: {
@@ -169,7 +170,6 @@ SilicaListView {
 
         //font.italic: bSelected
         font.bold: bLoaded
-
         text: aValue
       }
       Label {
@@ -187,7 +187,7 @@ SilicaListView {
             var idx = nId
             var oT = idTrackModel
             var oM = mainMap
-            remorse.execute(idEditText, "Deleting", function () {
+            idRemorse.execute(idRow, "Deleting", function () {
               oT.trackDelete(idx)
               oM.unloadTrack(idx)
             })
