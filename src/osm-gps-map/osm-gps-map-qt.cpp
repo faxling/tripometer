@@ -781,19 +781,17 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
       nLastDeltaY = delta.y();
       osm_gps_map_scroll(map);
       osm_gps_map_uppdate_offset(map,0,0);
-      /*
-      mapUpdate();
-      update();
-      */
-      // factor0 = 0.f;
     } else if (zooming) {
       // Zoom and drag case
+      if (touchPoints.count() != 2)
+        return;
+
       const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
       const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
       int nTDistNew = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
       if (abs(nTDistNew - nTDistLast) > 50)
       {
-        if (nTDistNew > nTDistLast)
+        if (nTDistNew >= nTDistLast)
           osm_gps_map_zoom_in (map);
         else
           osm_gps_map_zoom_out (map);
@@ -805,40 +803,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
   }
   case QEvent::TouchEnd:
   {
-    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    // g_message("touch end %d", dragging);
-    if (touchPoints.count() == 2)
-    {
-      mapUpdate();
-      update();
-    }
-    if (dragging)
-    {
-      dragging = FALSE;
 
-
-
-      g_object_set(map, "auto-center", FALSE, NULL);
-      /*
-      // Adjust zoom and factor.
-      factor = osm_gps_map_get_factor(map);
-      if (factor >= 1.5) {
-        g_object_get(map, "zoom", &zoom, NULL);
-        if (osm_gps_map_zoom_in(map) != zoom)
-          osm_gps_map_set_factor(map, factor / 2.);
-      } else if (factor <= 0.66666666666666667) {
-        g_object_get(map, "zoom", &zoom, NULL);
-        if (osm_gps_map_zoom_out(map) != zoom)
-          osm_gps_map_set_factor(map, factor * 2.);
-      }
-
-
-      */
-    }
-    else if (touchPoints.count() == 1)
-      osm_gps_map_layer_button(OSM_GPS_MAP_LAYER(wiki),
-                               touchPoints.first().pos().x(),
-                               touchPoints.first().pos().y(), FALSE);
   }
   default:
     QQuickItem::touchEvent(touchEvent);
