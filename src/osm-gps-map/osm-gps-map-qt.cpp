@@ -558,6 +558,7 @@ void Maep::GpsMap::paintTo(QPainter *painter, int width, int height)
   QRectF target(0, 0, width, height);
   QRectF source((w - width) * 0.5, (h - height) * 0.5,
                 width, height);
+
   painter->drawImage(target, *img, source);
 }
 

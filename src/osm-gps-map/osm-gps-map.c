@@ -668,7 +668,7 @@ osm_gps_map_print_images (OsmGpsMap *map)
                          CAIRO_FONT_SLANT_NORMAL,
                          CAIRO_FONT_WEIGHT_NORMAL);
 
-  cairo_set_font_size(priv->cr, 17);
+  cairo_set_font_size(priv->cr, 10);
 
   for(list = priv->images; list != NULL; list = list->next)
   {
@@ -2872,7 +2872,7 @@ osm_gps_map_set_factor (OsmGpsMap *map, gfloat factor)
 {
   g_return_if_fail (OSM_IS_GPS_MAP (map));
 
-  factor = CLAMP(factor, 2, 4);
+  factor = CLAMP(factor, 1, 5);
   if (factor == map->priv->map_factor)
     return;
   map->priv->map_factor = factor;

@@ -154,13 +154,10 @@ void InfoListModel::UpdateOnTimer()
   m_fLastTimeSec = fCurTime;
   QVector<int> oc;
   oc.push_back(ValueRole);
-  // varje sec
-  if ((((int)(p.m_fDurationSec * 10)) % 10) == 0)
-  {
-    m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
-    emit dataChanged(index(CURRENTTIME), index(CURRENTTIME),oc);
 
-  }
+
+  m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
+
   // var tioned
 
 
@@ -170,14 +167,15 @@ void InfoListModel::UpdateOnTimer()
     m_pDataFile.write((char*)&p,sizeof p);
   }
 
-  m_nData[nUnit][DURATION].f = FormatDuration(p.m_fDurationSec*10);
+  m_nData[nUnit][DURATION].f = FormatDurationSec(p.m_fDurationSec);
   m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
 
-  emit dataChanged(index(DURATION), index(DURATION),oc);
+
 
   // oc.push_back(ValueRole);
 
-  emit dataChanged(index(COMPASS), index(COMPASS),oc);
+
+    emit dataChanged(index(0), index(LAST_VAL-1),oc);
 }
 
 
@@ -225,7 +223,7 @@ InfoListModel::InfoListModel(QObject *parent) :
   m_pTimer = new MssTimer();
   m_pTimer->SetTimeOut([this]{UpdateOnTimer();});
 
-  m_pTimer->Start(100);
+  m_pTimer->Start(1000);
   m_nData.resize(2);
   m_nData[0].resize(LAST_VAL);
   m_nData[1].resize(LAST_VAL);
@@ -278,9 +276,8 @@ void InfoListModel::CompassReadingChanged()
   double fAz = m_oCompass.reading()->azimuth();
   double fLevel = m_oCompass.reading()->calibrationLevel();
 
-  if (fLevel < 0.6)
+  if (fLevel < 0.7)
     return;
-
 
   for (int i = 0; i < 2;++i)
     m_nData[i][COMPASS].f = FormatBearing(fAz,fLevel);
@@ -289,6 +286,7 @@ void InfoListModel::CompassReadingChanged()
 
 // Share for maep
 double g_fMaxSpeed = 0;
+
 void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
   QVector<int> oc;
@@ -304,7 +302,6 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   for (int i = 0; i < 2;++i)
     m_nData[i][PREC].f = FormatKmH(fPrec);
 
-  emit dataChanged(index(PREC), index(PREC),oc);
 
   if (m_oLastPos.isValid()==false)
   {
@@ -328,7 +325,6 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 
     }
 
-    emit dataChanged(index(LAT), index(LONG),oc);
 
     //  double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
     // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp,0));
@@ -440,7 +436,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   m_oLastPos = o.coordinate();
   //qDebug() << m_fLastSpeed;
   // qDebug(QString("Speed %1").arg(fSpeed));
-  emit dataChanged(index(0), index(LAST_VAL-1),oc);
+
 
 }
 
