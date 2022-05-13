@@ -90,14 +90,14 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
 TrackModel::TrackModel(QObject *)
 {
   QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-  m_nLastId = 0;
   QDir oDir(sDataFilePath);
   oDir.setNameFilters(QStringList() << "*.dat");
   oDir.setFilter(QDir::Files);
   QStringList oc = oDir.entryList();
+
   for (auto &oI : oc )
   {
-    ++m_nLastId;
+    m_nLastId = m_oc.size();
     ModelDataNode tNode =  GetNodeFromTrack(JustFileNameNoExt(oI),false);
     m_oc.append(tNode);
   }
@@ -141,7 +141,7 @@ void TrackModel::trackUnloaded(int nId)
   if (nRow<0)
     return;
 
-  QModelIndex oMI = index(nRow, 1, QModelIndex());
+  QModelIndex oMI = index(nRow, 0, QModelIndex());
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
@@ -163,7 +163,7 @@ void TrackModel::trackLoaded(int nId)
   if (nRow<0)
     return;
 
-  QModelIndex oMI = index(nRow, 1, QModelIndex());
+  QModelIndex oMI = index(nRow, 0, QModelIndex());
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
@@ -183,7 +183,7 @@ void TrackModel::loadSelected()
     {
       oJ.bIsLoaded = true;
       QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName),  Q_ARG(int, oJ.nId));
-      QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
+      QModelIndex oMI = index(IndexOf(oJ,m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc) ;
     }
   }
@@ -215,7 +215,7 @@ void TrackModel::unloadSelected()
     {
       oJ.bIsLoaded = false;
       QMetaObject::invokeMethod(g_pTheMap, "unloadTrack",  Q_ARG(int, oJ.nId));
-      QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
+      QModelIndex oMI = index(IndexOf(oJ,m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc) ;
     }
   }
@@ -327,10 +327,11 @@ void TrackModel::trackImport(const QString& sPath)
 void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
-  beginInsertRows(QModelIndex(), 0, 0);
+
   ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
   tNode.bSelected = true;
-  m_oc.push_front(tNode);
+  m_oc.push_back(tNode);
+  beginInsertRows(QModelIndex(), m_oc.size()-1, m_oc.size()-1);
   endInsertRows();
   UpdateSelected();
 }
@@ -367,6 +368,7 @@ void TrackModel::UpdateSelected()
 
 bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nRole)
 {
+
   if (nRole == SELECTED_t)
   {
     m_oc[index.row()].bSelected = value.toBool();

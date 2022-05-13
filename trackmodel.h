@@ -75,7 +75,7 @@ private:
 
   void UpdateSelected();
   QVector<ModelDataNode> m_oc;
-  int m_nLastId;
+  int m_nLastId = -1;
 
 };
 

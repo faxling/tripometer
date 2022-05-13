@@ -1242,8 +1242,9 @@ void maep_geodata_add_trackpoint(MaepGeodata *track_state,
   track_state->priv->dirty = TRUE;
   track_state->priv->metricLength +=
       _seg_add_point(seg, &new_point, track_state->priv->metricAccuracy);
-  g_message("gps: creating new point %g (%g)",
-            track_state->priv->metricLength, h_acc);
+
+  // g_message("gps: creating new point %g (%g)",
+ // track_state->priv->metricLength, h_acc);
 
   /* Updating bounding box. */
   track_state_update_bb0(track_state, &new_point);

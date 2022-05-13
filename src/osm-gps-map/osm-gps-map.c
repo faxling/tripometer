@@ -2803,7 +2803,6 @@ static gboolean _set_zoom(OsmGpsMap *map, int zoom)
   zoom = CLAMP(zoom, priv->min_zoom, priv->max_zoom);
   if (zoom == priv->map_zoom)
     return FALSE;
-  g_print("Set zoom %d", zoom);
 
   priv->map_zoom = zoom;
   g_object_notify_by_pspec(G_OBJECT(map), properties[PROP_ZOOM]);

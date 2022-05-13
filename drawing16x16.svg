@@ -10,14 +10,14 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
+   width="20"
+   height="20"
    id="svg4019"
    version="1.1"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   inkscape:export-filename="C:\Users\fax\Documents\qt\harbour-tripometer\qml\symFia.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
+   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\symFia.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    sodipodi:docname="drawing16x16.svg">
   <defs
      id="defs4021">
@@ -79,7 +79,8 @@
   <g
      id="layer1"
      inkscape:label="Layer 1"
-     inkscape:groupmode="layer">
+     inkscape:groupmode="layer"
+     transform="translate(0,4)">
     <path
        style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#00ff00;stroke:#000000;stroke-width:0.35867161;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        d="m 49.359673,43.691135 c 0,0 8.282371,2.945854 12.576953,2.945854 4.294585,0 12.576953,-2.945854 12.576953,-2.945854 L 66.128943,28.961868 c 0,0 5.008843,-4.409181 4.19232,-7.364633 -0.816523,-2.95545 -5.261217,-5.794961 -8.384637,-5.891708 -3.545995,-0.109827 -8.988263,2.553496 -9.782073,5.891708 -0.793812,3.33821 5.589755,7.364633 5.589755,7.364633 z"
@@ -87,15 +88,15 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cscczszcc" />
     <g
-       style="display:inline;stroke-width:2.49991632"
+       style="display:inline;stroke-width:1.76150262"
        id="g4100"
-       transform="matrix(0.22670433,0,0.00117652,0.33247557,24.416885,3.3700463)">
+       transform="matrix(0.38841864,0,0.00201576,0.39084438,37.180755,-0.01216312)">
       <ellipse
          inkscape:transform-center-y="1.8181818"
          inkscape:transform-center-x="10.181818"
          transform="matrix(0.90013381,0,0,0.9426394,107.43142,-7.5741524)"
          id="path4080"
-         style="fill:url(#radialGradient4104);fill-opacity:1;stroke:none;stroke-width:2.49991632"
+         style="fill:url(#radialGradient4104);fill-opacity:1;stroke:none;stroke-width:1.76150262"
          cx="-197.45454"
          cy="10.363636"
          rx="14.545455"
@@ -103,8 +104,9 @@
       <path
          inkscape:connector-curvature="0"
          id="path4098"
-         d="m -76.097332,13.357212 3.60054,24.337236 7.20107,-24.337236 z"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#000000;stroke:#000000;stroke-width:2.24052787;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
+         d="m -76.097332,13.357212 5.441893,27.103524 5.359717,-27.103524 z"
+         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#000000;stroke:#000000;stroke-width:1.57842208;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+         sodipodi:nodetypes="cccc" />
     </g>
     <ellipse
        style="fill:#e32f2f;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.9372549"

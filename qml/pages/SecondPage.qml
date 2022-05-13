@@ -7,7 +7,18 @@ import harbour.tripometer 1.0
 SilicaListView {
 
   id: idObjectList
-  cacheBuffer:500
+  cacheBuffer:2000
+  property int nLastCount
+
+  onCountChanged:
+  {
+    if (nLastCount < count)
+    {
+      scrollToBottom()
+    }
+    nLastCount = count
+  }
+
   Component {
     id: idDetailsFactory
     Rectangle {
@@ -181,6 +192,13 @@ SilicaListView {
     Component {
       id: contextMenu
       ContextMenu {
+
+        MenuItem {
+          text: "Toggle Select"
+          onClicked: {
+            bSelected = !bSelected
+          }
+        }
         MenuItem {
           text: "Delete"
           onClicked: {

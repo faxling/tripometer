@@ -4,7 +4,7 @@ import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
 // import QtQuick.Controls 1.0
 import "pages"
-import QtDocGallery 5.0
+// import QtDocGallery 1.0
 
 ApplicationWindow {
 
@@ -299,18 +299,6 @@ ApplicationWindow {
             idTrackModel.trackImport(selectedContentProperties.filePath)
           }
 
-          _contentModel.contentFilter: GalleryFilterIntersection {
-            filters: [
-              GalleryStartsWithFilter {
-                property: "filePath"
-                value: StandardPaths.download
-              },
-              GalleryWildcardFilter {
-                property: "fileName"
-                value: "*.gpx"
-              }
-            ]
-          }
         }
       }
 
@@ -325,6 +313,7 @@ ApplicationWindow {
         }
 
         SecondPage {
+          id: idSecondPage
           anchors.fill: parent
           anchors.topMargin: 100
           anchors.bottomMargin: Theme.itemSizeLarge
