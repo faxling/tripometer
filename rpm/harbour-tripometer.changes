@@ -8,6 +8,9 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sun May 15 2022 Fredrik Axling <faxling11@gmail.com> 2.6-0
+- Fix Bugg loading saved objects
+
 * Mon May 09 2022 Fredrik Axling <faxling11@gmail.com> 2.5-0
 - Import gpx Button
 - Magnify with buttons and zoom with pinch

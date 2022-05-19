@@ -293,8 +293,14 @@ ApplicationWindow {
         id: idDownloadPickerPage
         DownloadPickerPage {
           title: "Select gpx download"
+          id:idPicker
+          Component.onCompleted:
+          {
+            _contentModel.filter = ".gpx"
+          }
 
-          _contentModel.contentType: 0
+          _contentModel.contentType: 1
+
           onSelectedContentPropertiesChanged: {
             idTrackModel.trackImport(selectedContentProperties.filePath)
           }
