@@ -1,6 +1,6 @@
 #TEMPLATE = app
 
-TARGET = harbour-tripometer
+TARGET = harbour-pikefight
 DEPENDPATH += .
 INCLUDEPATH += .
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\dconf
@@ -25,7 +25,8 @@ SOURCES += src/harbour-tripometer.cpp \
     Utils.cpp
 
 OTHER_FILES += \
-    rpm/harbour-tripometer.spec \
+    harbour-pikefight.desktop \
+    qml/harbour-pikefight.png \
     qml/harbour-tripometer.qml \
     qml/btnPlus.png \
     qml/btnMinus.png \
@@ -39,7 +40,7 @@ OTHER_FILES += \
     qml/pages/SecondPage.qml \
     qml/symFia.png \
     qml/btnTracks.png \
-    harbour-tripometer.desktop
+    rpm/harbour-pikefight.spec
 
 HEADERS += \
     trackmodel.h \
@@ -91,17 +92,19 @@ SOURCES += src/misc.c src/net_io.c src/geonames.c src/search.c src/track.c src/i
 
 #INSTALLS += target desktop icon resources
 
-OTHER_FILES += rpm/harbour-tripometer.spec
+OTHER_FILES += rpm/harbour-pikefight.spec
 
 # This part is to circumvent harbour limitations.
 QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 
 #QT += qml-private core-private
 
+SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
+
 DISTFILES += \
     qml/TrippBtn.qml \
     qml/pages/SmallText.qml \
-    rpm/harbour-tripometer.changes \
     qml/btnSat.png \
     qml/btnWorld.png \
-    qml/pages/SearchPage.qml
+    qml/pages/SearchPage.qml \
+    rpm/harbour-pikefight.changes

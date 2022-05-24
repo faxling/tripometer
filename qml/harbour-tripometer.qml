@@ -28,12 +28,12 @@ ApplicationWindow {
     Label {
       anchors.topMargin: 30
       anchors.horizontalCenter: parent.horizontalCenter
-      text: "Tripometer"
+      text: "PikeFight"
     }
     Image {
       id: idIcon
       anchors.centerIn: parent
-      source: "harbour-tripometer.png"
+      source: "harbour-pikefight.png"
     }
     Label {
       anchors.top: idIcon.bottom

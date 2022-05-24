@@ -6,7 +6,7 @@
 # RPM. To build, use the command: rpmbuild --clean -ba harbour-tripometer.spec
 #
 
-Name: harbour-tripometer
+Name: harbour-pikefight
 
 # Harbour requirements.
 %define __provides_exclude_from ^%{_datadir}/.*$
@@ -15,8 +15,8 @@ Name: harbour-tripometer
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
-Summary: Tripometer with Map
-Version: 2.6
+Summary: Pike with Map
+Version: 1.0
 Release: 0
 Group: Applications/Engineering
 License: GPLv2
@@ -87,7 +87,8 @@ install -m 644 -p /usr/lib/libpsl.so %{buildroot}/usr/share/%{name}/lib/
 %attr(755,-,-) %{_bindir}
 %{_datadir}/%{name}
 %{_datadir}/applications/%{name}.desktop
-%{_datadir}/icons/hicolor/86x86/apps/%{name}.png
+%{_datadir}/icons/hicolor/*/apps/%{name}.png
+
 
 
 

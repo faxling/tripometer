@@ -59,7 +59,7 @@ Page {
       color: Theme.highlightColor
       font.pixelSize: Theme.fontSizeHuge
       anchors.horizontalCenter: parent.horizontalCenter
-      text: "Tripometer"
+      text: "PikeFight"
     }
 
   }
