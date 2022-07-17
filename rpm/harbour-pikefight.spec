@@ -3,7 +3,7 @@
 # Such packages make it easy to install and uninstall
 # the library and related files from binaries or source.
 #
-# RPM. To build, use the command: rpmbuild --clean -ba harbour-tripometer.spec
+# RPM. To build, use the command: rpmbuild --clean -ba harbour-pikefight.spec
 #
 
 Name: harbour-pikefight
@@ -16,8 +16,8 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.0
-Release: 0
+Version: 1.1
+Release: 1
 Group: Applications/Engineering
 License: GPLv2
 Source: %{name}-%{version}.tar.gz

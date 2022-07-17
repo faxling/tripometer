@@ -746,6 +746,7 @@ void Maep::GpsMap::keyPressEvent(QKeyEvent * event)
 void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
 {
   static int nTDistLast = 0;
+  static int nTripple = 0;
   static int nLastDeltaX = 0;
   static int nLastDeltaY = 0;
   switch (touchEvent->type()) {
@@ -764,8 +765,19 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
   case QEvent::TouchUpdate:
   {
     // g_message("touch update %d", haveMouseEvent);
-
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+    if ( touchPoints.count() == 3 )
+    {
+      if (nTripple == 0)
+      {
+        nTripple = 1;
+        emit trippleDrag();
+      }
+      return;
+    }
+
+
+
     if (touchPoints.count() == 2 && dragging) {
       dragging = false;
       zooming = true;;
@@ -804,7 +816,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent *touchEvent)
   }
   case QEvent::TouchEnd:
   {
-
+    nTripple = 0;
   }
   default:
     QQuickItem::touchEvent(touchEvent);
@@ -922,6 +934,53 @@ void Maep::GpsMap::addDbPoint()
 
 }
 
+void Maep::GpsMap::loadPikeInMap(int nId, int nType, float fLo, float fLa)
+{
+  //full_path /home/nemo/.harbour-pikefight/qml/symPike2.png
+  // full_path /usr/share/harbour-pikefight/qml/symPike2.png
+
+  char* szSymName;
+  if (nType == 0)
+    szSymName = find_file("qml/symPike.png");
+  else
+    szSymName = find_file("qml/symPike2.png");
+
+
+
+  cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);
+
+  g_free(szSymName);
+
+
+  osm_gps_map_add_image_with_alignment(map,fLa,fLo,pSurface,0.5,1.0,0);
+
+  m_ocPikeMarkers[nId] = pSurface;
+
+}
+
+QGeoCoordinate Maep::GpsMap::currentPos()
+{
+  coord_t tPos;
+
+
+  if (lastGps.isValid() == true)
+  {
+    tPos.rlat =  lastGps.coordinate().latitude();
+    tPos.rlon =  lastGps.coordinate().longitude();
+  }
+  else
+  {
+    tPos = osm_gps_map_get_co_ordinates(map,  width()/ 2, height()/2);
+    tPos.rlat = rad2deg(tPos.rlat);
+    tPos.rlon= rad2deg(tPos.rlon);
+  }
+
+  QGeoCoordinate tRet(tPos.rlat ,tPos.rlon );
+
+  return tRet;
+
+}
+
 void Maep::GpsMap::saveMark(int nId)
 {
 
@@ -948,7 +1007,8 @@ void Maep::GpsMap::saveMark(int nId)
   osm_gps_map_add_image_with_alignment(map,t.la,t.lo,pSurface,0.5,1.0,sTrackName.toLatin1().data());
 
   m_ocMarkers[nId] = pSurface;
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
+
+  // QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 }
 
 void Maep::GpsMap::saveTrack(G_GNUC_UNUSED  int nId)
@@ -964,10 +1024,16 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED  int nId)
   
   if (track_current == 0)
     return;
-  
+  double fLen = maep_geodata_track_get_metric_length(track_current->get());
+
+  if (fLen < 10)
+    return;
+
+
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
 
-  double fLen = maep_geodata_track_get_metric_length(track_current->get());
+
+
 
   MarkData t;
   t.nDuration = maep_geodata_track_get_duration(track_current->get());

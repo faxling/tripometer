@@ -61,13 +61,13 @@ isEmpty(PREFIX)
 }
 
 
-# eg /usr/share/applications/harbour-tripometer.desktop
+# eg /usr/share/applications/harbour-pikefight.desktop
 DEPLOYMENT_PATH = $$PREFIX/share/$$TARGET
 DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += APP=\"\\\"\"$${TARGET}\"\\\"\"
 DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += SAILFISH
-DEFINES += VERSION=\"\\\"\"2.2.0\"\\\"\"
+DEFINES += VERSION=\"\\\"\"1.0.0\"\\\"\"
 
 # Input
 HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/osm-gps-map-osd-classic.h src/osm-gps-map/layer-wiki.h src/osm-gps-map/layer-gps.h
@@ -102,7 +102,12 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 DISTFILES += \
+    qml/PikeBtn.qml \
+    qml/PikeMapPage.qml \
+    qml/pages/TextList.qml \
     qml/TrippBtn.qml \
+    qml/tripometer-functions.js \
+    qml/pages/PikePage.qml \
     qml/pages/SmallText.qml \
     qml/btnSat.png \
     qml/btnWorld.png \

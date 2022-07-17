@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,7 +42,7 @@ namespace Maep {
 class Conf: public QObject
 {
   Q_OBJECT
-  
+
 public:
   Q_INVOKABLE inline QString getString(const QString &key, const QString &fallback = NULL) const
   {
@@ -84,12 +84,12 @@ public:
   inline GeonamesPlace(const MaepGeonamesPlace *place = NULL, QObject *parent = NULL) : QObject(parent)
   {
     if (place)
-      {
-        this->name = QString(place->name);
-        this->country = QString(place->country);
-        this->m_coordinate = QGeoCoordinate(rad2deg(place->pos.rlat),
-                                            rad2deg(place->pos.rlon));
-      }
+    {
+      this->name = QString(place->name);
+      this->country = QString(place->country);
+      this->m_coordinate = QGeoCoordinate(rad2deg(place->pos.rlat),
+                                          rad2deg(place->pos.rlon));
+    }
   }
   inline QString getName() const
   {
@@ -113,7 +113,7 @@ public:
   inline QGeoCoordinate coordinate() const
   {
     return this->m_coordinate;
-  }    
+  }
 
 signals:
   void nameChanged();
@@ -142,14 +142,14 @@ public:
                        QObject *parent = NULL) : QObject(parent)
   {
     if (entry)
-      {
-        this->title = QString(entry->title);
-        this->summary = QString(entry->summary);
-        this->thumbnail = QString(entry->thumbnail_url);
-        this->url = QString(entry->url);
-        this->m_coordinate = QGeoCoordinate(rad2deg(entry->pos.rlat),
-                                            rad2deg(entry->pos.rlon));
-      }
+    {
+      this->title = QString(entry->title);
+      this->summary = QString(entry->summary);
+      this->thumbnail = QString(entry->thumbnail_url);
+      this->url = QString(entry->url);
+      this->m_coordinate = QGeoCoordinate(rad2deg(entry->pos.rlat),
+                                          rad2deg(entry->pos.rlon));
+    }
   }
   inline void set(const Maep::GeonamesEntry *entry)
   {
@@ -158,23 +158,23 @@ public:
   inline QString getTitle() const
   {
     return this->title;
-  }    
+  }
   inline QString getSummary() const
   {
     return this->summary;
-  }     
+  }
   inline QString getThumbnail() const
   {
     return this->thumbnail;
-  }     
+  }
   inline QString getURL() const
   {
     return this->url;
-  }     
+  }
   inline QGeoCoordinate coordinate() const
   {
     return this->m_coordinate;
-  }    
+  }
 
 signals:
   void titleChanged();
@@ -187,8 +187,8 @@ public slots:
   QString coordinateToString(QGeoCoordinate::CoordinateFormat format = QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
 
 private:
-    QString title, summary, thumbnail, url;
-    QGeoCoordinate m_coordinate;
+  QString title, summary, thumbnail, url;
+  QGeoCoordinate m_coordinate;
 };
 
 class Track: public QObject
@@ -212,7 +212,7 @@ public:
   };
 
   Q_INVOKABLE inline Track(MaepGeodata *track = NULL,
-               QObject *parent = NULL) : QObject(parent)
+                           QObject *parent = NULL) : QObject(parent)
   {
     if (track)
       g_object_ref(G_OBJECT(track));
@@ -331,7 +331,7 @@ class GpsMap : public QQuickPaintedItem
   Q_PROPERTY(QString license READ license CONSTANT)
 
 
- public:
+public:
 
   enum Source {
     SOURCE_NULL,
@@ -440,6 +440,9 @@ class GpsMap : public QQuickPaintedItem
 
   Q_INVOKABLE void addDbPoint();
   Q_INVOKABLE void noDbPoint();
+  Q_INVOKABLE QGeoCoordinate currentPos();
+  Q_INVOKABLE void openPage();
+  Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
   Q_INVOKABLE void saveMark(int nId);
   Q_INVOKABLE void saveTrack(int nId);
   Q_INVOKABLE void clearTrack();
@@ -474,12 +477,12 @@ class GpsMap : public QQuickPaintedItem
     return compassEnabled_;
   }
 
- protected:
+protected:
   void paint(QPainter *painter);
   void keyPressEvent(QKeyEvent * event);
   void touchEvent(QTouchEvent *touchEvent);
 
- signals:
+signals:
 
   void mapChanged();
 
@@ -498,8 +501,11 @@ class GpsMap : public QQuickPaintedItem
   void screenRotationChanged(bool status);
   void gpsRefreshRateChanged(unsigned int rate);
   void enableCompassChanged(bool enable);
+  void trippleDrag();
 
- public slots:
+
+
+public slots:
 
   void setSource(Source source);
   void setOverlaySource(Source source);
@@ -525,7 +531,7 @@ class GpsMap : public QQuickPaintedItem
   void compassReadingChanged();
   void enableCompass(bool enable);
 
- private:
+private:
   static int countSearchResults(QQmlListProperty<GeonamesPlace> *prop)
   {
     GpsMap *self = qobject_cast<GpsMap*>(prop->object);
@@ -585,7 +591,8 @@ class GpsMap : public QQuickPaintedItem
   Maep::Track *track_current;
 
   /* Marker images */
-  QHash<int, cairo_surface_t *> m_ocMarkers;
+  QHash<int, cairo_surface_t*> m_ocMarkers;
+  QHash<int, cairo_surface_t*> m_ocPikeMarkers;
 };
 
 class GpsMapCover : public QQuickPaintedItem
@@ -594,25 +601,25 @@ class GpsMapCover : public QQuickPaintedItem
   Q_PROPERTY(Maep::GpsMap* map READ map WRITE setMap NOTIFY mapChanged)
   Q_PROPERTY(bool status READ status WRITE setStatus NOTIFY statusChanged)
 
- public:
+public:
   GpsMapCover(QQuickItem *parent = 0);
   ~GpsMapCover();
   Maep::GpsMap* map() const;
   bool status();
 
- protected:
+protected:
   void paint(QPainter *painter);
 
- signals:
+signals:
   void mapChanged();
   void statusChanged();
 
- public slots:
+public slots:
   void setMap(Maep::GpsMap *map);
   void setStatus(bool active);
   void updateCover();
 
- private:
+private:
   bool status_;
   GpsMap *map_;
 };

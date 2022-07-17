@@ -1,9 +1,10 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-//import harbour.maep.qt 1.0
-Page {
-  id: page
 
+//import harbour.maep.qt 1.0
+Item {
+  id: page
+  // SilicaFlickable to get the dropdown menue
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
@@ -13,7 +14,7 @@ Page {
         text: "Nautical Units"
         font.bold: nUnit === 1
         onClicked: {
-          nUnit = 1;
+          nUnit = 1
           idListModel.klicked2(5)
         }
       }
@@ -21,7 +22,7 @@ Page {
         font.bold: nUnit === 0
         text: "Metric Units"
         onClicked: {
-          nUnit = 0;
+          nUnit = 0
           idListModel.klicked2(5)
         }
       }
@@ -30,7 +31,6 @@ Page {
         text: bScreenallwaysOn ? "Turn On Powersaver" : "Turn Off Powersaver"
         onClicked: {
           bScreenallwaysOn = !bScreenallwaysOn
-
         }
       }
       MenuItem {
@@ -52,18 +52,24 @@ Page {
           idListModel.klicked2(3)
         }
       }
+      MenuItem {
+        text: "MAP"
+        onClicked: {
+          idApp.bFlipped = true
+        }
+      }
     }
-    Text {
-      font.family: Theme.fontFamilyHeading
-      font.bold: true
-      color: Theme.highlightColor
-      font.pixelSize: Theme.fontSizeHuge
+    Row {
       anchors.horizontalCenter: parent.horizontalCenter
-      text: "PikeFight"
+      Text {
+        font.family: Theme.fontFamilyHeading
+        font.bold: true
+        color: Theme.highlightColor
+        font.pixelSize: Theme.fontSizeHuge
+        text: "PikeFight"
+      }
     }
-
   }
-
 
   ListView {
     clip: true
@@ -107,6 +113,4 @@ Page {
       }
     }
   }
-
 }
-
