@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
+import "../tripometer-functions.js" as Lib
 
 SilicaListView {
   id: idListView
@@ -12,7 +13,22 @@ SilicaListView {
       Behavior on y {
         SpringAnimation {
           spring: 3
+
           damping: 0.2
+        }
+      }
+    }
+  }
+  Component {
+    id: contextMenu
+    ContextMenu {
+
+      MenuItem {
+        text: "Delete"
+        onClicked: {
+          idRemorse.execute(idListItem, "Deleting", function () {
+            Lib.removePike(nId, model)
+          })
         }
       }
     }
@@ -23,6 +39,7 @@ SilicaListView {
 
   delegate: ListItem {
     id: idListItem
+    menu: contextMenu
 
     // width: ListView.view.width
     Row {

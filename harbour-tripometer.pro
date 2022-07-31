@@ -104,6 +104,7 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 DISTFILES += \
     qml/PikeBtn.qml \
     qml/PikeMapPage.qml \
+    qml/PikePanel.qml \
     qml/pages/TextList.qml \
     qml/TrippBtn.qml \
     qml/tripometer-functions.js \

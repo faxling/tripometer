@@ -4,15 +4,9 @@ import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
 import QtQuick.LocalStorage 2.0 as Sql
 import "tripometer-functions.js" as Lib
-
-// import QtQuick.Controls 1.0
 import "pages"
 
-// import QtDocGallery 1.0
 Item {
-  Component.onCompleted: {
-    console.log("int db")
-  }
 
   GpsMap {
     id: idMap
@@ -41,7 +35,6 @@ Item {
   PikeBtn {
     id: idPikeBtn1
     src: "symPikeL.png"
-    property alias oSize1: idSize1
     Text {
       id: idCount1
       font.pixelSize: Theme.fontSizeMedium
@@ -51,12 +44,11 @@ Item {
     }
     Text {
       id: idSize1
-
       font.pixelSize: Theme.fontSizeMedium
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.bottom: parent.bottom
       color: Theme.primaryColor
-      text: "cm"
+      text: idApp.sSumSize1
     }
     anchors.verticalCenter: parent.verticalCenter
     anchors.left: parent.left
@@ -71,7 +63,6 @@ Item {
 
   PikeBtn {
     id: idPikeBtn2
-    property alias idSize2: idSize2
     src: "symPike2L.png"
     Text {
       id: idCount2
@@ -86,7 +77,7 @@ Item {
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.bottom: parent.bottom
       color: Theme.primaryColor
-      text: "cm"
+      text: idApp.sSumSize2
     }
     anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
@@ -218,59 +209,17 @@ Item {
     }
   }
 
-  DockedPanel {
-    id: idPike1DockedPanel
-    height: idMapPage.width + Theme.itemSizeLarge
-    width: idMapPage.width + Theme.itemSizeLarge
+  PikePanel {
+    id: idPikePanel_1
     dock: Dock.Left
-
-    Slider {
-      id: idSlider1
-      width: parent.width
-      minimumValue: 40
-      maximumValue: 200
-      value: 50
-    }
-
-    PikePage {
-      id: idPikePage1
-      anchors.topMargin: idSlider1.height
-      anchors.fill: parent
-      model: idPikeModel1
-      onCurrentIndexChanged: {
-        idSlider1.value = idPikeModel1.get(currentIndex).nLen
-      }
-    }
+    oModel: idPikeModel1
+    nOwner: 1
   }
-  DockedPanel {
-    id: idPike2DockedPanel
-    height: idMapPage.width
-    width: idMapPage.width
+  PikePanel {
+    id: idPikePanel_2
     dock: Dock.Right
-
-    Slider {
-      id: idSlider2
-      width: parent.width
-      minimumValue: 40
-      maximumValue: 200
-      value: 50
-    }
-    PikePage {
-      id: idPikePage2
-      anchors.topMargin: idSlider2.height
-      anchors.fill: parent
-      model: idPikeModel2
-
-      onCurrentIndexChanged: {
-        if (currentIndex < 0)
-          return
-        idSlider2.value = idPikeModel2.get(currentIndex).nLen
-      }
-
-      onPikePressed: {
-
-      }
-    }
+    oModel: idPikeModel2
+    nOwner: 2
   }
   DockedPanel {
     id: idSearchPageDockedPanel

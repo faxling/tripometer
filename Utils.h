@@ -27,6 +27,9 @@ QString BaseName(const QString & sFileName);
 // txt
 QString Ext(const QString & sFileName);
 
+
+
+QString StorageDir();
 QString GpxNewName(const QString& sTrackName);
 QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
@@ -137,11 +140,11 @@ public:
   QVariant Data(int nRow, int nUserRole) const {
     return (data(index(nRow, 0), Qt::UserRole + nUserRole));
   }
-  QHash<int, QByteArray> roleNames() const;
-  int rowCount(const QModelIndex &) const;
-  int columnCount(const QModelIndex &) const;
-  QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-  QModelIndex parent(const QModelIndex &) const;
+  QHash<int, QByteArray> roleNames() const override;
+  int rowCount(const QModelIndex &) const  override;
+  int columnCount(const QModelIndex &) const  override;
+  QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const  override;
+  QModelIndex parent(const QModelIndex &) const  override;
 
 protected:
 //   Rows values indexed by roles - Qt::UserRole::

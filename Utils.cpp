@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include <QDebug>
 #include <QFile>
+#include <QDir>
 #include <QBasicTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
@@ -108,6 +109,23 @@ void MssTimer::timerEvent(QTimerEvent *)
     m_pTimer->stop();
 }
 
+QString StorageDir()
+{
+  static bool bIsChecked = false;
+  QString sRet = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+ "/pikeFight";
+  if (bIsChecked == false)
+  {
+    QDir o(sRet);
+    if (o.exists() == false)
+    {
+      o.mkpath(sRet);
+
+    }
+    bIsChecked = true;
+  }
+
+  return sRet;
+}
 
 QString GpxNewName(const QString& _sTrackName)
 {
@@ -123,7 +141,7 @@ QString GpxNewName(const QString& _sTrackName)
 
 QString GpxDatFullName(const QString& sTrackName)
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sDataFilePath = StorageDir();
   QString sGpxFileName;
   sGpxFileName.sprintf("%ls/%ls.dat",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
 
@@ -132,7 +150,7 @@ QString GpxDatFullName(const QString& sTrackName)
 
 QString GpxFullName(const QString& sTrackName)
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sDataFilePath = StorageDir();
   QString sGpxFileName;
   sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
   return sGpxFileName;

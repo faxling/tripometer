@@ -1323,11 +1323,35 @@ void osm_gps_map_get_tile_xy_at(OsmGpsMap *map, float lat, float lon,
   *y = (int)floor(lat2pixel(map->priv->map_zoom, deg2rad(lat)) / (float)tilesize);
 }
 
+
+
+static void
+draw_startpoint (OsmGpsMapPrivate *priv, MaepGeodataTrackIter iter)
+{
+  double s = 10.;
+  int map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
+  int map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
+  int x = lon2pixel(priv->map_zoom, iter.cur->coord.rlon) - map_x0;
+  int y = lat2pixel(priv->map_zoom, iter.cur->coord.rlat) - map_y0;
+
+  cairo_move_to(priv->cr, x, y);
+  cairo_arc(priv->cr, x, y - 1.5 * s, s, 2. * M_PI / 3., M_PI / 3.);
+  cairo_line_to(priv->cr, x, y);
+  cairo_new_sub_path (priv->cr);
+  cairo_arc (priv->cr, x, y - 1.5 * s, s * 3. / 8., 0, 2 * M_PI);
+  // 0xFF/255. 0x14 0x93 DeepPink
+  cairo_set_source_rgba (priv->cr, 0xFF/255.0,0x14/255.0, 0x93/255.0, 0.6);
+  cairo_fill_preserve (priv->cr);
+  cairo_set_source_rgba (priv->cr, 0.0, 0.0, 0.0, 0.6);
+  cairo_stroke (priv->cr);
+}
+
 static void
 osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
                          int *max_x, int *min_x, int *max_y, int *min_y, int nType)
 {
   MaepGeodataTrackIter iter;
+  MaepGeodataTrackIter iterFirst;
   const way_point_t *wpt;
   int x,y, map_x0, map_y0, st;
   guint i;
@@ -1361,11 +1385,18 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
 
     if (st & TRACK_POINT_START)
     {
-      cairo_move_to(priv->cr, x, y);
-      cairo_line_to(priv->cr, x, y);
-      cairo_set_line_width (priv->cr, lw * 3);
-      cairo_stroke(priv->cr);
-      cairo_move_to(priv->cr, x, y);
+      if (nType == -1)
+      {
+        iterFirst = iter;
+      }
+      else
+      {
+        cairo_move_to(priv->cr, x, y);
+        cairo_line_to(priv->cr, x, y);
+        cairo_set_line_width (priv->cr, lw * 3);
+        cairo_stroke(priv->cr);
+        cairo_move_to(priv->cr, x, y);
+      }
     }
     cairo_line_to(priv->cr, x, y);
     if (st & TRACK_POINT_STOP)
@@ -1406,6 +1437,12 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
     cairo_set_source_rgba (priv->cr, 0.0, 0.0, 0.0, 0.6);
     cairo_stroke (priv->cr);
   }
+
+
+  // -1 Distance tool
+  if (nType == -1)
+    draw_startpoint(priv,iterFirst);
+
 }
 
 /* Prints the gps trip history, and any other tracks */
@@ -2852,7 +2889,7 @@ osm_gps_map_zoom_in (OsmGpsMap *map)
 {
   g_return_val_if_fail (OSM_IS_GPS_MAP (map), 0);
 
-//  int nLZoom = map->priv->map_zoom;
+  //  int nLZoom = map->priv->map_zoom;
   int nRZoom = osm_gps_map_set_zoom(map, map->priv->map_zoom+1);
 
   return nRZoom;

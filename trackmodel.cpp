@@ -89,7 +89,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
 
 TrackModel::TrackModel(QObject *)
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sDataFilePath = StorageDir();
   QDir oDir(sDataFilePath);
   oDir.setNameFilters(QStringList() << "*.dat");
   oDir.setFilter(QDir::Files);

@@ -19,6 +19,8 @@ ApplicationWindow {
     mainMap.saveTrack(0)
   }
 
+  property string sSumSize1
+  property string sSumSize2
   property string sDur
   property string sDirname: "track name"
   property bool bIsPause: false

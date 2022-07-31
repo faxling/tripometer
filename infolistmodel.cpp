@@ -191,7 +191,7 @@ InfoListModel::~InfoListModel()
 InfoListModel::InfoListModel(QObject *parent) :
   QAbstractListModel(parent)
 {
-  QString sDataFilePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  QString sDataFilePath = StorageDir();
   QString sDataFileName;
   sDataFileName.sprintf("%ls/%s",(wchar_t*)sDataFilePath.utf16(),"fraxtrip");
   m_pDataFile.setFileName(sDataFileName);
