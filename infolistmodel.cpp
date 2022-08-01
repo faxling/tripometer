@@ -143,6 +143,9 @@ enum TRIP_FIELDS
 
 void InfoListModel::UpdateOnTimer()
 {
+
+
+
   double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
   if (m_pRoot==0)
     return;
@@ -166,6 +169,11 @@ void InfoListModel::UpdateOnTimer()
     m_pDataFile.seek(0);
     m_pDataFile.write((char*)&p,sizeof p);
   }
+
+  bool bBacknav = m_pRoot->property("bInfoViewVisible").toBool();
+
+  if (bBacknav == false)
+    return;
 
   m_nData[nUnit][DURATION].f = FormatDurationSec(p.m_fDurationSec);
   m_pRoot->setProperty("sDur",FormatDurationSec(p.m_fDurationSec));
@@ -273,6 +281,10 @@ void InfoListModel::ResetData()
 
 void InfoListModel::CompassReadingChanged()
 {
+  bool bBacknav = m_pRoot->property("bInfoViewVisible").toBool();
+
+  if (bBacknav == false)
+    return;
   double fAz = m_oCompass.reading()->azimuth();
   double fLevel = m_oCompass.reading()->calibrationLevel();
 

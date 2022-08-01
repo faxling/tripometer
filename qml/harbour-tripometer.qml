@@ -4,8 +4,8 @@ import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
 // import QtQuick.Controls 1.0
 import "pages"
-// import QtDocGallery 1.0
 
+// import QtDocGallery 1.0
 ApplicationWindow {
 
   id: idApp
@@ -18,6 +18,7 @@ ApplicationWindow {
   // 0 = km/h 1 kts
   property int nUnit: 0
   property GpsMap mainMap
+  property bool bInfoViewVisible: true
 
   CoverBackground {
     id: blueCover
@@ -149,16 +150,14 @@ ApplicationWindow {
             idMap.auto_center = !idMap.auto_center
           }
 
-          Rectangle
-          {
+          Rectangle {
             visible: idMap.auto_center
-            anchors.centerIn : parent
-            color:"#f9535c"
-            height:17
-            width:17
-            radius:3
+            anchors.centerIn: parent
+            color: "#f9535c"
+            height: 17
+            width: 17
+            radius: 3
           }
-
         }
         TrippBtn {
           id: idMarker
@@ -181,9 +180,7 @@ ApplicationWindow {
 
               idTrackModel.markAllUnload()
               idMap.setTrack(o)
-            }
-            else
-            {
+            } else {
               idMap.saveTrack(0)
             }
           }
@@ -208,7 +205,9 @@ ApplicationWindow {
           id: idBack
           src: idMapPage.backNavigation ? "btnBackDis.png" : "btnBack.png"
           onClicked: {
+
             idMapPage.backNavigation = !idMapPage.backNavigation
+            idApp.bInfoViewVisible = idMapPage.backNavigation
           }
         }
       }
@@ -248,6 +247,7 @@ ApplicationWindow {
             width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 2
             height: Theme.itemSizeLarge
 
+
             /*
             EnterKey.text: "search"
             EnterKey.onClicked:
@@ -256,14 +256,14 @@ ApplicationWindow {
               idMap.setSearchRequest(idSearchText.text)
             }
             */
-
           }
           IconButton {
 
             anchors.verticalCenter: parent.verticalCenter
             width: Theme.itemSizeSmall
             height: Theme.itemSizeSmall
-            icon.source:  "image://theme/icon-m-search-on-page?" + (down ? Theme.highlightColor : Theme.primaryColor)
+            icon.source: "image://theme/icon-m-search-on-page?"
+                         + (down ? Theme.highlightColor : Theme.primaryColor)
             onClicked: {
               idSearchPage.currentIndex = -1
               idMap.setSearchRequest(idSearchText.text)
@@ -281,7 +281,8 @@ ApplicationWindow {
             anchors.verticalCenter: parent.verticalCenter
             width: Theme.itemSizeSmall
             height: Theme.itemSizeSmall
-            icon.source:  "image://theme/icon-m-cancel?" + (down ? Theme.highlightColor : Theme.primaryColor)
+            icon.source: "image://theme/icon-m-cancel?"
+                         + (down ? Theme.highlightColor : Theme.primaryColor)
             onClicked: {
               idSearchText.text = ""
             }
@@ -293,9 +294,8 @@ ApplicationWindow {
         id: idDownloadPickerPage
         DownloadPickerPage {
           title: "Select gpx download"
-          id:idPicker
-          Component.onCompleted:
-          {
+          id: idPicker
+          Component.onCompleted: {
             _contentModel.filter = ".gpx"
           }
 
@@ -304,7 +304,6 @@ ApplicationWindow {
           onSelectedContentPropertiesChanged: {
             idTrackModel.trackImport(selectedContentProperties.filePath)
           }
-
         }
       }
 
@@ -339,10 +338,12 @@ ApplicationWindow {
               var oM = idTrackModel
               idDeleteRemorse._labels.children[1].font.pixelSize = Theme.fontSizeHuge
               idDeleteRemorse._labels.children[1].palette.primaryColor = Theme.highlightColor
-              idDeleteRemorse.execute(idTrackPanel, "Deleting  " + nSelectCount + " Item(s)", function () {
-                oM.unloadSelected()
-                oM.deleteSelected()
-              })
+              idDeleteRemorse.execute(idTrackPanel,
+                                      "Deleting  " + nSelectCount + " Item(s)",
+                                      function () {
+                                        oM.unloadSelected()
+                                        oM.deleteSelected()
+                                      })
             }
           }
 
