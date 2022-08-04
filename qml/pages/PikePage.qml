@@ -9,40 +9,49 @@ SilicaListView {
     id: highlight
     Rectangle {
       color: Theme.highlightBackgroundColor
+
+
+      /*
       y: idListView.currentItem.y
       Behavior on y {
         SpringAnimation {
           spring: 3
-
           damping: 0.2
         }
       }
-    }
-  }
-  Component {
-    id: contextMenu
-    ContextMenu {
-
-      MenuItem {
-        text: "Delete"
-        onClicked: {
-          idRemorse.execute(idListItem, "Deleting", function () {
-            Lib.removePike(nId, model)
-          })
-        }
-      }
+      */
     }
   }
 
+  highlightFollowsCurrentItem: true
   highlight: highlight
   signal pikePressed(int nId)
 
   delegate: ListItem {
     id: idListItem
-    menu: contextMenu
+    menu: ContextMenu {
+      MenuItem {
+        id: idMenuItem
+        text: "Delete"
+
+        onClicked: {
+          idListItem.showRemorseItem()
+        }
+      }
+    }
+    RemorseItem {
+      id: idRemorse
+    }
+    function showRemorseItem() {
+      var idx = index
+      idRemorse.execute(idListItem, "Deleting", function () {
+        Lib.removePike(nId, idListView.model, idListView.nOwner)
+      })
+    }
 
     // width: ListView.view.width
     Row {
+
       TextList {
         width: idListItem.width / 2
         text: sDate

@@ -6,7 +6,7 @@ Text {
   signal click
   signal pressAndHold
   color: "black"
-  font.pixelSize: Theme.fontSizeMedium
+  font.pixelSize: Theme.fontSizeLarge
   MouseArea {
     anchors.fill: parent
     onClicked: idText.click()

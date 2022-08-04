@@ -16,7 +16,7 @@
    id="svg9430"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="pikefight2.svg"
-   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\symPike2.png"
+   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\symPike.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7.9195959"
-     inkscape:cx="14.82242"
+     inkscape:cx="-39.599548"
      inkscape:cy="8.0465286"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -52,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -188,6 +188,6 @@
        id="text14034"
        transform="scale(1.1195186,0.89324107)"><tspan
          sodipodi:role="line"
-         id="tspan14036">T</tspan></text>
+         id="tspan4777">1</tspan></text>
   </g>
 </svg>

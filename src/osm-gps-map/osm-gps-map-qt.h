@@ -441,6 +441,8 @@ public:
   Q_INVOKABLE void addDbPoint();
   Q_INVOKABLE void noDbPoint();
   Q_INVOKABLE QGeoCoordinate currentPos();
+  Q_INVOKABLE void removePikesInMap();
+  Q_INVOKABLE void removePikeInMap(int nId);
   Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
   Q_INVOKABLE void saveMark(int nId);
   Q_INVOKABLE void saveTrack(int nId);

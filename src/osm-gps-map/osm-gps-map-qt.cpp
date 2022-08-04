@@ -934,22 +934,43 @@ void Maep::GpsMap::addDbPoint()
 
 }
 
+void Maep::GpsMap::removePikeInMap(int nId)
+{
+  osm_gps_map_remove_image(map,m_ocPikeMarkers[nId]);
+  m_ocPikeMarkers.remove(nId);
+}
+
+void Maep::GpsMap::removePikesInMap()
+{
+
+  for (auto oI : m_ocPikeMarkers)
+    osm_gps_map_remove_image(map,oI);
+
+  m_ocPikeMarkers.clear();
+
+}
+
 void Maep::GpsMap::loadPikeInMap(int nId, int nType, float fLo, float fLa)
 {
   //full_path /home/nemo/.harbour-pikefight/qml/symPike2.png
   // full_path /usr/share/harbour-pikefight/qml/symPike2.png
 
   char* szSymName;
-  if (nType == 0)
+  if (nType == 1)
     szSymName = find_file("qml/symPike.png");
-  else
+  else if (nType == 2)
     szSymName = find_file("qml/symPike2.png");
-
-
+  else
+    return;
 
   cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);
 
+  qDebug() << szSymName;
+
   g_free(szSymName);
+
+
+  qDebug() << fLa;
 
 
   osm_gps_map_add_image_with_alignment(map,fLa,fLo,pSurface,0.5,1.0,0);
@@ -1008,20 +1029,11 @@ void Maep::GpsMap::saveMark(int nId)
 
   m_ocMarkers[nId] = pSurface;
 
-  // QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd",  Q_ARG(QString,sTrackName));
 }
 
-void Maep::GpsMap::saveTrack(G_GNUC_UNUSED  int nId)
+void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
 {
-
-  QDateTime oNow(QDateTime::currentDateTime());
-
-  QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-  QString sGpxFileName = GpxFullName(sTrackName);
-
-
-  GError *error;
-  
   if (track_current == 0)
     return;
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
@@ -1029,10 +1041,24 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED  int nId)
   if (fLen < 10)
     return;
 
+  QString sTrackName;
+  // Auto saved
+  if (nId == 0)
+  {
+    sTrackName = GpxNewName("fishing track");
+  }
+  else
+  {
+    QDateTime oNow(QDateTime::currentDateTime());
+    sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  }
 
+  QString sGpxFileName = GpxFullName(sTrackName);
+
+
+  GError *error;
+  
   maep_geodata_to_file(track_current->get(), sGpxFileName.toLatin1().data(), &error);
-
-
 
 
   MarkData t;

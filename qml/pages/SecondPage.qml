@@ -7,15 +7,10 @@ import harbour.tripometer 1.0
 SilicaListView {
 
   id: idObjectList
-  cacheBuffer:2000
+  // cacheBuffer: 2000
   property int nLastCount
 
-  onCountChanged:
-  {
-    if (nLastCount < count)
-    {
-      scrollToBottom()
-    }
+  onCountChanged: {
     nLastCount = count
   }
 
@@ -102,7 +97,7 @@ SilicaListView {
 
       Button {
         y: 80
-        x: parent.width -25 -width
+        x: parent.width - 25 - width
         //anchors.right: parent.right
         // anchors.rightMargin: 20
         color: "black"
@@ -116,6 +111,7 @@ SilicaListView {
   }
 
   // anchors.fill: parent
+
 
   /*
     x:100
@@ -144,7 +140,6 @@ SilicaListView {
       id: idRow
 
       // x:20
-
       TextField {
         id: idEditText
         width: Theme.itemSizeLarge * 3
@@ -183,9 +178,10 @@ SilicaListView {
         font.bold: bLoaded
         text: aValue
       }
-      Label {
+      Text {
+        id: idText
         color: "black"
-        y: 10
+        font.pixelSize: Theme.fontSizeLarge
         text: sLength
       }
     }

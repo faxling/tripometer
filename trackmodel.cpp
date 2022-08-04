@@ -329,7 +329,7 @@ void TrackModel::trackAdd(const QString& sTrackName)
   ++m_nLastId;
 
   ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
-  tNode.bSelected = true;
+  tNode.bSelected = false;
   m_oc.push_back(tNode);
   beginInsertRows(QModelIndex(), m_oc.size()-1, m_oc.size()-1);
   endInsertRows();

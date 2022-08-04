@@ -1377,6 +1377,10 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
   cairo_set_line_join (priv->cr, CAIRO_LINE_JOIN_ROUND);
   maep_geodata_track_iter_new(&iter, track);
 
+  double fStr[2] = {10,20};
+
+
+
 
   while (maep_geodata_track_iter_next(&iter, &st))
   {
@@ -1395,6 +1399,7 @@ osm_gps_map_print_track (OsmGpsMapPrivate *priv, MaepGeodata *track, int lw,
         cairo_line_to(priv->cr, x, y);
         cairo_set_line_width (priv->cr, lw * 3);
         cairo_stroke(priv->cr);
+        cairo_set_dash(priv->cr,fStr,2,0);
         cairo_move_to(priv->cr, x, y);
       }
     }

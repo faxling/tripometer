@@ -176,6 +176,9 @@ Item {
         idMap.saveMark(idTrackModel.nextId())
       }
     }
+
+
+    /*
     TrippBtn {
       id: idTrack
       enabled: true
@@ -194,6 +197,7 @@ Item {
         }
       }
     }
+    */
     TrippBtn {
       src: "btnTracks.png"
       onClicked: {
@@ -215,12 +219,14 @@ Item {
     oModel: idPikeModel1
     nOwner: 1
   }
+
   PikePanel {
     id: idPikePanel_2
     dock: Dock.Right
     oModel: idPikeModel2
     nOwner: 2
   }
+
   DockedPanel {
     id: idSearchPageDockedPanel
     height: idMapPage.width + Theme.itemSizeLarge
@@ -340,11 +346,17 @@ Item {
       x: 30
       y: 10
       spacing: 10
+      Item {
+        height: 1
+        width: Theme.itemSizeLarge
+      }
+
       Button {
         width: Theme.itemSizeLarge
         text: "Delete"
         color: "black"
         onClicked: {
+          console.log("del")
           var oM = idTrackModel
           idDeleteRemorse._labels.children[1].font.pixelSize = Theme.fontSizeHuge
           idDeleteRemorse._labels.children[1].palette.primaryColor = Theme.highlightColor
@@ -371,18 +383,9 @@ Item {
         onClicked: idTrackModel.unloadSelected()
       }
 
-      Button {
-        color: "black"
+      Item {
+        height: 1
         width: Theme.itemSizeLarge
-        text: "Save"
-        onClicked: idMap.saveTrack(idTrackModel.nextId())
-      }
-
-      Button {
-        color: "black"
-        width: Theme.itemSizeLarge
-        text: "Gpx"
-        onClicked: pageStack.push(idDownloadPickerPage)
       }
     }
   }

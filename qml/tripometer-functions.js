@@ -7,7 +7,7 @@ function initDB() {
   db.transaction(function (tx) {
 
     tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS Catch_V2(pike_id INTEGER PRIMARY KEY, dbnumber INT , sDate TEXT, nLen INT, nOwner INT, fLO DOUBLE, fLA DOUBLE)')
+          'CREATE TABLE IF NOT EXISTS Catch_V2(pike_id INTEGER PRIMARY KEY, dbnumber INT , sDate TEXT, nLen INT, nOwner INT, fLo DOUBLE, fLa DOUBLE)')
 
     var rs = tx.executeSql("SELECT * FROM Catch_V2")
     var nRowLen = rs.rows.length
@@ -21,6 +21,7 @@ function initDB() {
 
 function newSession() {
   deleteDB()
+  mainMap.removePikesInMap()
   idApp.sSumSize2 = ""
   idApp.sSumSize1 = ""
   idListModel.klicked2(3)
@@ -53,28 +54,32 @@ function calcSizeAndDisplay(nOwner, value) {
   if (nOwner === 1) {
     currentIndex = idPikePanel_1.currentIndex
     oPModel = idPikeModel1
-    oSizeText = idApp.sSumSize1
   } else {
     currentIndex = idPikePanel_2.currentIndex
     oPModel = idPikeModel2
-    oSizeText = idApp.sSumSize2
   }
+
   if (value !== undefined) {
     var nLen = Math.round(value)
     var nId = oPModel.get(currentIndex).nId
     oPModel.setProperty(currentIndex, "nLen", nLen)
     oPModel.setProperty(currentIndex, "sLength", nLen + " cm")
     db.transaction(function (tx) {
-
       tx.executeSql('UPDATE Catch_V2 SET nLen=? WHERE pike_id=?', [nLen, nId])
     })
   }
+
   var nC = oPModel.count
   var nSum = 0
   for (var i = 0; i < nC; ++i) {
     nSum = nSum + oPModel.get(i).nLen
   }
-  oSizeText.text = nSum + " cm"
+  oSizeText = nSum + " cm"
+  if (nOwner === 1) {
+    idApp.sSumSize1 = oSizeText
+  } else {
+    idApp.sSumSize2 = oSizeText
+  }
 }
 
 function showPike(nOwner) {
@@ -86,7 +91,6 @@ function showPike(nOwner) {
 }
 
 function addPikeEx(nId, nOwner, sDate, nLen, fLo, fLa, bShow) {
-  console.log("add pike " + nId)
   var oPModel
   var currentIndex
   var oPanel
@@ -123,20 +127,27 @@ function addPikeEx(nId, nOwner, sDate, nLen, fLo, fLa, bShow) {
   mainMap.loadPikeInMap(nId, nOwner, fLo, fLa)
 }
 
-function removePike(nId, oPModel) {
-  console.log("removePike " + nId)
-
+function removePike(nId, oPModel, nOwnerIn) {
   var nC = oPModel.count
   for (var i = 0; i < nC; ++i) {
     if (oPModel.get(i).nId === nId) {
-
+      oPModel.remove(i)
+      break
     }
   }
 
   db.transaction(function (tx) {
-    tx.executeSql('DELETE FROM Catch_V2 WHERE=pike_id=?', [nId])
+    tx.executeSql('DELETE FROM Catch_V2 WHERE pike_id=?', [nId])
   })
+
+  mainMap.removePikeInMap(nId)
+  calcSizeAndDisplay(nOwner)
+  var nNewPikeCount = idApp.nPikeCount
+  nNewPikeCount[nOwner] = nPikeCount[nOwner] - 1
+  nNewPikeCount[0] = nPikeCount[0] - 1
+  idApp.nPikeCount = nNewPikeCount
 }
+
 function zN(nValue) {
   if (nValue < 10)
     return ('0' + nValue.toString())
@@ -152,6 +163,9 @@ function pikeDateTimeStr() {
 
 function addPike(nOwner) {
   var tPos = mainMap.currentPos()
+
+  if (tPos.longitude === undefined)
+    return
   var sDate = pikeDateTimeStr()
   var nLen = 50
 

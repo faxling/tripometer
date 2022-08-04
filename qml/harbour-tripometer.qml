@@ -117,8 +117,7 @@ ApplicationWindow {
           }
         }
         back: PikeMapPage {
-          height: idApp.height
-          width: idApp.width
+          anchors.fill: parent
           id: idMapPage
         }
 

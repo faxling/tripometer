@@ -7,16 +7,31 @@ import "tripometer-functions.js" as Lib
 import "pages"
 
 DockedPanel {
+  id: idDockedPanel
   height: idApp.width + Theme.itemSizeLarge
   width: idApp.width
   property alias currentIndex: idPikePage.currentIndex
-
   property int nOwner
-
   property var oModel
+  Rectangle {
+    color: Theme.primaryColor
+    // opacity: Theme.highlightBackgroundOpacity
+    height: idSlider1.height
+    width: parent.width
+    Text {
+      anchors.horizontalCenter: parent.horizontalCenter
+      font.family: Theme.fontFamilyHeading
+      font.bold: true
+      color: Theme.highlightColor
+      font.pixelSize: Theme.fontSizeHuge
+      text: "Angler " + nOwner
+    }
+  }
 
   PikePage {
     id: idPikePage
+    property alias nOwner: idDockedPanel.nOwner
+    anchors.topMargin: idSlider1.height
     anchors.bottomMargin: idSlider1.height
     anchors.fill: parent
     model: oModel
