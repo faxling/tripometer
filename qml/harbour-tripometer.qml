@@ -21,8 +21,8 @@ ApplicationWindow {
 
   property string sSumSize1
   property string sSumSize2
+  property int nPikesCounted: 6
   property string sDur
-  property string sDirname: "track name"
   property bool bIsPause: false
   property int nSelectCount
   property bool nSearchBusy

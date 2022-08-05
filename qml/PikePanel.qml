@@ -14,7 +14,7 @@ DockedPanel {
   property int nOwner
   property var oModel
   Rectangle {
-    color: Theme.primaryColor
+    color: idApp.background.color
     // opacity: Theme.highlightBackgroundOpacity
     height: idSlider1.height
     width: parent.width

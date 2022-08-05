@@ -11,19 +11,10 @@ Item {
     width: page.width
     PullDownMenu {
       MenuItem {
-        text: "Nautical Units"
-        font.bold: nUnit === 1
+        text: "Settings"
+
         onClicked: {
-          nUnit = 1
-          idListModel.klicked2(5)
-        }
-      }
-      MenuItem {
-        font.bold: nUnit === 0
-        text: "Metric Units"
-        onClicked: {
-          nUnit = 0
-          idListModel.klicked2(5)
+          pageStack.push("SettingsPage.qml")
         }
       }
 

@@ -955,8 +955,10 @@ osm_gps_map_tile_download_complete (SoupSession *session, SoupMessage *msg, gpoi
   }
   else
   {
-    g_message("Error downloading tile: %d - %s (%s)",
-              msg->status_code, msg->reason_phrase, dl->uri);
+
+   // g_message("Error downloading tile: %d - %s (%s)",
+   //           msg->status_code, msg->reason_phrase, dl->uri);
+
     if (msg->status_code == SOUP_STATUS_NOT_FOUND)
     {
       g_hash_table_insert(priv->missing_tiles, dl->uri, NULL);

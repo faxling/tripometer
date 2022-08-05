@@ -8,7 +8,9 @@ Rectangle {
   signal clicked
   radius: 9
   property alias src: idImg.source
-  color: idMouseArea.pressed ? "#ff808080" : "#af808080"
+  color: idApp.background.color
+  opacity: idMouseArea.pressed ? 0.9 : 1
+  // color: idMouseArea.pressed ? "#ff808080" : "#af808080"
   width: 100
   height: 100
   Image {

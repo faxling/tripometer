@@ -1045,7 +1045,7 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
   // Auto saved
   if (nId == 0)
   {
-    sTrackName = GpxNewName("fishing track");
+    sTrackName = GpxNewName("Track");
   }
   else
   {
