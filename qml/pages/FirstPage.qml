@@ -24,12 +24,7 @@ Item {
           bScreenallwaysOn = !bScreenallwaysOn
         }
       }
-      MenuItem {
-        text: bIsPause ? "Resume" : "Pause"
-        onClicked: {
-          idListModel.klicked2(1)
-        }
-      }
+
       MenuItem {
         text: "Reset Max Speed"
         onClicked: {
@@ -37,12 +32,6 @@ Item {
         }
       }
 
-      MenuItem {
-        text: "Reset"
-        onClicked: {
-          idListModel.klicked2(3)
-        }
-      }
       MenuItem {
         text: "MAP"
         onClicked: {

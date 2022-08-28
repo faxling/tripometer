@@ -15,7 +15,6 @@ Page {
       label: "Units"
       currentIndex: idApp.nUnit
       onCurrentIndexChanged: {
-        console.log("index " + currentIndex)
         idApp.nUnit = currentIndex
         idListModel.klicked2(5)
       }
@@ -35,7 +34,6 @@ Page {
       label: "Pikes Counted"
       currentIndex: nPikesCounted - 1
       onCurrentIndexChanged: {
-        console.log("nPikesCounted " + currentIndex)
         idApp.nPikesCounted = currentIndex + 1
         if (idApp.nPikesCounted === 7)
           idApp.nPikesCounted = null

@@ -7,13 +7,13 @@ function initDB() {
   db.transaction(function (tx) {
 
     tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS Catch_V2(pike_id INTEGER PRIMARY KEY, dbnumber INT , sDate TEXT, nLen INT, nOwner INT, fLo DOUBLE, fLa DOUBLE)')
+          'CREATE TABLE IF NOT EXISTS Catch_V2(pike_id INTEGER PRIMARY KEY, dbnumber INT , sDate TEXT,sImage TEXT, nLen INT, nOwner INT, fLo DOUBLE, fLa DOUBLE)')
 
     var rs = tx.executeSql("SELECT * FROM Catch_V2")
     var nRowLen = rs.rows.length
     for (var j = 0; j < nRowLen; j++) {
       var o = rs.rows.item(j)
-      addPikeEx(Number(o.pike_id), o.nOwner, o.sDate, o.nLen, o.fLo,
+      addPikeEx(Number(o.pike_id), o.nOwner, o.sDate, o.sImage, o.nLen, o.fLo,
                 o.fLa, false)
     }
   })
@@ -70,10 +70,24 @@ function calcSizeAndDisplay(nOwner, value) {
   }
 
   var nC = oPModel.count
-  var nSum = 0
+
+  var ocLength = []
   for (var i = 0; i < nC; ++i) {
-    nSum = nSum + oPModel.get(i).nLen
+    ocLength.push(oPModel.get(i).nLen)
   }
+
+  ocLength.sort()
+  // @disable-check M325
+  if (nPikesCounted != null) {
+    if (nC > nPikesCounted) {
+      nC = nPikesCounted
+    }
+  }
+  var nSum = 0
+  for (i = 0; i < nC; ++i) {
+    nSum = nSum + ocLength[i]
+  }
+
   oSizeText = nSum + " cm"
   if (nOwner === 1) {
     idApp.sSumSize1 = oSizeText
@@ -85,12 +99,22 @@ function calcSizeAndDisplay(nOwner, value) {
 function showPike(nOwner) {
   if (nOwner === 1) {
     idPikePanel_1.show()
+    idPikePanel_1.currentIndex = -1
   } else {
     idPikePanel_2.show()
+    idPikePanel_2.currentIndex = -1
   }
 }
 
-function addPikeEx(nId, nOwner, sDate, nLen, fLo, fLa, bShow) {
+function addPikeImage(i, oPModel, sImage) {
+  var nId = oPModel.get(i).nId
+  oPModel.get(i).sImage = sImage
+  db.transaction(function (tx) {
+    tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])
+  })
+}
+
+function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
   var oPModel
   var currentIndex
   var oPanel
@@ -116,10 +140,11 @@ function addPikeEx(nId, nOwner, sDate, nLen, fLo, fLa, bShow) {
   oPModel.append({
                    "nId": Number(nId),
                    "sDate": sDate,
+                   "sImage": sImage,
                    "sLength": sLenText,
                    "nLen": nLen,
-                   "fLO": fLo,
-                   "fLA": fLa
+                   "fLo": fLo,
+                   "fLa": fLa
                  })
   var nC = oPModel.count
   oPanel.currentIndex = nC - 1
@@ -127,6 +152,15 @@ function addPikeEx(nId, nOwner, sDate, nLen, fLo, fLa, bShow) {
   mainMap.loadPikeInMap(nId, nOwner, fLo, fLa)
 }
 
+function centerPike(nId, oPModel) {
+  var nC = oPModel.count
+  for (var i = 0; i < nC; ++i) {
+    if (oPModel.get(i).nId === nId) {
+      mainMap.setLookAt(oPModel.get(i).fLa, oPModel.get(i).fLo)
+      break
+    }
+  }
+}
 function removePike(nId, oPModel, nOwnerIn) {
   var nC = oPModel.count
   for (var i = 0; i < nC; ++i) {
@@ -172,10 +206,10 @@ function addPike(nOwner) {
   db.transaction(function (tx) {
 
     var rs = tx.executeSql(
-          'INSERT INTO Catch_V2 VALUES(?,?,?,?,?,?,?)',
-          [undefined, 1, sDate, nLen, nOwner, tPos.longitude, tPos.latitude])
+          'INSERT INTO Catch_V2 VALUES(?,?,?,?,?,?,?,?)',
+          [undefined, 1, sDate, "image://theme/icon-m-file-image", nLen, nOwner, tPos.longitude, tPos.latitude])
 
-    addPikeEx(rs.insertId, nOwner, sDate, nLen, tPos.longitude,
-              tPos.latitude, true)
+    addPikeEx(rs.insertId, nOwner, sDate, "image://theme/icon-m-file-image",
+              nLen, tPos.longitude, tPos.latitude, true)
   })
 }

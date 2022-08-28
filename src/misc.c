@@ -268,9 +268,8 @@ void proxy_config_free(struct proxy_config *config)
     }
 }
 
-
+//  "~/" APP,                 // in home directory
 static const char *data_paths[] = {
-  "~/." APP,                 // in home directory
   DATADIR ,                  // final installation path (e.g. /usr/share/maep)
 #ifdef USE_MAEMO
   "/media/mmc1/" APP,        // path to external memory card
@@ -292,6 +291,8 @@ char *find_file(const char *name) {
     else
       full_path = g_strdup_printf("%s/%s", *path, name);
 
+
+     g_message(full_path);
     if(g_file_test(full_path, G_FILE_TEST_IS_REGULAR))
       return full_path;
 

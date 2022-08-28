@@ -39,11 +39,13 @@ DockedPanel {
       if (currentIndex < 0)
         return
       idSlider1.value = oModel.get(currentIndex).nLen
+      idMap.markPikeInMap(oModel.get(currentIndex).nId)
     }
   }
 
   Slider {
     id: idSlider1
+    visible: idPikePage.currentIndex >= 0
     anchors.bottom: parent.bottom
     width: parent.width
     minimumValue: 40

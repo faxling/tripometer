@@ -1,14 +1,26 @@
-- delete
+- delete  OK 
 
-- streckat spår
+- streckat spår  OK
 
-- marker lista funkar inte
+- marker lista funkar inte   OK
 
 - settings hur många fiskar + namn
 
-- Enheter i settings
+- Enheter i settings   OK
 
 - Spår med färre punker för google maps
 
-- 
+- Centrera på dubbel klick  , meny
+
+- Photo  i lista , photo picker ,  Photo symbol sen thumb 
+
+- Sjökort
+
+- båt markör
+
+- visa slider om selecttad
+
+
+
+void Maep::GpsMap::setLookAt(float lat, float lon)
 

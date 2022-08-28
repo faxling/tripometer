@@ -934,6 +934,11 @@ void Maep::GpsMap::addDbPoint()
 
 }
 
+void Maep::GpsMap::markPikeInMap(int nId)
+{
+  osm_gps_map_mark_image(map,m_ocPikeMarkers[nId]);
+}
+
 void Maep::GpsMap::removePikeInMap(int nId)
 {
   osm_gps_map_remove_image(map,m_ocPikeMarkers[nId]);
@@ -961,6 +966,9 @@ void Maep::GpsMap::loadPikeInMap(int nId, int nType, float fLo, float fLa)
   else if (nType == 2)
     szSymName = find_file("qml/symPike2.png");
   else
+    return;
+
+  if (szSymName == nullptr)
     return;
 
   cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);

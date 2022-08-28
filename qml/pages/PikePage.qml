@@ -1,10 +1,22 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
+import Sailfish.Pickers 1.0
 import "../tripometer-functions.js" as Lib
 
 SilicaListView {
   id: idListView
+
+  Component {
+    id: idImagePickerPage
+    ImagePickerPage {
+      onSelectedContentPropertiesChanged: {
+        Lib.addPikeImage(idListView.currentIndex, idListView.model,
+                         selectedContentProperties.filePath)
+      }
+    }
+  }
+
   Component {
     id: highlight
     Rectangle {
@@ -33,9 +45,22 @@ SilicaListView {
       MenuItem {
         id: idMenuItem
         text: "Delete"
-
         onClicked: {
           idListItem.showRemorseItem()
+        }
+      }
+      MenuItem {
+        text: "Center"
+        onClicked: {
+          idListView.currentIndex = index
+          Lib.centerPike(nId, idListView.model)
+        }
+      }
+      MenuItem {
+        text: "Add/Replace Image"
+        onClicked: {
+          idListView.currentIndex = index
+          pageStack.push(idImagePickerPage)
         }
       }
     }
@@ -43,7 +68,6 @@ SilicaListView {
       id: idRemorse
     }
     function showRemorseItem() {
-      var idx = index
       idRemorse.execute(idListItem, "Deleting", function () {
         Lib.removePike(nId, idListView.model, idListView.nOwner)
       })
@@ -57,7 +81,22 @@ SilicaListView {
         text: sDate
       }
       TextList {
+        id: idTextHeight
+        width: idListItem.width / 4
         text: sLength
+      }
+      Image {
+        source: sImage
+        autoTransform: true
+        height: idListItem.height
+        width: idListItem.height
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            idApp.sImage = sImage
+            pageStack.push("ImagePage.qml")
+          }
+        }
       }
     }
 

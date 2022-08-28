@@ -30,7 +30,7 @@ ApplicationWindow {
   // 0 = km/h 1 kts
   property int nUnit: 1
   property GpsMap mainMap
-
+  property string sImage
   // Total , fish1 , fish 2
   property var nPikeCount: [0, 0, 0]
   CoverBackground {

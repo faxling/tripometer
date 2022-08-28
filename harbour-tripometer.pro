@@ -105,6 +105,7 @@ DISTFILES += \
     qml/PikeBtn.qml \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
+    qml/pages/ImagePage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/TextList.qml \
     qml/TrippBtn.qml \

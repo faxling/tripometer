@@ -17,7 +17,7 @@ Name: harbour-pikefight
 
 Summary: Pike with Map
 Version: 1.1
-Release: 1
+Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
 Source: %{name}-%{version}.tar.gz
