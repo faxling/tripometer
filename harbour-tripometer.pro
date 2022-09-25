@@ -102,9 +102,11 @@ QMAKE_RPATHDIR = $$DEPLOYMENT_PATH/lib
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 DISTFILES += \
+    qml/NameText.qml \
     qml/PikeBtn.qml \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
+    qml/StepSlider.qml \
     qml/pages/ImagePage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/TextList.qml \

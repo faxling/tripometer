@@ -81,8 +81,8 @@ SilicaListView {
         text: sDate
       }
       TextList {
-        id: idTextHeight
         width: idListItem.width / 4
+        font.italic: nLen < idApp.nMinSize
         text: sLength
       }
       Image {

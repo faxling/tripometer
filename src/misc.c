@@ -292,7 +292,7 @@ char *find_file(const char *name) {
       full_path = g_strdup_printf("%s/%s", *path, name);
 
 
-     g_message(full_path);
+ //    g_message(full_path);
     if(g_file_test(full_path, G_FILE_TEST_IS_REGULAR))
       return full_path;
 

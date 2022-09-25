@@ -26,7 +26,9 @@ Item {
 
     Component.onCompleted: {
       mainMap = idMap
+      console.log("onCompleted start")
       Lib.initDB()
+      console.log("onCompleted end")
     }
 
     enable_compass: true
@@ -35,59 +37,29 @@ Item {
   PikeBtn {
     id: idPikeBtn1
     src: "symPikeL.png"
-    Text {
-      id: idCount1
-      font.pixelSize: Theme.fontSizeMedium
-      anchors.horizontalCenter: parent.horizontalCenter
-      color: Theme.primaryColor
-      text: nPikeCount[1]
-    }
-    Text {
-      id: idSize1
-      font.pixelSize: Theme.fontSizeMedium
-      anchors.horizontalCenter: parent.horizontalCenter
-      anchors.bottom: parent.bottom
-      color: Theme.primaryColor
-      text: idApp.sSumSize1
-    }
+    nOwner: 1
     anchors.verticalCenter: parent.verticalCenter
     anchors.left: parent.left
     anchors.leftMargin: 20
-    onDoubleClicked: {
-      Lib.addPike(1)
-    }
-    onSwiped: {
-      Lib.showPike(1)
-    }
   }
 
   PikeBtn {
     id: idPikeBtn2
     src: "symPike2L.png"
-    Text {
-      id: idCount2
-      font.pixelSize: Theme.fontSizeMedium
-      anchors.horizontalCenter: parent.horizontalCenter
-      color: Theme.primaryColor
-      text: nPikeCount[2]
-    }
-    Text {
-      id: idSize2
-      font.pixelSize: Theme.fontSizeMedium
-      anchors.horizontalCenter: parent.horizontalCenter
-      anchors.bottom: parent.bottom
-      color: Theme.primaryColor
-      text: idApp.sSumSize2
-    }
+    nOwner: 2
     anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
     anchors.rightMargin: 20
-    onDoubleClicked: {
-      Lib.addPike(2)
-    }
-    onSwiped: {
-      Lib.showPike(2)
-    }
+  }
+
+  PikeBtn {
+    id: idPikeBtn3
+    src: "symPikeL.png"
+    nOwner: 3
+    anchors.top: idPikeBtn1.bottom
+    anchors.topMargin: 20
+    anchors.left: parent.left
+    anchors.leftMargin: 20
   }
 
   Column {
@@ -225,6 +197,12 @@ Item {
     dock: Dock.Right
     oModel: idPikeModel2
     nOwner: 2
+  }
+  PikePanel {
+    id: idPikePanel_3
+    dock: Dock.Left
+    oModel: idPikeModel3
+    nOwner: 3
   }
 
   DockedPanel {

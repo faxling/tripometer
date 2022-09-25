@@ -19,9 +19,10 @@ ApplicationWindow {
     mainMap.saveTrack(0)
   }
 
-  property string sSumSize1
-  property string sSumSize2
+  property var ocSumSize: ["", "", ""]
   property int nPikesCounted: 6
+  property int nNrTeams: 2
+  property int nMinSize: 60
   property string sDur
   property bool bIsPause: false
   property int nSelectCount
@@ -31,8 +32,9 @@ ApplicationWindow {
   property int nUnit: 1
   property GpsMap mainMap
   property string sImage
-  // Total , fish1 , fish 2
-  property var nPikeCount: [0, 0, 0]
+  // Total , team 1 , team 2 ..
+  property var ocPikeCount: [0, 0, 0, 0]
+  property var ocTeamName: []
   CoverBackground {
     id: blueCover
 
@@ -69,7 +71,9 @@ ApplicationWindow {
   ListModel {
     id: idPikeModel2
   }
-
+  ListModel {
+    id: idPikeModel3
+  }
   initialPage: Component {
     Page {
       Flipable {

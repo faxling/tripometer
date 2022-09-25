@@ -3,6 +3,7 @@
 #include <QtQuick>
 #endif
 
+#include <sailfishapp.h>
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -11,7 +12,6 @@
 #include <QSettings>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/QtPositioning>
-#include <sailfishapp.h>
 
 #include "osm-gps-map/osm-gps-map-qt.h"
 
@@ -26,68 +26,85 @@
 QObject* g_pTheTrackModel;
 QObject* g_pTheMap;
 
-int main(int argc, char* argv[])
-{
-    // SailfishApp::main() will display "qml/template.qml", if you need more
-    // control over initialization, you can use:
-    //
-    //   - SailfishApp::application(int, char *[]) to get the QGuiApplication *
-    //   - SailfishApp::createView() to get a new QQuickView * instance
-    //   - SailfishApp::pathTo(QString) to get a QUrl to a resource file
-    //
-    // To display the view, call "show()" (will show fullscreen on device).
+int main(int argc, char* argv[]) {
+  //  cashe /home/nemo/.cache/harbour-pikefight
+  // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
+  // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
+  // To display the view, call "show()" (will show fullscreen on device).
 
-    // QStringList oc = QGeoPositionInfoSource::availableSources();
-    // QtPositioning::
+  // QStringList oc = QGeoPositionInfoSource::availableSources();
+  // QtPositioning::
 
-    // qmlRegisterType<InfoListModel>("harbour.tripometer", 1, 0,
-    // "InfoListModel");
-    QGuiApplication* app = SailfishApp::application(argc, argv);
-    QQuickView* pU = SailfishApp::createView();
-    QQmlContext* pContext = pU->rootContext();
-    InfoListModel* pInfoListModel = new InfoListModel;
-    pContext->setContextProperty("idListModel", pInfoListModel);
+  // qmlRegisterType<InfoListModel>("harbour.tripometer", 1, 0,
+  // "InfoListModel");
+  StopWatch oSW("Start %1");
+  QGuiApplication* app = SailfishApp::application(argc, argv);
+  QQuickView* pU = SailfishApp::createView();
+  QQmlContext* pContext = pU->rootContext();
+  InfoListModel* pInfoListModel = new InfoListModel;
+  pContext->setContextProperty("idListModel", pInfoListModel);
 
-    g_pTheTrackModel = new TrackModel;
-    pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
-    MssListModel* pSearchResultModel = new MssListModel("name", "lat", "lo", "type");
-    pSearchResultModel->Init(1);
-    pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
+  g_pTheTrackModel = new TrackModel;
+  pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
+  MssListModel* pSearchResultModel =
+      new MssListModel("name", "lat", "lo", "type");
+  oSW.Stop();
+  pSearchResultModel->Init(1);
+  pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
 
-    qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
-    qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
-    qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
-    qmlRegisterType<Maep::GeonamesPlace>(
-        "harbour.tripometer", 1, 0, "GeonamesPlace");
-    // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
-    // &QGuiApplication::quit,Qt::DirectConnection);
-    pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
-    pU->showFullScreen();
-    InfoListModel::m_pRoot = pU->rootObject();
+  qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
+  qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
+  qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
+  qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0,
+                                       "GeonamesPlace");
+  // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
+  // &QGuiApplication::quit,Qt::DirectConnection);
+  pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
+  pU->showFullScreen();
+  oSW.Stop();
+  InfoListModel::m_pRoot = pU->rootObject();
 
-    QSettings oSettings("harbour-pikefight", "PikeFight");
-    qDebug() << "settings file " << oSettings.fileName();
-    pU->rootObject()->setProperty("nUnit", oSettings.value("nUnit", 1).toInt());
-    int nPikesCounted = oSettings.value("nPikesCounted", 6).toInt();
-    pInfoListModel->klicked2(5);
-    pU->rootObject()->setProperty("nPikesCounted", nPikesCounted);
+  QSettings oSettings("harbour-pikefight", "PikeFight");
+  qDebug() << "settings file " << oSettings.fileName();
 
-    MssTimer oTimer([] {
-        if (InfoListModel::m_pRoot == 0)
-            return;
-        if (InfoListModel::m_pRoot->property("bScreenallwaysOn").toBool() == true)
-            ScreenOn(true);
-    });
-    oTimer.Start(1000 * 30);
-    pInfoListModel->klicked2(5);
-    app->exec();
-    oSettings.setValue("nPikesCounted",
-        pU->rootObject()->property("nPikesCounted"));
-    oSettings.setValue("nUnit", pU->rootObject()->property("nUnit"));
-    oSettings.sync();
+  QString filePath = QStandardPaths::writableLocation(
+      QStandardPaths::StandardLocation::AppLocalDataLocation);
 
-    ScreenOn(false);
-    oTimer.Stop();
-    delete pU;
-    qDebug() << "Exit";
+  qDebug() << "local storage " << filePath;
+  pU->rootObject()->setProperty("nUnit", oSettings.value("nUnit", 1));
+  pInfoListModel->klicked2(5);
+  oSW.Stop();
+  pU->rootObject()->setProperty("nPikesCounted",
+                                oSettings.value("nPikesCounted", 6));
+  pU->rootObject()->setProperty("nMinSize", oSettings.value("nMinSize", 60));
+  pU->rootObject()->setProperty("nNrTeams", oSettings.value("nNrTeams", 2));
+  pU->rootObject()->setProperty(
+      "ocTeamName",
+      oSettings.value("ocTeamName",
+                      QStringList({"Team 1", "Team 2", "Team 3"})));
+  MssTimer oTimer([] {
+    if (InfoListModel::m_pRoot == 0)
+      return;
+    if (InfoListModel::m_pRoot->property("bScreenallwaysOn").toBool() == true)
+      ScreenOn(true);
+  });
+  oTimer.Start(1000 * 30);
+  oSW.Stop();
+  pInfoListModel->klicked2(5);
+  oSW.Stop();
+  app->exec();
+  oSettings.setValue("ocTeamName", pU->rootObject()->property("ocTeamName"));
+
+  oSettings.setValue("nPikesCounted",
+                     pU->rootObject()->property("nPikesCounted"));
+  oSettings.setValue("nUnit", pU->rootObject()->property("nUnit"));
+  oSettings.setValue("nMinSize", pU->rootObject()->property("nMinSize"));
+  oSettings.setValue("nNrTeams", pU->rootObject()->property("nNrTeams"));
+
+  oSettings.sync();
+
+  ScreenOn(false);
+  oTimer.Stop();
+  delete pU;
+  qDebug() << "Exit";
 }

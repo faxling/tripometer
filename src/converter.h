@@ -30,33 +30,25 @@
 G_BEGIN_DECLS
 
 typedef struct {
-    float rlat;
-    float rlon;
+  float rlat;
+  float rlon;
 } coord_t;
 
-#define OSM_GPS_MAP_INVALID         (0.0/0.0)
+#define OSM_GPS_MAP_INVALID (0.0 / 0.0)
 
-float
-deg2rad(float deg);
+float deg2rad(float deg);
 
-float
-rad2deg(float rad);
+float rad2deg(float rad);
 
-int
-lat2pixel(  int zoom,
-            float lat);
+int lat2pixel(int zoom, float lat);
 
-int
-lon2pixel(  int zoom,
-            float lon);
+int lon2pixel(int zoom, float lon);
 
-float
-pixel2lon(  int zoom,
-            int pixel_x);
+float pixel2lon(int zoom, int pixel_x);
 
-float
-pixel2lat(  int zoom,
-            int pixel_y);
+float pixel2lat(int zoom, int pixel_y);
+
+double* rgbToCario(unsigned int nRGB, double* rgb) ;
 
 G_END_DECLS
 

@@ -74,6 +74,11 @@ lon2pixel(  int zoom,
 
     return pixel_x;
 }
+double* rgbToCario(unsigned int nRGB, double* rgb) {
+  rgb[0] = (((nRGB & 0xFF0000) >> 16) / 255.0);
+  rgb[1] = (((nRGB & 0xFF00) >> 8) / 255.0);
+  rgb[2] = (((nRGB & 0xFF)) / 255.0);
+}
 
 float
 pixel2lon(  int zoom,

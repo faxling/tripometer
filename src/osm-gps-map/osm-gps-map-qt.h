@@ -36,7 +36,7 @@
 #include "layer-wiki.h"
 #include "layer-gps.h"
 #include "osm-gps-map-osd-classic.h"
-
+#include <Utils.h>
 namespace Maep {
 
 class Conf: public QObject
@@ -371,10 +371,10 @@ public:
       return QGeoCoordinate();
   }
   inline bool wikiStatus() {
-    return wiki_enabled;
+    return true; //wiki_enabled;
   }
   inline Maep::GeonamesEntry* getWikiEntry() const {
-    return wiki_entry;
+    return nullptr;// wiki_entry;
   }
   /*
   inline QQmlListProperty<Maep::GeonamesPlace> getSearchResults() {
@@ -571,10 +571,11 @@ private:
   // float factor0;
 
   /* Wiki entry. */
+  /*
   bool wiki_enabled;
   MaepWikiContext *wiki ;
   GeonamesEntry *wiki_entry;
-
+*/
   /* Screen display. */
   cairo_surface_t *surf;
   cairo_t *cr;

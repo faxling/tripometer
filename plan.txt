@@ -18,9 +18,9 @@
 
 - båt markör
 
-- visa slider om selecttad
+- visa slider om selecttad OK
 
-
+- nNrTeams  
 
 void Maep::GpsMap::setLookAt(float lat, float lon)
 

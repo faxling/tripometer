@@ -8,7 +8,6 @@ function initDB() {
 
     tx.executeSql(
           'CREATE TABLE IF NOT EXISTS Catch_V2(pike_id INTEGER PRIMARY KEY, dbnumber INT , sDate TEXT,sImage TEXT, nLen INT, nOwner INT, fLo DOUBLE, fLa DOUBLE)')
-
     var rs = tx.executeSql("SELECT * FROM Catch_V2")
     var nRowLen = rs.rows.length
     for (var j = 0; j < nRowLen; j++) {
@@ -22,8 +21,7 @@ function initDB() {
 function newSession() {
   deleteDB()
   mainMap.removePikesInMap()
-  idApp.sSumSize2 = ""
-  idApp.sSumSize1 = ""
+  idApp.ocSumSize = ["", "", ""]
   idListModel.klicked2(3)
   idApp.bFlipped = true
   idApp.bAppStarted = true
@@ -43,27 +41,36 @@ function deleteDB() {
 
   idPikeModel1.clear()
   idPikeModel2.clear()
-  nPikeCount = [0, 0, 0]
+  idApp.ocPikeCount = [0, 0, 0, 0]
 }
 
 function calcSizeAndDisplay(nOwner, value) {
   var oPModel
-  var currentIndex
+  var nCurrentIndex
   var oSizeText
 
+  if (idPikePanel_1 == null)
+    return
+  if (idPikePanel_2 == null)
+    return
+  if (idPikePanel_3 == null)
+    return
   if (nOwner === 1) {
-    currentIndex = idPikePanel_1.currentIndex
+    nCurrentIndex = idPikePanel_1.currentIndex
     oPModel = idPikeModel1
-  } else {
-    currentIndex = idPikePanel_2.currentIndex
+  } else if (nOwner === 2) {
+    nCurrentIndex = idPikePanel_2.currentIndex
     oPModel = idPikeModel2
+  } else {
+    nCurrentIndex = idPikePanel_3.currentIndex
+    oPModel = idPikeModel3
   }
 
   if (value !== undefined) {
     var nLen = Math.round(value)
-    var nId = oPModel.get(currentIndex).nId
-    oPModel.setProperty(currentIndex, "nLen", nLen)
-    oPModel.setProperty(currentIndex, "sLength", nLen + " cm")
+    var nId = oPModel.get(nCurrentIndex).nId
+    oPModel.setProperty(nCurrentIndex, "nLen", nLen)
+    oPModel.setProperty(nCurrentIndex, "sLength", nLen + " cm")
     db.transaction(function (tx) {
       tx.executeSql('UPDATE Catch_V2 SET nLen=? WHERE pike_id=?', [nLen, nId])
     })
@@ -73,36 +80,46 @@ function calcSizeAndDisplay(nOwner, value) {
 
   var ocLength = []
   for (var i = 0; i < nC; ++i) {
-    ocLength.push(oPModel.get(i).nLen)
+    nLen = oPModel.get(i).nLen
+
+    if (nLen < idApp.nMinSize)
+      continue
+    ocLength.push(nLen)
   }
 
   ocLength.sort()
-  // @disable-check M325
-  if (nPikesCounted != null) {
-    if (nC > nPikesCounted) {
-      nC = nPikesCounted
-    }
+  nC = ocLength.length
+
+  if (nC > idApp.nPikesCounted) {
+    nC = idApp.nPikesCounted
   }
+
   var nSum = 0
+
   for (i = 0; i < nC; ++i) {
     nSum = nSum + ocLength[i]
   }
 
   oSizeText = nSum + " cm"
-  if (nOwner === 1) {
-    idApp.sSumSize1 = oSizeText
-  } else {
-    idApp.sSumSize2 = oSizeText
-  }
+  var t = idApp.ocSumSize
+  t[nOwner - 1] = oSizeText
+  idApp.ocSumSize = t
+
+  var ocNewPikeCount = idApp.ocPikeCount
+  ocNewPikeCount[nOwner] = nC
+  idApp.ocPikeCount = ocNewPikeCount
 }
 
 function showPike(nOwner) {
   if (nOwner === 1) {
     idPikePanel_1.show()
     idPikePanel_1.currentIndex = -1
-  } else {
+  } else if (nOwner === 2) {
     idPikePanel_2.show()
     idPikePanel_2.currentIndex = -1
+  } else {
+    idPikePanel_3.show()
+    idPikePanel_3.currentIndex = -1
   }
 }
 
@@ -116,27 +133,27 @@ function addPikeImage(i, oPModel, sImage) {
 
 function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
   var oPModel
-  var currentIndex
+  var nCurrentIndex
   var oPanel
   if (nOwner === 1) {
     oPModel = idPikeModel1
-    currentIndex = idPikePanel_1.currentIndex
     oPanel = idPikePanel_1
     if (bShow)
       idPikePanel_1.show()
-  } else {
+  } else if (nOwner === 2) {
     oPModel = idPikeModel2
     oPanel = idPikePanel_2
-    currentIndex = idPikePanel_2.currentIndex
     if (bShow)
       idPikePanel_2.show()
+  } else {
+    oPModel = idPikeModel3
+    oPanel = idPikePanel_3
+    if (bShow)
+      idPikePanel_3.show()
   }
 
   var sLenText = nLen + " cm"
-  var nNewPikeCount = nPikeCount
-  nNewPikeCount[nOwner] = nPikeCount[nOwner] + 1
-  nNewPikeCount[0] = nPikeCount[0] + 1
-  nPikeCount = nNewPikeCount
+
   oPModel.append({
                    "nId": Number(nId),
                    "sDate": sDate,
@@ -147,9 +164,10 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
                    "fLa": fLa
                  })
   var nC = oPModel.count
-  oPanel.currentIndex = nC - 1
+
   calcSizeAndDisplay(nOwner)
   mainMap.loadPikeInMap(nId, nOwner, fLo, fLa)
+  // oPanel.currentIndex = nC - 1
 }
 
 function centerPike(nId, oPModel) {
@@ -176,10 +194,6 @@ function removePike(nId, oPModel, nOwnerIn) {
 
   mainMap.removePikeInMap(nId)
   calcSizeAndDisplay(nOwner)
-  var nNewPikeCount = idApp.nPikeCount
-  nNewPikeCount[nOwner] = nPikeCount[nOwner] - 1
-  nNewPikeCount[0] = nPikeCount[0] - 1
-  idApp.nPikeCount = nNewPikeCount
 }
 
 function zN(nValue) {
