@@ -1,3 +1,5 @@
+// PikePage.qml
+// Maybe PikeList
 import QtQuick 2.5
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
@@ -21,17 +23,13 @@ SilicaListView {
     id: highlight
     Rectangle {
       color: Theme.highlightBackgroundColor
-
-
-      /*
-      y: idListView.currentItem.y
+      // y: idListView.currentItem.y
       Behavior on y {
         SpringAnimation {
           spring: 3
           damping: 0.2
         }
       }
-      */
     }
   }
 
@@ -67,6 +65,7 @@ SilicaListView {
     RemorseItem {
       id: idRemorse
     }
+
     function showRemorseItem() {
       idRemorse.execute(idListItem, "Deleting", function () {
         Lib.removePike(nId, idListView.model, idListView.nOwner)
@@ -75,25 +74,27 @@ SilicaListView {
 
     // width: ListView.view.width
     Row {
-
       TextList {
+
         width: idListItem.width / 2
         text: sDate
       }
       TextList {
         width: idListItem.width / 4
-        font.italic: nLen < idApp.nMinSize
+        font.strikeout: nLen < idApp.nMinSize
+        // font.italic:
         text: sLength
       }
+
       Image {
-        source: sImage
-        autoTransform: true
-        height: idListItem.height
-        width: idListItem.height
+        source: sImageThumb
+        asynchronous: true
+        // no autoTransform here
         MouseArea {
           anchors.fill: parent
           onClicked: {
             idApp.sImage = sImage
+            idApp.sImageThumb = sImageThumb
             pageStack.push("ImagePage.qml")
           }
         }

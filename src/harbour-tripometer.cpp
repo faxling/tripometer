@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
       new MssListModel("name", "lat", "lo", "type");
   oSW.Stop();
   pSearchResultModel->Init(1);
+  pContext->setContextProperty("oImageThumb", new ImageThumb(app));
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
-
   qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
   qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
   oSW.Stop();
   pInfoListModel->klicked2(5);
   oSW.Stop();
+  mssutils::MkCache();
   app->exec();
   oSettings.setValue("ocTeamName", pU->rootObject()->property("ocTeamName"));
 

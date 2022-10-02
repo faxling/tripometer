@@ -14,35 +14,32 @@ DockedPanel {
   property int nOwner
   property var oModel
 
-
-  /*
-  Rectangle {
-    color: idApp.background.color
-    // opacity: Theme.highlightBackgroundOpacity
-    height: Theme.itemSizeLarge
-    width: parent.width
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      font.family: Theme.fontFamilyHeading
-      font.bold: true
-      color: Theme.highlightColor
-      font.pixelSize: Theme.fontSizeHuge
-      text: idApp.ocTeamName[nOwner - 1]
+  Text {
+    anchors.horizontalCenter: parent.horizontalCenter
+    font.family: Theme.fontFamilyHeading
+    font.bold: true
+    color: "black"
+    font.pixelSize: Theme.fontSizeHuge
+    text: idApp.ocTeamName[nOwner - 1] + " " + ocSumSize[nOwner - 1]
+    MouseArea {
+      // strange, this is needed for the docked panel to be enabled:
+      // to respond on this area
+      propagateComposedEvents: true
+      anchors.fill: parent
     }
   }
 
-  */
   PikePage {
     id: idPikePage
     property alias nOwner: idDockedPanel.nOwner
-    anchors.topMargin: Theme.itemSizeLarge
-    anchors.bottomMargin: idSlider1.height
-    anchors.fill: parent
+    y: Theme.itemSizeLarge
+    // anchors.bottomMargin: idSlider1.height
+    width: idDockedPanel.width
+    height: idDockedPanel.height - Theme.itemSizeLarge - idSlider1.height
     model: oModel
     onCurrentIndexChanged: {
       if (currentIndex < 0)
         return
-      idMap.loadPikeInMap(-1, null, null, null)
       idSlider1.value = oModel.get(currentIndex).nLen / 200.0
       idMap.markPikeInMap(oModel.get(currentIndex).nId)
     }
@@ -55,7 +52,6 @@ DockedPanel {
     stepSize: 0.005
     width: parent.width
     onValueChanged: {
-      idMap.loadPikeInMap(-1, null, null, null)
       if (idApp.bAppStarted)
         Lib.calcSizeAndDisplay(nOwner, Math.round(value * 200))
       else
@@ -63,20 +59,5 @@ DockedPanel {
     }
     value: 0.25
     valueText: "Length:" + Math.round(value * 200)
-  }
-
-  Rectangle {
-    color: idApp.background.color
-    // opacity: Theme.highlightBackgroundOpacity
-    height: Theme.itemSizeLarge
-    width: parent.width
-    Text {
-      anchors.horizontalCenter: parent.horizontalCenter
-      font.family: Theme.fontFamilyHeading
-      font.bold: true
-      color: Theme.highlightColor
-      font.pixelSize: Theme.fontSizeHuge
-      text: idApp.ocTeamName[nOwner - 1]
-    }
   }
 }

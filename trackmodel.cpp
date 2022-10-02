@@ -1,16 +1,16 @@
 #include "trackmodel.h"
-#include "infolistmodel.h"
 #include "Utils.h"
-#include <QStandardPaths>
-#include <QDir>
+#include "infolistmodel.h"
 #include <QDebug>
+#include <QDir>
+#include <QStandardPaths>
 #include <time.h>
 
 enum TRACK_ROLES_t
 {
   NAME_t = Qt::UserRole,
   ISLOADED_t,
-  ID_t ,
+  ID_t,
   SELECTED_t,
   LENGTH_t,
   DATETIME_t,
@@ -21,7 +21,6 @@ enum TRACK_ROLES_t
 };
 
 extern QObject* g_pTheMap;
-
 
 TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded)
 {
@@ -38,14 +37,14 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     tNode.nTime = t.nTime;
     tNode.bIsLoaded = bIsLoaded;
     tNode.sDateTime = FormatDateTime(t.nTime);
-    tNode.sMaxSpeed = FormatKmH(t.speed*3.6) + " km/h";
-    tNode.sDuration = FormatDuration(t.nDuration*10);
-    if (tNode.nType == 1 )
+    tNode.sMaxSpeed = FormatKmH(t.speed * 3.6) + " km/h";
+    tNode.sDuration = FormatDuration(t.nDuration * 10);
+    if (tNode.nType == 1)
       tNode.sLength = "x";
     else
       tNode.sLength = FormatKm(t.len / 1000.0) + " km";
 
-    tNode.sDiskSize = FormatNrBytes(t.nSize );
+    tNode.sDiskSize = FormatNrBytes(t.nSize);
   }
 
   if (t.nType <= 0)
@@ -54,13 +53,13 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     {
       if (t.nType == -1)
         t.nType = 2;
-      qDebug() << sTrackName << " Len " <<  t.len;
+      qDebug() << sTrackName << " Len " << t.len;
       tNode.nType = t.nType;
       QString sGpxFileName = GpxFullName(sTrackName);
       QFileInfo oFI(sGpxFileName);
       t.nSize = oFI.size();
-      tNode.sDiskSize = FormatNrBytes(t.nSize );
-      MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
+      tNode.sDiskSize = FormatNrBytes(t.nSize);
+      MaepGeodata* track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), 0);
       MaepGeodataTrackIter iter;
       maep_geodata_track_iter_new(&iter, track);
       int status = 0;
@@ -74,20 +73,19 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
       tNode.bIsLoaded = false;
       tNode.sDateTime = FormatDateTime(t.nTime);
       t.nDuration = maep_geodata_track_get_duration(track);
-      tNode.sDuration = FormatDuration(t.nDuration* 10);
+      tNode.sDuration = FormatDuration(t.nDuration * 10);
       t.len = maep_geodata_track_get_metric_length(track);
       tNode.sLength = FormatKm(t.len / 1000.0) + " km";
       tNode.bSelected = true;
-      WriteMarkData(sTrackName,  t );
+      WriteMarkData(sTrackName, t);
       g_object_unref(G_OBJECT(track));
     }
   }
 
-
   return tNode;
 }
 
-TrackModel::TrackModel(QObject *)
+TrackModel::TrackModel(QObject*)
 {
   QString sDataFilePath = StorageDir();
   QDir oDir(sDataFilePath);
@@ -95,25 +93,21 @@ TrackModel::TrackModel(QObject *)
   oDir.setFilter(QDir::Files);
   QStringList oc = oDir.entryList();
 
-  for (auto &oI : oc )
+  for (auto& oI : oc)
   {
     m_nLastId = m_oc.size();
-    ModelDataNode tNode =  GetNodeFromTrack(JustFileNameNoExt(oI),false);
+    ModelDataNode tNode = GetNodeFromTrack(JustFileNameNoExt(oI), false);
     m_oc.append(tNode);
   }
-
 }
 
 TrackModel::~TrackModel()
 {
-
 }
-
 
 void TrackModel::trackCenter(int nId)
 {
-  std::find_if(m_oc.begin(),m_oc.end(), [&] (const ModelDataNode &t)
-  {
+  std::find_if(m_oc.begin(), m_oc.end(), [&](const ModelDataNode& t) {
     if (t.nId == nId)
     {
       trackLoaded(nId);
@@ -125,7 +119,6 @@ void TrackModel::trackCenter(int nId)
   });
 }
 
-
 void TrackModel::trackUnloaded(int nId)
 {
   int nRow = -1;
@@ -133,12 +126,12 @@ void TrackModel::trackUnloaded(int nId)
   {
     if (nId == oJ.nId)
     {
-      nRow = IndexOf(oJ,m_oc);
+      nRow = IndexOf(oJ, m_oc);
       oJ.bIsLoaded = false;
       break;
     }
   }
-  if (nRow<0)
+  if (nRow < 0)
     return;
 
   QModelIndex oMI = index(nRow, 0, QModelIndex());
@@ -149,27 +142,24 @@ void TrackModel::trackUnloaded(int nId)
 
 void TrackModel::trackLoaded(int nId)
 {
-
   int nRow = -1;
   for (auto& oJ : m_oc)
   {
     if (nId == oJ.nId)
     {
-      nRow = IndexOf(oJ,m_oc);
+      nRow = IndexOf(oJ, m_oc);
       oJ.bIsLoaded = true;
       break;
     }
   }
-  if (nRow<0)
+  if (nRow < 0)
     return;
 
   QModelIndex oMI = index(nRow, 0, QModelIndex());
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
-
 }
-
 
 extern QObject* g_pTheMap;
 
@@ -182,9 +172,9 @@ void TrackModel::loadSelected()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = true;
-      QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName),  Q_ARG(int, oJ.nId));
-      QModelIndex oMI = index(IndexOf(oJ,m_oc), 0, QModelIndex());
-      emit dataChanged(oMI, oMI, oc) ;
+      QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
+      QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
+      emit dataChanged(oMI, oMI, oc);
     }
   }
 }
@@ -198,8 +188,8 @@ void TrackModel::markAllUnload()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = false;
-      QModelIndex oMI = index(IndexOf(oJ,m_oc), 1, QModelIndex());
-      emit dataChanged(oMI, oMI, oc) ;
+      QModelIndex oMI = index(IndexOf(oJ, m_oc), 1, QModelIndex());
+      emit dataChanged(oMI, oMI, oc);
     }
   }
 }
@@ -214,9 +204,9 @@ void TrackModel::unloadSelected()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = false;
-      QMetaObject::invokeMethod(g_pTheMap, "unloadTrack",  Q_ARG(int, oJ.nId));
-      QModelIndex oMI = index(IndexOf(oJ,m_oc), 0, QModelIndex());
-      emit dataChanged(oMI, oMI, oc) ;
+      QMetaObject::invokeMethod(g_pTheMap, "unloadTrack", Q_ARG(int, oJ.nId));
+      QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
+      emit dataChanged(oMI, oMI, oc);
     }
   }
 }
@@ -225,11 +215,10 @@ void TrackModel::deleteSelected()
 {
   for (;;)
   {
-    auto oI = std::find_if(m_oc.begin(),m_oc.end(), [&] (const ModelDataNode &t)
-    {
+    auto oI = std::find_if(m_oc.begin(), m_oc.end(), [&](const ModelDataNode& t) {
       if (t.bSelected == true)
       {
-        int nRow = IndexOf(t,m_oc);
+        int nRow = IndexOf(t, m_oc);
         if (t.nType == 0)
           QFile::remove(GpxFullName(t.sName));
         QFile::remove(GpxDatFullName(t.sName));
@@ -243,11 +232,9 @@ void TrackModel::deleteSelected()
 
     if (oI == m_oc.end())
       return;
-
   }
 
   UpdateSelected();
-
 }
 QModelIndex TrackModel::IndexFromId(int nId) const
 {
@@ -255,7 +242,7 @@ QModelIndex TrackModel::IndexFromId(int nId) const
   {
     if (nId == oJ.nId)
     {
-      return index(IndexOf(oJ,m_oc),0, QModelIndex());
+      return index(IndexOf(oJ, m_oc), 0, QModelIndex());
       break;
     }
   }
@@ -270,13 +257,13 @@ void TrackModel::trackDelete(int nId)
   {
     if (nId == oJ.nId)
     {
-      nRow = IndexOf(oJ,m_oc);
+      nRow = IndexOf(oJ, m_oc);
       QFile::remove(GpxFullName(oJ.sName));
       QFile::remove(GpxDatFullName(oJ.sName));
       break;
     }
   }
-  if (nRow<0)
+  if (nRow < 0)
     return;
 
   beginRemoveRows(QModelIndex(), nRow, nRow);
@@ -296,8 +283,8 @@ void TrackModel::trackRename(QString _sTrackName, int nId)
 
       QString sTrackName = GpxNewName(_sTrackName);
 
-      QFile::rename(GpxFullName(oJ.sName),GpxFullName(sTrackName));
-      QFile::rename(GpxDatFullName(oJ.sName),GpxDatFullName(sTrackName));
+      QFile::rename(GpxFullName(oJ.sName), GpxFullName(sTrackName));
+      QFile::rename(GpxDatFullName(oJ.sName), GpxDatFullName(sTrackName));
       oJ.sName = sTrackName;
 
       QVector<int> oc;
@@ -307,7 +294,6 @@ void TrackModel::trackRename(QString _sTrackName, int nId)
       break;
     }
   }
-
 }
 
 int TrackModel::nextId()
@@ -323,7 +309,6 @@ void TrackModel::trackImport(const QString& sPath)
   trackAdd(sTrackName);
 }
 
-
 void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
@@ -331,17 +316,17 @@ void TrackModel::trackAdd(const QString& sTrackName)
   ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
   tNode.bSelected = false;
   m_oc.push_back(tNode);
-  beginInsertRows(QModelIndex(), m_oc.size()-1, m_oc.size()-1);
+  beginInsertRows(QModelIndex(), m_oc.size() - 1, m_oc.size() - 1);
   endInsertRows();
   UpdateSelected();
 }
 
-QModelIndex TrackModel::index(int row , int column , const QModelIndex&) const
+QModelIndex TrackModel::index(int row, int column, const QModelIndex&) const
 {
   return createIndex(row, column);
 }
 
-int TrackModel::columnCount(const QModelIndex &) const
+int TrackModel::columnCount(const QModelIndex&) const
 {
   return 1;
 }
@@ -351,7 +336,7 @@ QModelIndex TrackModel::parent(const QModelIndex&) const
   return QModelIndex();
 }
 
-int TrackModel::rowCount(const QModelIndex &) const
+int TrackModel::rowCount(const QModelIndex&) const
 {
   return m_oc.size();
 }
@@ -360,15 +345,13 @@ void TrackModel::UpdateSelected()
 {
   int nCount = 0;
   for (auto& oJ : m_oc)
-    nCount += oJ.bSelected ? 1 :0;
+    nCount += oJ.bSelected ? 1 : 0;
 
-  InfoListModel::m_pRoot->setProperty("nSelectCount",nCount);
+  InfoListModel::m_pRoot->setProperty("nSelectCount", nCount);
 }
 
-
-bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nRole)
+bool TrackModel::setData(const QModelIndex& index, const QVariant& value, int nRole)
 {
-
   if (nRole == SELECTED_t)
   {
     m_oc[index.row()].bSelected = value.toBool();
@@ -376,14 +359,13 @@ bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int nR
     oc.push_back(SELECTED_t);
     emit dataChanged(index, index, oc);
     UpdateSelected();
-
   }
   return true;
 }
 
 QString FormatType(int nType)
 {
-  switch(nType)
+  switch (nType)
   {
   case 0:
     return "track";
@@ -391,14 +373,11 @@ QString FormatType(int nType)
     return "point";
   case 2:
     return "gpxTrack";
-
   }
   return "-";
-
 }
 
-
-QVariant TrackModel::data(const QModelIndex &index, int nRole) const
+QVariant TrackModel::data(const QModelIndex& index, int nRole) const
 {
   switch (nRole)
   {
@@ -407,7 +386,7 @@ QVariant TrackModel::data(const QModelIndex &index, int nRole) const
   case SELECTED_t:
     return m_oc[index.row()].bSelected;
   case ISLOADED_t:
-    return  m_oc[index.row()].bIsLoaded;
+    return m_oc[index.row()].bIsLoaded;
   case ID_t:
     return m_oc[index.row()].nId;
   case LENGTH_t:

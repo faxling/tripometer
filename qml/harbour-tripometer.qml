@@ -32,6 +32,7 @@ ApplicationWindow {
   property int nUnit: 1
   property GpsMap mainMap
   property string sImage
+  property string sImageThumb
   // Total , team 1 , team 2 ..
   property var ocPikeCount: [0, 0, 0, 0]
   property var ocTeamName: []

@@ -1,14 +1,111 @@
 #include <math.h>
 
 #include "Utils.h"
-#include <QDebug>
-#include <QFile>
-#include <QDir>
 #include <QBasicTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
-#include <QStandardPaths>
+#include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
+#include <QFile>
+#include <QImage>
+#include <QStandardPaths>
+
+QRegExp& SLASH = *new QRegExp("[\\\\/]");
+
+QString operator^(const QString& sIn, const QString& s2In)
+{
+  QString s(sIn), s2(s2In);
+  int nLen1 = s.length() - 1;
+  int nLen2 = s2.length() - 1;
+  bool bIsBack = true;
+
+  // use  the last dir separator if we need to append
+  int nSP = sIn.indexOf(SLASH);
+  if (nSP >= 0)
+    if (sIn[nSP] == '/')
+      bIsBack = false;
+
+  if (nLen1 == -1 && nLen1 == -2)
+  {
+    return "";
+  }
+
+  if (nLen2 == -1)
+  {
+    if (s[nLen1] == '\\' || s[nLen1] == '/')
+      s.remove(nLen1, 1);
+
+    return s;
+  }
+
+  if (nLen1 == -1)
+    return s2;
+
+  if (s[nLen1] == '\\' || s[nLen1] == '/')
+    s.remove(nLen1, 1);
+
+  if (s2[0] == '\\' || s[nLen1] == '/')
+    s2.remove(0, 1);
+
+  if (bIsBack == true)
+    return s + "\\" + s2;
+  else
+    return s + "/" + s2;
+}
+
+void mssutils::MkCache()
+{
+  QString sCasheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+  QDir o(sCasheDir);
+  if (o.exists() == false)
+  {
+    o.mkpath(sCasheDir);
+  }
+}
+
+QString mssutils::Hash(const QString& s)
+{
+  unsigned long long h = 0, g;
+  for (auto ik : s)
+  {
+    h = (h << 4) + ik.unicode(); // shift h 4 bits left, add in ki
+    g = h & 0xf000000000000000;  // get the top 4 bits of h
+    if (g != 0)
+    {
+      // if the top 4 bits aren't zero,
+      h = h ^ (g >> 56); //   move them to the low end of h
+      h = h ^ g;
+    }
+  }
+
+  QString sRet;
+
+  sRet.sprintf("%016llx", h);
+  QString sCasheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+  return (sCasheDir ^ sRet) + Ext(s);
+}
+
+ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
+{
+}
+
+void ImageThumb::save(QString s)
+{
+  if (s.isEmpty())
+    return;
+  QImage oOriginalPixmap(s);
+  oOriginalPixmap.scaledToWidth(180).save(mssutils::Hash(s));
+}
+
+QUrl ImageThumb::name(QString s)
+{
+  QString sRet;
+  if (s.startsWith("/") == false)
+    return QUrl("image://theme/icon-m-file-image");
+  sRet = mssutils::Hash(s);
+  return sRet;
+}
 
 StopWatch::StopWatch(const QString& sMsg)
 {
@@ -17,6 +114,7 @@ StopWatch::StopWatch(const QString& sMsg)
   m_oTimer->start();
   return;
 }
+
 StopWatch::StopWatch()
 {
   m_oTimer = new QElapsedTimer;
@@ -38,7 +136,6 @@ StopWatch::~StopWatch()
   }
   delete m_oTimer;
 }
-
 
 double StopWatch::StopTimeSec()
 {
@@ -62,13 +159,12 @@ MssTimer::MssTimer()
   m_bIsSingleShot = false;
 }
 
-MssTimer::MssTimer(std::function<void ()> pfnTimeOut)
+MssTimer::MssTimer(std::function<void()> pfnTimeOut)
 {
   m_pTimer = new QBasicTimer;
-  m_pfnTimeOut =  pfnTimeOut;
+  m_pfnTimeOut = pfnTimeOut;
   m_bIsSingleShot = false;
 }
-
 
 MssTimer::~MssTimer()
 {
@@ -78,31 +174,30 @@ MssTimer::~MssTimer()
 void MssTimer::Start(int nMilliSec)
 {
   m_bIsSingleShot = false;
-  m_pTimer->start(nMilliSec,this);
+  m_pTimer->start(nMilliSec, this);
 }
-
 
 void MssTimer::SingleShot(int nMilliSec)
 {
   m_bIsSingleShot = true;
-  if (m_pTimer->isActive()==true)
+  if (m_pTimer->isActive() == true)
     m_pTimer->stop();
-  m_pTimer->start(nMilliSec,this);
+  m_pTimer->start(nMilliSec, this);
 }
-
 
 void MssTimer::Stop()
 {
   m_pTimer->stop();
 }
 
-bool MssTimer::IsActive() {
+bool MssTimer::IsActive()
+{
   return m_pTimer->isActive();
 }
 
-void MssTimer::timerEvent(QTimerEvent *)
+void MssTimer::timerEvent(QTimerEvent*)
 {
-  if (m_pfnTimeOut!= nullptr)
+  if (m_pfnTimeOut != nullptr)
     m_pfnTimeOut();
 
   if (m_bIsSingleShot == true)
@@ -112,15 +207,13 @@ void MssTimer::timerEvent(QTimerEvent *)
 QString StorageDir()
 {
   static bool bIsChecked = false;
-  QString sRet = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+ "/pikeFight";
+  QString sRet = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/pikeFight";
   if (bIsChecked == false)
   {
     QDir o(sRet);
     if (o.exists() == false)
-    {
       o.mkpath(sRet);
 
-    }
     bIsChecked = true;
   }
 
@@ -129,11 +222,11 @@ QString StorageDir()
 
 QString GpxNewName(const QString& _sTrackName)
 {
-  int nCount=0;
+  int nCount = 0;
   QString sTrackName = _sTrackName;
-  while(QFile::exists(GpxDatFullName(sTrackName))== true)
+  while (QFile::exists(GpxDatFullName(sTrackName)) == true)
   {
-    sTrackName.sprintf("%ls(%d)",(wchar_t*)_sTrackName.utf16(),++nCount);
+    sTrackName.sprintf("%ls(%d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
   }
   return sTrackName;
 }
@@ -142,7 +235,7 @@ QString GpxDatFullName(const QString& sTrackName)
 {
   QString sDataFilePath = StorageDir();
   QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/%ls.dat",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
+  sGpxFileName.sprintf("%ls/%ls.dat", (wchar_t*)sDataFilePath.utf16(), (wchar_t*)sTrackName.utf16());
 
   return sGpxFileName;
 }
@@ -151,24 +244,23 @@ QString GpxFullName(const QString& sTrackName)
 {
   QString sDataFilePath = StorageDir();
   QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/%ls.gpx",(wchar_t*)sDataFilePath.utf16(),(wchar_t*)sTrackName.utf16());
+  sGpxFileName.sprintf("%ls/%ls.gpx", (wchar_t*)sDataFilePath.utf16(), (wchar_t*)sTrackName.utf16());
   return sGpxFileName;
 }
 
 QString FormatKm(double f)
 {
   char szStr[21];
-  snprintf(szStr,20, "%.3f",f);
+  snprintf(szStr, 20, "%.3f", f);
   return szStr;
 }
 
 QString FormatLatitude(double fLatitude)
 {
-
   int nDegrees = abs(static_cast<int>(fLatitude));
   double fMinutes = 60.0 * (fabs(fLatitude) - nDegrees);
 
-  //Check if we have overflow
+  // Check if we have overflow
   if (fMinutes >= 59.995)
   {
     fMinutes = 0.0;
@@ -177,12 +269,10 @@ QString FormatLatitude(double fLatitude)
 
   char cLat('N');
   if (fLatitude < 0.0)
-  {
     cLat = 'S';
-  }
 
   char szStr[40];
-  sprintf(szStr, "%c%02d\xb0 %.2f'",cLat,nDegrees,fMinutes);
+  sprintf(szStr, "%c%02d\xb0 %.2f'", cLat, nDegrees, fMinutes);
   return QString::fromLatin1(szStr);
 }
 
@@ -191,10 +281,10 @@ QString FormatDuration(unsigned int nTime)
   wchar_t szStr[20];
   time_t now = nTime / 10;
 
-  tm *tmNow = gmtime(&now);
+  tm* tmNow = gmtime(&now);
 
   if (nTime <= 0)
-    return  "x";
+    return "x";
 
   if (tmNow->tm_hour > 0)
     wcsftime(szStr, 20, L"%H:%M:%S", tmNow);
@@ -203,9 +293,9 @@ QString FormatDuration(unsigned int nTime)
 
   wchar_t szStr2[20];
 
-  swprintf(szStr2,20,L"%ls.%d",szStr,nTime%10);
+  swprintf(szStr2, 20, L"%ls.%d", szStr, nTime % 10);
 
-  return  QString::fromWCharArray(szStr2);
+  return QString::fromWCharArray(szStr2);
 }
 
 QString FormatDateTime(unsigned int nTime)
@@ -218,25 +308,24 @@ QString FormatDateTime(unsigned int nTime)
 
   wcsftime(szStr, 20, L"%Y-%m-%d %H:%M:%S", localtime(&now));
 
-  QString sRet = QString::fromWCharArray(szStr );
+  QString sRet = QString::fromWCharArray(szStr);
 
-  return  sRet;
+  return sRet;
 }
 
 QString FormatKmH(double f)
 {
   char szStr[60];
-  sprintf(szStr, "%.1f",f);
+  sprintf(szStr, "%.1f", f);
   return szStr;
 }
 
 QString FormatLongitude(double fLongitude)
 {
-
   int nDegrees = abs(static_cast<int>(fLongitude));
   double fMinutes = 60.0 * (fabs(fLongitude) - nDegrees);
 
-  //Check if we have overflow
+  // Check if we have overflow
   if (fMinutes >= 59.995)
   {
     fMinutes = 0.0;
@@ -251,79 +340,76 @@ QString FormatLongitude(double fLongitude)
 
   char szStr[20];
 
-  sprintf(szStr, "%c%03d\xb0 %.2f'",cLong,nDegrees,fMinutes);
+  sprintf(szStr, "%c%03d\xb0 %.2f'", cLong, nDegrees, fMinutes);
   return QString::fromLatin1(szStr);
 
-  //   return QString(QLatin1String("%1%2\xB0%3'")).arg(cLong).arg(nDegrees, 3, 10, QChar('0')).arg(fMinutes, 5, 'f', 2, QChar('0'));
+  //   return QString(QLatin1String("%1%2\xB0%3'")).arg(cLong).arg(nDegrees, 3,
+  //   10, QChar('0')).arg(fMinutes, 5, 'f', 2, QChar('0'));
 }
 
-
-QRegExp& SLASH = *new QRegExp("[\\\\/]");
-
-QString DirName(const QString & sFileName) {
-  int n  = sFileName.lastIndexOf(SLASH);
+QString DirName(const QString& sFileName)
+{
+  int n = sFileName.lastIndexOf(SLASH);
   if (n < 0)
     return sFileName;
   return sFileName.left(n);
 }
 
-QString JustFileNameNoExt(const QString & sFileName) {
+QString JustFileNameNoExt(const QString& sFileName)
+{
   return BaseName(JustFileName(sFileName));
 }
 
-
-QString JustFileName(const QString & sFileName) {
-  int n  = sFileName.lastIndexOf(SLASH);
+QString JustFileName(const QString& sFileName)
+{
+  int n = sFileName.lastIndexOf(SLASH);
   if (n < 0)
     return sFileName;
-  return sFileName.right(sFileName.size() - n -1);
+  return sFileName.right(sFileName.size() - n - 1);
 }
 
-
-QString BaseName(const QString & sFileName) {
+QString BaseName(const QString& sFileName)
+{
   return sFileName.left(sFileName.lastIndexOf('.'));
 }
 
-QString Ext(const QString & sFileName) {
-  return sFileName.right(sFileName.size() - sFileName.lastIndexOf('.') -1 );
+QString Ext(const QString& sFileName)
+{
+  return sFileName.right(sFileName.size() - sFileName.lastIndexOf('.'));
 }
-
 
 const int kb = 1024;
 const int mb = 1024 * kb;
 const int gb = 1024 * mb;
 
-
-
-QString FormatNrBytes(int nBytes) {
-
+QString FormatNrBytes(int nBytes)
+{
   double fBytes = nBytes;
-  wchar_t  szStr[30];
+  wchar_t szStr[30];
 
   if (nBytes == 0)
     return "-";
 
   if (nBytes >= gb)
-    swprintf(szStr,30, L"%.2f GB", fBytes / gb);
+    swprintf(szStr, 30, L"%.2f GB", fBytes / gb);
   else if (nBytes >= mb)
-    swprintf(szStr,30, L"%.1f MB", fBytes / mb);
+    swprintf(szStr, 30, L"%.1f MB", fBytes / mb);
   else if (nBytes >= kb)
-    swprintf(szStr,30, L"%d KB", nBytes / kb);
+    swprintf(szStr, 30, L"%d KB", nBytes / kb);
   else
-    swprintf(szStr,30, L"%d byte(s)", nBytes);
+    swprintf(szStr, 30, L"%d byte(s)", nBytes);
 
   return QString::fromWCharArray(szStr);
 }
 
-
-void WriteMarkData(const QString& sTrackName, MarkData& t )
+void WriteMarkData(const QString& sTrackName, MarkData& t)
 {
   QString sGpxDatFileName = GpxDatFullName(sTrackName);
   QFile oDat(sGpxDatFileName);
   oDat.open(QIODevice::WriteOnly);
-  oDat.write((char*)&t,sizeof t);
+  oDat.write((char*)&t, sizeof t);
   oDat.close();
-  return ;
+  return;
 }
 
 MarkData GetMarkData(const QString& sTrackName)
@@ -333,31 +419,22 @@ MarkData GetMarkData(const QString& sTrackName)
   oDat.setFileName(sGpxDatFileName);
   bool bRet = oDat.open(QIODevice::ReadOnly);
   MarkData tData;
-  memset((void*)&tData,0,sizeof tData);
+  memset((void*)&tData, 0, sizeof tData);
   tData.nType = -1;
-  if (bRet==false)
+  if (bRet == false)
     return tData;
-  oDat.read((char*)&tData,sizeof tData);
+  oDat.read((char*)&tData, sizeof tData);
   oDat.close();
   return tData;
 }
 
-
-
-
 void ScreenOn(bool b)
 {
-  QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus,
-                                                         "system");
-  QDBusInterface interface("com.nokia.mce",
-                           "/com/nokia/mce/request",
-                           "com.nokia.mce.request",
-                           system);
-
+  QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus, "system");
+  QDBusInterface interface("com.nokia.mce", "/com/nokia/mce/request", "com.nokia.mce.request", system);
 
   if (b == true)
   {
-
     // interface.call( "req_display_state_dim");
     interface.call("req_display_state_on");
     interface.call("req_display_blanking_pause");
@@ -367,8 +444,10 @@ void ScreenOn(bool b)
 
   //   QDBusConnection::disconnectFromBus("system");
 }
-namespace msslistmodel{
-  QHash<int, MssListModel*> g_ocInstance;
+
+namespace msslistmodel
+{
+QHash<int, MssListModel*> g_ocInstance;
 }
 
 void MssListModel::Init(int nInstanceId)
@@ -409,44 +488,43 @@ int MssListModel::FindRow(const QVariant& oValToFind, int nCol)
   return -1;
 }
 
-
 QHash<int, QByteArray> MssListModel::roleNames() const
 {
   return m_ocRole;
 }
 
-int MssListModel::columnCount(const QModelIndex &) const
+int MssListModel::columnCount(const QModelIndex&) const
 {
   return 1;
 }
 
-int MssListModel::rowCount(const QModelIndex &) const
+int MssListModel::rowCount(const QModelIndex&) const
 {
   return m_ocRows.size();
 }
 
-QModelIndex MssListModel::index(int row, int column, const QModelIndex &) const
+QModelIndex MssListModel::index(int row, int column, const QModelIndex&) const
 {
   QModelIndex o = createIndex(row, column);
   return o;
 }
 
-QModelIndex  MssListModel::parent(const QModelIndex &) const
+QModelIndex MssListModel::parent(const QModelIndex&) const
 {
   return QModelIndex();
 }
 
-QVariant MssListModel::data(const QModelIndex &oIndex, int role) const
+QVariant MssListModel::data(const QModelIndex& oIndex, int role) const
 {
   int roleIdx = role - Qt::UserRole;
   int nRow = oIndex.row();
   if (m_ocRows.size() <= nRow || nRow < 0)
     return QVariant();
 
-  return  m_ocRows[nRow][roleIdx];
+  return m_ocRows[nRow][roleIdx];
 }
 
-void MssListModel::updateItem(int nRow, int nCol, const QVariant &value)
+void MssListModel::updateItem(int nRow, int nCol, const QVariant& value)
 {
   if (nRow < 0)
     return;

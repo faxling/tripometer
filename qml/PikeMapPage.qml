@@ -26,9 +26,7 @@ Item {
 
     Component.onCompleted: {
       mainMap = idMap
-      console.log("onCompleted start")
       Lib.initDB()
-      console.log("onCompleted end")
     }
 
     enable_compass: true

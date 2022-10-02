@@ -177,9 +177,12 @@ static void osm_gps_map_qt_source(Maep::GpsMap* widget,
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget,
                                           GParamSpec* pspec,
                                           OsmGpsMap* map);
+/*
 static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,
                                 MaepGeonamesEntry* entry,
                                 MaepWikiContext* wiki);
+                                */
+
 static void osm_gps_map_qt_places(Maep::GpsMap* widget,
                                   MaepSearchContextSource source,
                                   GSList* places,
@@ -1077,7 +1080,7 @@ void Maep::GpsMap::setScreenRotation(bool status) {
   emit screenRotationChanged(status);
 }
 
-void Maep::GpsMap::setWikiStatus(bool status) {
+void Maep::GpsMap::setWikiStatus(bool ) {
   /*
   if (status == wiki_enabled)
     return;
@@ -1089,7 +1092,7 @@ void Maep::GpsMap::setWikiStatus(bool status) {
   */
 }
 
-void Maep::GpsMap::setWikiEntry(const MaepGeonamesEntry* entry) {
+void Maep::GpsMap::setWikiEntry(const MaepGeonamesEntry* ) {
   /*
   if (wiki_entry)
     delete (wiki_entry);
@@ -1099,7 +1102,7 @@ void Maep::GpsMap::setWikiEntry(const MaepGeonamesEntry* entry) {
 
   */
 }
-
+/*
 static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,
                                 MaepGeonamesEntry* entry,
                                 MaepWikiContext* wiki) {
@@ -1107,7 +1110,7 @@ static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,
 
   widget->setWikiEntry(entry);
 }
-
+*/
 void Maep::GpsMap::setSearchResults(MaepSearchContextSource source,
                                     GSList* places) {
   Q_UNUSED(source);

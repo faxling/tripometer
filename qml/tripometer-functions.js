@@ -126,6 +126,8 @@ function showPike(nOwner) {
 function addPikeImage(i, oPModel, sImage) {
   var nId = oPModel.get(i).nId
   oPModel.get(i).sImage = sImage
+  oImageThumb.save(sImage)
+  oPModel.get(i).sImageThumb = String(oImageThumb.name(sImage))
   db.transaction(function (tx) {
     tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])
   })
@@ -158,11 +160,13 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
                    "nId": Number(nId),
                    "sDate": sDate,
                    "sImage": sImage,
+                   "sImageThumb": String(oImageThumb.name(sImage)),
                    "sLength": sLenText,
                    "nLen": nLen,
                    "fLo": fLo,
                    "fLa": fLa
                  })
+
   var nC = oPModel.count
 
   calcSizeAndDisplay(nOwner)
@@ -221,7 +225,7 @@ function addPike(nOwner) {
 
     var rs = tx.executeSql(
           'INSERT INTO Catch_V2 VALUES(?,?,?,?,?,?,?,?)',
-          [undefined, 1, sDate, "image://theme/icon-m-file-image", nLen, nOwner, tPos.longitude, tPos.latitude])
+          [undefined, 1, sDate, null, nLen, nOwner, tPos.longitude, tPos.latitude])
 
     addPikeEx(rs.insertId, nOwner, sDate, "image://theme/icon-m-file-image",
               nLen, tPos.longitude, tPos.latitude, true)
