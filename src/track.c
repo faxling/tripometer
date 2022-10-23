@@ -43,7 +43,7 @@
 #endif
 
 #define DATE_FORMAT "%FT%T"
-#define TRACK_CAPTURE_ENABLED "track_capture_enabled"
+//#define TRACK_CAPTURE_ENABLED "track_capture_enabled"
 #define TRACK_CAPTURE_LAST    "track_capture_last"
 
 #ifndef LIBXML_TREE_ENABLED

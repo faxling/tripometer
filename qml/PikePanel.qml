@@ -20,7 +20,7 @@ DockedPanel {
     font.bold: true
     color: "black"
     font.pixelSize: Theme.fontSizeHuge
-    text: idApp.ocTeamName[nOwner - 1] + " " + ocSumSize[nOwner - 1]
+    text: idApp.ocTeamName[nOwner] + " " + ocSumSize[nOwner - 1]
     MouseArea {
       // strange, this is needed for the docked panel to be enabled:
       // to respond on this area
@@ -38,8 +38,12 @@ DockedPanel {
     height: idDockedPanel.height - Theme.itemSizeLarge - idSlider1.height
     model: oModel
     onCurrentIndexChanged: {
-      if (currentIndex < 0)
+
+      if (idApp.bAppStarted === false)
         return
+      if (currentIndex < 0) {
+        return
+      }
       idSlider1.value = oModel.get(currentIndex).nLen / 200.0
       idMap.markPikeInMap(oModel.get(currentIndex).nId)
     }

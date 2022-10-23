@@ -22,5 +22,10 @@
 
 - nNrTeams  
 
+- ställa datum
+
+- View
+
+
 void Maep::GpsMap::setLookAt(float lat, float lon)
 

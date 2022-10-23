@@ -166,6 +166,7 @@ void        osm_gps_map_draw_gps                    (OsmGpsMap *map, gboolean st
 coord_t     osm_gps_map_get_co_ordinates            (OsmGpsMap *map, int pixel_x, int pixel_y);
 void        osm_gps_map_from_co_ordinates           (OsmGpsMap *map, coord_t *coord,
                                                      int *pixel_x, int *pixel_y);
+void        osm_gps_map_from_deg                    (OsmGpsMap* map, double log, double lat, int* pixel_x, int* pixel_y);
 void        osm_gps_map_screen_to_geographic        (OsmGpsMap *map, gint pixel_x, gint pixel_y, gfloat *latitude, gfloat *longitude);
 void        osm_gps_map_geographic_to_screen        (OsmGpsMap *map, gfloat latitude, gfloat longitude, gint *pixel_x, gint *pixel_y);
 void        osm_gps_map_scroll                      (OsmGpsMap *map);

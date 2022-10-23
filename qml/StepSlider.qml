@@ -51,8 +51,6 @@ Row {
 
   Slider {
     id: idSlider
-    leftMargin: 0
-    rightMargin: 0
     width: parent.width - idLeftBtn.width * 2
   }
 

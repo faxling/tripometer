@@ -28,6 +28,8 @@ QString BaseName(const QString& sFileName);
 // .txt
 QString Ext(const QString& sFileName);
 
+QString operator^(const QString& s, const QString& s2);
+
 QString StorageDir();
 QString GpxNewName(const QString& sTrackName);
 QString GpxDatFullName(const QString& sTrackName);

@@ -6,9 +6,10 @@ Page {
 
   Component.onDestruction: {
     var t = idApp.ocTeamName
-    t[0] = idnOwner1.text
-    t[1] = idnOwner2.text
-    t[2] = idnOwner3.text
+    t[0] = idReportLabel.text
+    t[1] = idnOwner1.text
+    t[2] = idnOwner2.text
+    t[3] = idnOwner3.text
     idApp.ocTeamName = t
   }
 
@@ -19,6 +20,44 @@ Page {
 
     PageHeader {
       title: "Settings"
+    }
+
+    ComboBox {
+      width: parent.width
+      label: "Number of Teams"
+      currentIndex: nNrTeams - 1
+      onCurrentIndexChanged: {
+        idApp.nNrTeams = currentIndex + 1
+      }
+      menu: ContextMenu {
+        MenuItem {
+          text: "1"
+        }
+        MenuItem {
+          text: "2"
+        }
+        MenuItem {
+          text: "3"
+        }
+      }
+    }
+
+    NameText {
+      id: idnOwner1
+      nOwner: 1
+    }
+
+    NameText {
+      id: idnOwner2
+      nOwner: 2
+    }
+    NameText {
+      id: idnOwner3
+      nOwner: 3
+    }
+    NameText {
+      id: idReportLabel
+      nOwner: 0
     }
     ComboBox {
       width: parent.width
@@ -71,40 +110,6 @@ Page {
           text: "All"
         }
       }
-    }
-
-    ComboBox {
-      width: parent.width
-      label: "Number of Teams"
-      currentIndex: nNrTeams - 1
-      onCurrentIndexChanged: {
-        idApp.nNrTeams = currentIndex + 1
-      }
-      menu: ContextMenu {
-        MenuItem {
-          text: "1"
-        }
-        MenuItem {
-          text: "2"
-        }
-        MenuItem {
-          text: "3"
-        }
-      }
-    }
-
-    NameText {
-      id: idnOwner1
-      nOwner: 1
-    }
-
-    NameText {
-      id: idnOwner2
-      nOwner: 2
-    }
-    NameText {
-      id: idnOwner3
-      nOwner: 3
     }
 
     StepSlider {

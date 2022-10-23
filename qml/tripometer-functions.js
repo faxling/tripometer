@@ -30,8 +30,13 @@ function newSession() {
 function resumeSession() {
   idApp.bFlipped = true
   idApp.bAppStarted = true
+  idApp.bIsPause = false
 }
 
+function viewSession() {
+  idApp.bFlipped = true
+  idApp.bAppStarted = true
+}
 function deleteDB() {
 
   db.transaction(function (tx) {

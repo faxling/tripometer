@@ -10,6 +10,7 @@ Item {
 
   GpsMap {
     id: idMap
+    track_capture: !idApp.bIsPause
 
     Component.onDestruction: {
 

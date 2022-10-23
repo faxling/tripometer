@@ -2460,6 +2460,11 @@ void osm_gps_map_osd_classic_free(osm_gps_map_osd_t *osd)
 void osm_gps_map_set_azimuth(osm_gps_map_osd_t *osd, double azimuth)
 {
   osd_priv_t *priv = (osd_priv_t*)osd->priv;
+  if (isnan(azimuth))
+  {
+    priv->scale.compass_azimuth = NAN;
+    return;
+  }
   priv->scale.compass_azimuth = deg2rad((float)azimuth);
 }
 

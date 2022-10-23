@@ -31,7 +31,16 @@ Item {
           idListModel.klicked2(2)
         }
       }
-
+      MenuItem {
+        text: "Make Report"
+        onClicked: {
+          mainMap.markPikeInMap(-1)
+          mainMap.savePikeReport(
+                idPikeModel1, idApp.ocTeamName[1] + " " + idApp.ocSumSize[0],
+                idPikeModel2, idApp.ocTeamName[2] + " " + idApp.ocSumSize[1],
+                idApp.nMinSize, idApp.ocTeamName[0])
+        }
+      }
       MenuItem {
         text: "MAP"
         onClicked: {

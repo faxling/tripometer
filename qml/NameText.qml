@@ -5,5 +5,11 @@ TextField {
   property int nOwner: 1
   //  property alias touched: _editor.touched
   visible: idApp.nNrTeams >= nOwner
-  text: idApp.ocTeamName[nOwner - 1]
+  label: {
+    if (nOwner === 0)
+      return "Report Header"
+
+    return "Team " + nOwner + " name"
+  }
+  text: idApp.ocTeamName[nOwner]
 }

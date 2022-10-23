@@ -27,6 +27,8 @@ QObject* g_pTheTrackModel;
 QObject* g_pTheMap;
 
 int main(int argc, char* argv[]) {
+
+  // /home/nemo/Documents/pikefight
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
   // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
@@ -81,7 +83,7 @@ int main(int argc, char* argv[]) {
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName",
-                      QStringList({"Team 1", "Team 2", "Team 3"})));
+                      QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));
   MssTimer oTimer([] {
     if (InfoListModel::m_pRoot == 0)
       return;
@@ -93,6 +95,7 @@ int main(int argc, char* argv[]) {
   pInfoListModel->klicked2(5);
   oSW.Stop();
   mssutils::MkCache();
+
   app->exec();
   oSettings.setValue("ocTeamName", pU->rootObject()->property("ocTeamName"));
 

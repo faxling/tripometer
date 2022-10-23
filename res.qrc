@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>FORTE.TTF</file>
+        <file>qml/symPike2.png</file>
+        <file>qml/symPike3.png</file>
+        <file>pike1.svg</file>
+        <file>pike2.svg</file>
+    </qresource>
+</RCC>

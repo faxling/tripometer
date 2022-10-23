@@ -24,7 +24,7 @@ ApplicationWindow {
   property int nNrTeams: 2
   property int nMinSize: 60
   property string sDur
-  property bool bIsPause: false
+  property bool bIsPause: true
   property int nSelectCount
   property bool nSearchBusy
   property bool bScreenallwaysOn: false
@@ -65,7 +65,10 @@ ApplicationWindow {
     // console.log("int db")
     // Lib.initDB()
   }
-
+  FontLoader {
+    id: webFont
+    source: "qrc:/FORTE.TTF"
+  }
   ListModel {
     id: idPikeModel1
   }
@@ -104,6 +107,17 @@ ApplicationWindow {
               text: "New"
               onClicked: {
                 Lib.newSession()
+              }
+            }
+            Button {
+              y: 100
+              anchors.horizontalCenter: parent.horizontalCenter
+              width: 200
+              text: "View"
+              onClicked: {
+                onClicked: {
+                  Lib.viewSession()
+                }
               }
             }
 
