@@ -5,13 +5,19 @@ import ".."
 
 Page {
 
+  property var fnDateTimeChanged
   property alias hour: idTimePicker.hour
   property alias minute: idTimePicker.minute
   property alias date: idDatePicker.date
   property alias time: idTimePicker.time
-  Component.onDestruction: {
 
+  Component.onDestruction: {
+    var o = new Date(date)
+    o.setMinutes(minute)
+    o.setHours(hour)
+    fnDateTimeChanged(o)
   }
+
   PageHeader {
     id: idHeader
     title: "Set date/time"

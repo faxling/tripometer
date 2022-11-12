@@ -188,6 +188,16 @@ function centerPike(nId, oPModel) {
     }
   }
 }
+
+function updateDateTime(date, index) {
+  var str = pikeDateTimeStr(date)
+  idListView.model.get(index).sDate = str
+  db.transaction(function (tx) {
+    tx.executeSql('UPDATE Catch_V2 SET sDate=? WHERE pike_id=?',
+                  [str, idListView.model.get(index).nId])
+  })
+}
+
 function removePike(nId, oPModel, nOwnerIn) {
   var nC = oPModel.count
   for (var i = 0; i < nC; ++i) {
@@ -211,25 +221,27 @@ function zN(nValue) {
   return nValue
 }
 
-function pikeDateTimeStr() {
-  var o = new Date()
+function pikeDateTimeStr(o) {
   return o.getFullYear(
         ) + "-" + (o.getMonth() + 1) + "-" + o.getDate() + " " + zN(
         o.getHours()) + ":" + zN(o.getMinutes()) + ":" + zN(o.getSeconds())
 }
 
+function pikeDateTimeStrNow() {
+  var o = new Date()
+  return pikeDateFromStr(o)
+}
+
 function pikeDateFromStr(sStr) {
-  console.log(sStr)
   var o = new Date()
   var oc = sStr.split("-")
   o.setFullYear(oc[0])
-  o.setMonth(oc[1])
+  o.setMonth(oc[1] - 1)
   var ocTimeEx = String(oc[2]).split(" ")
   o.setDate(ocTimeEx[0])
   var ocTime = ocTimeEx[1].split(":")
   o.setHours(ocTime[0])
   o.setMinutes(ocTime[1])
-  console.log(o)
   return o
 }
 
@@ -238,7 +250,7 @@ function addPike(nOwner) {
 
   if (tPos.longitude === undefined)
     return
-  var sDate = pikeDateTimeStr()
+  var sDate = pikeDateTimeStrNow()
   var nLen = 50
 
   db.transaction(function (tx) {

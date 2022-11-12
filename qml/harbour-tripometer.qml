@@ -15,7 +15,6 @@ ApplicationWindow {
   property bool bFlipped: false
   property bool bAppStarted: false
   Component.onDestruction: {
-    console.log("destruct")
     mainMap.saveTrack(0)
   }
 

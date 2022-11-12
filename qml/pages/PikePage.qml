@@ -86,9 +86,11 @@ SilicaListView {
                                         "date": oDate
                                       })
 
-          dialog.hour = oDate.getHours()
+          dialog.fnDateTimeChanged = function (date) {
+            Lib.updateDateTime(date, index)
+          }
 
-          console.log(dialog.hour)
+          // idListView.model.get(index).sDate = Lib.pikeDateTimeStr(o)
         }
       }
     }
