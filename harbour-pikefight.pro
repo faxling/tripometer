@@ -106,6 +106,7 @@ DISTFILES += \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
     qml/StepSlider.qml \
+    qml/pages/DateTimePage.qml \
     qml/pages/ImagePage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/TextList.qml \

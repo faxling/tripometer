@@ -218,6 +218,21 @@ function pikeDateTimeStr() {
         o.getHours()) + ":" + zN(o.getMinutes()) + ":" + zN(o.getSeconds())
 }
 
+function pikeDateFromStr(sStr) {
+  console.log(sStr)
+  var o = new Date()
+  var oc = sStr.split("-")
+  o.setFullYear(oc[0])
+  o.setMonth(oc[1])
+  var ocTimeEx = String(oc[2]).split(" ")
+  o.setDate(ocTimeEx[0])
+  var ocTime = ocTimeEx[1].split(":")
+  o.setHours(ocTime[0])
+  o.setMinutes(ocTime[1])
+  console.log(o)
+  return o
+}
+
 function addPike(nOwner) {
   var tPos = mainMap.currentPos()
 

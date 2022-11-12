@@ -288,7 +288,6 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
     case 0:
       fFactor = 3.6;
       fFactorDist = 1;
-
       break;
     case 1:
       fFactor = 1.9438;

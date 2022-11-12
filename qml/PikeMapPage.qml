@@ -333,7 +333,7 @@ Item {
         text: "Delete"
         color: "black"
         onClicked: {
-          console.log("del")
+
           var oM = idTrackModel
           idDeleteRemorse._labels.children[1].font.pixelSize = Theme.fontSizeHuge
           idDeleteRemorse._labels.children[1].palette.primaryColor = Theme.highlightColor

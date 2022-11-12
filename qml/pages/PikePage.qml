@@ -23,15 +23,23 @@ SilicaListView {
     id: highlight
     Rectangle {
       color: Theme.highlightBackgroundColor
+      height: 40
+      //visible: !idListItem.menu.active
       // y: idListView.currentItem.y
+
+
+      /*
       Behavior on y {
         SpringAnimation {
           spring: 3
           damping: 0.2
         }
       }
+      */
     }
   }
+
+  highlightResizeDuration: 0
 
   highlightFollowsCurrentItem: true
   highlight: highlight
@@ -40,6 +48,11 @@ SilicaListView {
   delegate: ListItem {
     id: idListItem
     menu: ContextMenu {
+
+      onActiveChanged: {
+        idListView.highlightItem.visible = !active
+      }
+
       MenuItem {
         id: idMenuItem
         text: "Delete"
@@ -61,6 +74,23 @@ SilicaListView {
           pageStack.push(idImagePickerPage)
         }
       }
+      MenuItem {
+        text: "Set Date/Time"
+        onClicked: {
+          idListView.currentIndex = index
+          var oDate = Lib.pikeDateFromStr(idListView.model.get(index).sDate)
+
+          var dialog = pageStack.push("DateTimePage.qml", {
+                                        "hour": oDate.getHours(),
+                                        "minute": oDate.getMinutes(),
+                                        "date": oDate
+                                      })
+
+          dialog.hour = oDate.getHours()
+
+          console.log(dialog.hour)
+        }
+      }
     }
     RemorseItem {
       id: idRemorse
@@ -74,8 +104,8 @@ SilicaListView {
 
     // width: ListView.view.width
     Row {
+      id: idRow
       TextList {
-
         width: idListItem.width / 2
         text: sDate
       }
@@ -101,6 +131,15 @@ SilicaListView {
       }
     }
 
+
+    /*
+    Rectangle {
+      anchors.fill: idRow
+      visible: index === currentIndex
+      color: Theme.highlightBackgroundColor
+    }
+
+    */
     onClicked: {
       idListView.currentIndex = index
       idListView.pikePressed(nId)
