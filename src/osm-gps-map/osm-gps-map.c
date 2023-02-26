@@ -105,9 +105,9 @@ struct _OsmGpsMapPrivate
   gboolean record_trip_history;
   gboolean show_trip_history;
   MaepGeodata* trip_history;
-  coord_t* gps;
-  float gps_heading;
-  gboolean gps_valid;
+  coord_t* osm_gps;
+  float osm_gps_heading;
+  gboolean osm_gps_valid;
   cairo_surface_t* cr_markedImage;
   // additional images or tracks added to the map
   GSList* tracks;
@@ -127,6 +127,9 @@ struct _OsmGpsMapPrivate
   int ui_gps_track_width;
   int ui_gps_point_inner_radius;
   int ui_gps_point_outer_radius;
+
+
+
 
   guint fullscreen : 1;
   guint is_disposed : 1;
@@ -195,7 +198,7 @@ G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
 static int inspect_map_uri(const gchar* repo_uri, gboolean* the_google);
 static void osm_gps_map_print_images(OsmGpsMap* map);
-static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
+//static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 #if USE_LIBSOUP22
 static void osm_gps_map_tile_download_complete(SoupMessage* msg, gpointer user_data);
 #else
@@ -724,74 +727,94 @@ static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
   OsmGpsMapPrivate* priv = map->priv;
 
   // incase we get called before we have got a gps point
-  if (priv->gps_valid)
+
+  g_debug("Queing redraw");
+
+
+
+  if (priv->osm_gps_valid)
   {
+
     int map_x0, map_y0;
     int x, y;
-    int r = priv->ui_gps_point_inner_radius / priv->map_factor;
-    int r2 = priv->ui_gps_point_outer_radius;
-    int mr = MAX(3 * r, r2);
-    cairo_rectangle_int_t rect;
+    map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER + 20;
+    map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER + 20;
 
-    map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
-    map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
-    x = lon2pixel(priv->map_zoom, priv->gps->rlon) - map_x0;
-    y = lat2pixel(priv->map_zoom, priv->gps->rlat) - map_y0;
-    cairo_pattern_t* pat;
+    /*
+     test
+     priv->gps_valid = true;
+    priv->gps->rlat = deg2rad(59.991 );
+    priv->gps->rlon = deg2rad(16.036);
+    priv->gps_heading = deg2rad(39);
 
-    // draw transparent area
-    if (r2 > 0)
-    {
-      /* Transform meters to pixel at current zoom and factor. */
-      r2 /= osm_gps_map_get_scale_at_lat(priv->map_zoom, priv->map_factor, priv->gps->rlat);
-      cairo_set_line_width(priv->cr, 1.5);
-      cairo_set_source_rgba(priv->cr, 0.75, 0.75, 0.75, 0.4);
-      cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
-      cairo_fill(priv->cr);
-      // draw transparent area border
-      cairo_set_source_rgba(priv->cr, 0.55, 0.55, 0.55, 0.4);
-      cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
-      cairo_stroke(priv->cr);
-    }
+    */
 
-    // draw ball gradient
-    if (r > 0)
-    {
-      // draw direction arrow
-      if (!isnan(priv->gps_heading))
-      {
-        cairo_move_to(priv->cr, x - r * cos(priv->gps_heading), y - r * sin(priv->gps_heading));
-        cairo_line_to(priv->cr, x + 3 * r * sin(priv->gps_heading),
-                      y - 3 * r * cos(priv->gps_heading));
-        cairo_line_to(priv->cr, x + r * cos(priv->gps_heading), y + r * sin(priv->gps_heading));
-        cairo_close_path(priv->cr);
+    /*
+        int r = priv->ui_gps_point_inner_radius / priv->map_factor;
+        int r2 = priv->ui_gps_point_outer_radius;
+        int mr = MAX(3 * r, r2);
+        cairo_rectangle_int_t rect;
 
-        cairo_set_source_rgba(priv->cr, 0.3, 0.3, 1.0, 0.5);
-        cairo_fill_preserve(priv->cr);
+        map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
+        map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
+        x = lon2pixel(priv->map_zoom, priv->gps->rlon) - map_x0;
+        y = lat2pixel(priv->map_zoom, priv->gps->rlat) - map_y0;
+        cairo_pattern_t* pat;
 
-        cairo_set_line_width(priv->cr, 1.0);
-        cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 0.5);
-        cairo_stroke(priv->cr);
-      }
+        // draw transparent area
+        if (r2 > 0)
+        {
+          // Transform meters to pixel at current zoom and factor.
+          r2 /= osm_gps_map_get_scale_at_lat(priv->map_zoom, priv->map_factor, priv->gps->rlat);
+          cairo_set_line_width(priv->cr, 1.5);
+          cairo_set_source_rgba(priv->cr, 0.75, 0.75, 0.75, 0.4);
+          cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
+          cairo_fill(priv->cr);
+          // draw transparent area border
+          cairo_set_source_rgba(priv->cr, 0.55, 0.55, 0.55, 0.4);
+          cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
+          cairo_stroke(priv->cr);
+        }
 
-      pat = cairo_pattern_create_radial(x - (r / 5), y - (r / 5), (r / 5), x, y, r);
-      cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1.0);
-      cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 1, 1.0);
-      cairo_set_source(priv->cr, pat);
-      cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
-      cairo_fill(priv->cr);
-      cairo_pattern_destroy(pat);
-      // draw ball border
-      cairo_set_line_width(priv->cr, 1.0);
-      cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 1.0);
-      cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
-      cairo_stroke(priv->cr);
-    }
-    rect.x = x - mr;
-    rect.y = y - mr;
-    rect.width = mr * 2;
-    rect.height = mr * 2;
-    cairo_region_union_rectangle(priv->dirty, &rect);
+        // draw ball gradient
+        if (r > 0)
+        {
+          // draw direction arrow
+          if (!isnan(priv->gps_heading))
+          {
+            cairo_move_to(priv->cr, x - r * cos(priv->gps_heading), y - r * sin(priv->gps_heading));
+            cairo_line_to(priv->cr, x + 3 * r * sin(priv->gps_heading),
+                          y - 3 * r * cos(priv->gps_heading));
+            cairo_line_to(priv->cr, x + r * cos(priv->gps_heading), y + r * sin(priv->gps_heading));
+            cairo_close_path(priv->cr);
+
+            cairo_set_source_rgba(priv->cr, 0.3, 0.3, 1.0, 0.5);
+            cairo_fill_preserve(priv->cr);
+
+            cairo_set_line_width(priv->cr, 1.0);
+            cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 0.5);
+            cairo_stroke(priv->cr);
+          }
+
+          pat = cairo_pattern_create_radial(x - (r / 5), y - (r / 5), (r / 5), x, y, r);
+          cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1.0);
+          cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 1, 1.0);
+          cairo_set_source(priv->cr, pat);
+          cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
+          cairo_fill(priv->cr);
+          cairo_pattern_destroy(pat);
+          // draw ball border
+          cairo_set_line_width(priv->cr, 1.0);
+          cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 1.0);
+          cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
+          cairo_stroke(priv->cr);
+        }
+        rect.x = x - mr;
+        rect.y = y - mr;
+        rect.width = mr * 2;
+        rect.height = mr * 2;
+        cairo_region_union_rectangle(priv->dirty, &rect);
+        */
   }
 }
 
@@ -800,7 +823,7 @@ static void osm_gps_map_blit_surface(OsmGpsMap* map, cairo_surface_t* cr_surf, i
 {
   OsmGpsMapPrivate* priv = map->priv;
 
-  g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
+ // g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
   if (priv->double_pixel)
   {
     modulo *= 2;
@@ -1554,7 +1577,8 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
 
   g_debug("dirty is %p.", (gpointer)priv->dirty);
   osm_gps_map_print_tracks(map);
-  osm_gps_map_draw_gps_point(map);
+  // draw in gps layer
+  // osm_gps_map_draw_gps_point(map);
   osm_gps_map_print_images(map);
 
   for (list = priv->layers; list != NULL; list = list->next)
@@ -1606,10 +1630,10 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->map_factor = 1.;
 
   priv->trip_history = NULL;
-  priv->gps = g_new0(coord_t, 1);
-  priv->gps_valid = FALSE;
+  priv->osm_gps = g_new0(coord_t, 1);
+  priv->osm_gps_valid = FALSE;
   priv->cr_markedImage = NULL;
-  priv->gps_heading = OSM_GPS_MAP_INVALID;
+  priv->osm_gps_heading = OSM_GPS_MAP_INVALID;
 
   priv->tracks = NULL;
   priv->images = NULL;
@@ -1800,7 +1824,7 @@ static void osm_gps_map_dispose(GObject* object)
   if (priv->idle_map_redraw != 0)
     g_source_remove(priv->idle_map_redraw);
 
-  g_free(priv->gps);
+  g_free(priv->osm_gps);
 
   G_OBJECT_CLASS(osm_gps_map_parent_class)->dispose(object);
 }
@@ -3087,9 +3111,9 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
   g_return_if_fail(OSM_IS_GPS_MAP(map));
   priv = map->priv;
 
-  priv->gps->rlat = deg2rad(latitude);
-  priv->gps->rlon = deg2rad(longitude);
-  priv->gps_heading = deg2rad(heading);
+  priv->osm_gps->rlat = deg2rad(latitude);
+  priv->osm_gps->rlon = deg2rad(longitude);
+  priv->osm_gps_heading = deg2rad(heading);
 
   // If trip marker add to list of gps points.
   if (priv->record_trip_history)
@@ -3115,18 +3139,18 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
     int width = priv->viewport_width;
     int height = priv->viewport_height;
 
-    osm_gps_map_from_co_ordinates(map, priv->gps, &x, &y);
+    osm_gps_map_from_co_ordinates(map, priv->osm_gps, &x, &y);
     if (x < (width / 2 - width / 8) || x > (width / 2 + width / 8) ||
         y < (height / 2 - height / 8) || y > (height / 2 + height / 8))
     {
-      if (_set_center(map, priv->gps->rlat, priv->gps->rlon))
+      if (_set_center(map, priv->osm_gps->rlat, priv->osm_gps->rlon))
         _update_screen_pos(map);
     }
   }
 
   // this redraws the map (including the gps track, and adjusts the
   // map center if it was changed
-  if (!priv->idle_map_redraw && priv->gps_valid)
+  if (!priv->idle_map_redraw && priv->osm_gps_valid)
     priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 }
 
@@ -3137,7 +3161,7 @@ void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status)
   g_return_if_fail(OSM_IS_GPS_MAP(map));
   priv = map->priv;
 
-  priv->gps_valid = status;
+  priv->osm_gps_valid = status;
 
   if (!map->priv->idle_map_redraw)
     map->priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
@@ -3286,10 +3310,10 @@ coord_t* osm_gps_map_get_gps(OsmGpsMap* map)
 {
   g_return_val_if_fail(OSM_IS_GPS_MAP(map), NULL);
 
-  if (!map->priv->gps_valid)
+  if (!map->priv->osm_gps_valid)
     return NULL;
 
-  return map->priv->gps;
+  return map->priv->osm_gps;
 }
 
 #endif

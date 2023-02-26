@@ -277,6 +277,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   gpsRefreshRate_ = 2000;
 
   gps = QGeoPositionInfoSource::createDefaultSource(this);
+
+
   if (gps)
   {
     connect(gps, SIGNAL(positionUpdated(QGeoPositionInfo)), this,
@@ -291,6 +293,26 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   }
   else
     g_message("no gps source...");
+
+  
+/* Timer for dev
+  MssTimer* p  = new MssTimer();
+
+  static int nCount = 1;
+  p->SetTimeOut([&] {
+    QGeoPositionInfo o(QGeoCoordinate(60,16.025 + nCount * 0.0005),QDateTime());
+
+    o.setAttribute(QGeoPositionInfo::HorizontalAccuracy,1000);
+    o.setAttribute(QGeoPositionInfo::Direction, nCount % 360);
+
+    positionUpdate(o);
+    ++nCount;
+  });
+
+  p->Start(2000);
+
+*/
+
   lastGps = QGeoPositionInfo();
   lgps = maep_layer_gps_new();
   g_signal_connect_swapped(G_OBJECT(lgps), "dirty", G_CALLBACK(osm_gps_map_qt_repaint), this);
@@ -298,7 +320,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   maep_layer_gps_set_azimuth(lgps, NAN);
   connect(&compass, SIGNAL(readingChanged()), this, SLOT(compassReadingChanged()));
   enableCompass(compassEnabled);
-
+  initBoatMarkers();
   track_capture = false;
   track_current = NULL;
 }
@@ -487,6 +509,7 @@ void Maep::GpsMap::mapUpdate()
     osm_gps_map_blit(overlay, cr, CAIRO_OPERATOR_OVER);
 
   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(lgps), cr, map);
+
   //  if (wiki_enabled)
   //   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(wiki), cr, map);
   cairo_restore(cr);
@@ -999,6 +1022,17 @@ oPModel.append({
                  "fLa": fLa
                })
 
+                 "fLa": 0
+                 "fLo": 1
+                 "nId":2
+                 "nLen": 4
+                 "sDate": 5
+                 "sImage": 6
+                 "sImageThumb": 7,
+                 "sLength": 8
+
+
+
 */
 struct MssFont : public QFont
 {
@@ -1028,7 +1062,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
   pPainter->setFont(BigFont);
   pPainter->drawText(INDENT1, START_LINE - LINE_SPACING * 2, sTeamNameAndSum);
   pPainter->drawImage(0, START_LINE - LINE_SPACING * 2 - (40), oImg);
-  const static int IMG_COLUMNS = 3;
+  const static int IMG_COLUMNS = 4;
   const static int IMG_COLUMN_WIDTH = 150;
   for (int i = 0; i < nC; i++)
   {
@@ -1039,7 +1073,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     NormalFont.setStrikeOut(pp->data(pp->index(i), 3).toInt() < nMinSize);
     pPainter->setFont(NormalFont);
     int nY = START_LINE + i * LINE_SPACING;
-    int nYImg = START_LINE + (i / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING ;
+    int nYImg = START_LINE + (i / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING;
     pPainter->drawText(INDENT1, nY, sDate);
     pPainter->drawText(INDENT2, nY, sLen);
     pPainter->drawText(INDENT, nY, sNum);
@@ -1064,6 +1098,38 @@ static void RenderSvg(QString sImgName, QImage* pImage)
   renderer.render(&painter);
 }
 
+static void BoatSvg(QSvgRenderer& renderer, QImage* pImage, int nRotation)
+{
+  *pImage = QImage(BOAT_IMG_SIZE, BOAT_IMG_SIZE, QImage::Format_ARGB32);
+  pImage->fill(Qt::transparent);
+  QPainter painter(pImage);
+  painter.translate(BOAT_IMG_SIZE/2,BOAT_IMG_SIZE/2);
+  painter.rotate(nRotation);
+  painter.translate(-BOAT_IMG_SIZE/2,-BOAT_IMG_SIZE/2);
+  renderer.render(&painter);
+}
+
+void Maep::GpsMap::initBoatMarkers()
+{
+  int DEG = 360;
+  cairo_surface_t** ocBoatMarker = new cairo_surface_t*[DEG];
+  QSvgRenderer renderer(QString(":/boat.svg"));
+
+  for (int nRotDeg = 0; nRotDeg < DEG; ++nRotDeg)
+  {
+    QImage* oImg = new QImage;
+    BoatSvg( renderer, oImg, nRotDeg);
+    //    int nStride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, oImg.width());
+    //    qDebug() << oImg.format() << " " << nStride;
+
+    ocBoatMarker[nRotDeg] = cairo_image_surface_create_for_data(
+        oImg->bits(), CAIRO_FORMAT_ARGB32, oImg->width(), oImg->height(), oImg->width() * 4);
+
+  }
+
+  lgps_init_boat_images(lgps, ocBoatMarker);
+}
+
 void Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
                                   QVariant pListTeam2, QString sTeamNameAndSum2, int nMinSize,
                                   QString sName)
@@ -1073,6 +1139,7 @@ void Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
   cairo_surface_write_to_png(surf, sPath.toLatin1().data());
 
   QImage oPaintImage(sPath);
+  oPaintImage = oPaintImage.scaledToWidth(1200);
   QPainter oImagePainter(&oPaintImage);
   oImagePainter.setRenderHints(QPainter::Antialiasing);
   oImagePainter.setFont(BigFont1);
@@ -1363,6 +1430,9 @@ static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, O
 
   g_object_get(G_OBJECT(map), "latitude", &lat, "longitude", &lon, NULL);
   widget->setCoordinate(lat, lon);
+
+
+
 }
 // QString Maep::GpsMap::orientationTo(QGeoCoordinate coord)
 // {
@@ -1379,6 +1449,9 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo& info)
 
   // Redraw GPS position.
   maep_layer_gps_set_active(lgps, TRUE);
+
+ //  osm_gps_map_draw_gps(map,TRUE);
+
   hprec = 0.;
   if (info.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))
     hprec = info.attribute(QGeoPositionInfo::HorizontalAccuracy);
@@ -1395,7 +1468,6 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo& info)
 
   lastGps = info;
   emit gpsCoordinateChanged();
-
   // Add track capture, if any.
   if (track_capture)
     gpsToTrack();

@@ -65,8 +65,9 @@ Item {
     id: map_controls2
     spacing: 20
     anchors.bottom: map_controls.top
-    anchors.right: parent.right
-    anchors.rightMargin: 20
+    anchors.bottomMargin: 20
+    anchors.left: parent.left
+    anchors.leftMargin: 20
     z: idMap.z + 1
 
     TrippBtn {
@@ -97,6 +98,17 @@ Item {
       onDoubleClicked: {
         idMap.noDbPoint()
       }
+    }
+  }
+
+  LargeBtn {
+    id: idLeftBtn
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: 20
+    onClicked: {
+      idApp.bFlipped = false
     }
   }
 
@@ -148,8 +160,6 @@ Item {
       }
     }
 
-
-    /*
     TrippBtn {
       id: idTrack
       enabled: true
@@ -168,18 +178,11 @@ Item {
         }
       }
     }
-    */
+
     TrippBtn {
       src: "btnTracks.png"
       onClicked: {
         idTrackPanel.open = !idTrackPanel.open
-      }
-    }
-    TrippBtn {
-      id: idBack
-      src: "btnBack.png"
-      onClicked: {
-        idApp.bFlipped = false
       }
     }
   }
@@ -197,6 +200,7 @@ Item {
     oModel: idPikeModel2
     nOwner: 2
   }
+
   PikePanel {
     id: idPikePanel_3
     dock: Dock.Left

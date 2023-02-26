@@ -101,6 +101,7 @@ OTHER_FILES += rpm/harbour-pikefight.spec
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 DISTFILES += \
+    qml/LargeBtn.qml \
     qml/NameText.qml \
     qml/PikeBtn.qml \
     qml/PikeMapPage.qml \

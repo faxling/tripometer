@@ -480,6 +480,7 @@ namespace Maep
     void enableCompass(bool enable);
 
   private:
+    void initBoatMarkers();
     int START_LINE = 0;
     void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize,QImage& sImg,  QPainter* p);
 

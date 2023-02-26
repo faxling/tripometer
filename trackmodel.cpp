@@ -28,6 +28,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
   MarkData t = GetMarkData(sTrackName);
   tNode.sName = sTrackName;
   tNode.nId = m_nLastId;
+  tNode.nType = t.nType;
   // -1
   if (tNode.nType >= 0)
   {
@@ -40,12 +41,16 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     tNode.sMaxSpeed = FormatKmH(t.speed * 3.6) + " km/h";
     tNode.sDuration = FormatDuration(t.nDuration * 10);
     if (tNode.nType == 1)
-      tNode.sLength = "x";
+      tNode.sLength = QString::asprintf("%.4f %.4f",t.lo, t.la);
     else
       tNode.sLength = FormatKm(t.len / 1000.0) + " km";
 
     tNode.sDiskSize = FormatNrBytes(t.nSize);
   }
+
+  // nType = 1 point
+
+
 
   if (t.nType <= 0)
   {

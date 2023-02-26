@@ -4,7 +4,7 @@
 
 - marker lista funkar inte   OK
 
-- settings hur många fiskar + namn
+- settings hur många fiskar + namn OK
 
 - Enheter i settings   OK
 
@@ -12,20 +12,20 @@
 
 - Centrera på dubbel klick  , meny
 
-- Photo  i lista , photo picker ,  Photo symbol sen thumb 
+- Photo  i lista , photo picker ,  Photo symbol sen thumb OK
 
 - Sjökort
 
-- båt markör
+- båt markör OK
 
 - visa slider om selecttad OK
 
-- nNrTeams  
+- nNrTeams   OK
 
-- ställa datum
+- ställa datum OK
 
-- View
+- View OK
 
+- ny flipp symbol
 
-void Maep::GpsMap::setLookAt(float lat, float lon)
-
+- 

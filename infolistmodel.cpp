@@ -114,6 +114,17 @@ QString FormatCurrentTime()
   return szStr;
 }
 
+QString FormatCurrentDate()
+{
+  char szStr[20];
+  time_t now = 0;
+  time(&now);
+  // time(&now);
+  strftime(szStr, 20, "%A %F", localtime(&now));
+  return szStr;
+}
+
+
 QString FormatDurationSec(unsigned int nTime)
 {
   char szStr[20];
@@ -155,6 +166,7 @@ enum TRIP_FIELDS
   DISTANS,
   DURATION,
   CURRENTTIME,
+  CURRENTDATE,
   TIMEKM,
   ELEVATION,
   MAXSPEED,
@@ -186,6 +198,7 @@ void InfoListModel::UpdateOnTimer()
   oc.push_back(ValueRole);
 
   m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
+  m_nData[nUnit][CURRENTDATE].f = FormatCurrentDate();
 
   // var tioned
 
@@ -260,6 +273,7 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   m_nData[0][LAT] = Data("", "Lat");
   m_nData[0][LONG] = Data("", "Long");
   m_nData[0][CURRENTTIME] = Data("time", "Current");
+  m_nData[0][CURRENTDATE] = Data("date", "Current");
   m_nData[0][PREC] = Data("m", "Precision");
 
   m_nData[1][DISTANS] = Data("NM", "Distans");
@@ -275,6 +289,7 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   m_nData[1][LAT] = Data("", "Lat");
   m_nData[1][LONG] = Data("", "Long");
   m_nData[1][CURRENTTIME] = Data("time", "Current");
+  m_nData[1][CURRENTDATE] = Data("date", "Current");
   m_nData[1][PREC] = Data("m", "Precision");
 
   ResetData();
@@ -514,14 +529,14 @@ void InfoListModel::klicked2(int nCmd)
     if (m_pTimer->IsActive() == true)
     {
       m_pRoot->setProperty("bIsPause", true);
-      // m_pTimer->Stop();
+      m_pTimer->Stop();
     }
     else
     {
       double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
       m_fLastTimeSec = fCurTime;
       m_pRoot->setProperty("bIsPause", false);
-      //   m_pTimer->Start(100);
+      m_pTimer->Start(100);
     }
     return;
   }

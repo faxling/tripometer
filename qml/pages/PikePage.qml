@@ -20,7 +20,7 @@ SilicaListView {
   }
 
   Component {
-    id: highlight
+    id: highlightClass
     Rectangle {
       color: Theme.highlightBackgroundColor
       height: 40
@@ -42,7 +42,7 @@ SilicaListView {
   highlightResizeDuration: 0
 
   highlightFollowsCurrentItem: true
-  highlight: highlight
+  highlight: highlightClass
   signal pikePressed(int nId)
 
   delegate: ListItem {
@@ -50,7 +50,9 @@ SilicaListView {
     menu: ContextMenu {
 
       onActiveChanged: {
-        idListView.highlightItem.visible = !active
+
+        if (idListView.highlightItem instanceof highlightClass)
+          idListView.highlightItem.visible = !active
       }
 
       MenuItem {
@@ -107,28 +109,45 @@ SilicaListView {
     // width: ListView.view.width
     Row {
       id: idRow
-      TextList {
-        width: idListItem.width / 2
-        text: sDate
+      function pushImgpage() {
+        idApp.sImage = sImage
+        idApp.sImageThumb = sImageThumb
+        pageStack.push("ImagePage.qml")
       }
-      TextList {
-        width: idListItem.width / 4
-        font.strikeout: nLen < idApp.nMinSize
-        // font.italic:
-        text: sLength
-      }
-
       Image {
+        visible: nOwner === 1 || nOwner === 3
         source: sImageThumb
         asynchronous: true
         // no autoTransform here
         MouseArea {
           anchors.fill: parent
           onClicked: {
-            idApp.sImage = sImage
-            idApp.sImageThumb = sImageThumb
-            pageStack.push("ImagePage.qml")
+            pushImgpage()
           }
+        }
+      }
+      TextList {
+        width: idListItem.width / 2 + 30
+        text: sDate
+      }
+      TextList {
+        width: idListItem.width / 4 - 20
+        font.strikeout: nLen < idApp.nMinSize
+        // font.italic:
+        text: sLength
+      }
+    }
+
+    Image {
+      anchors.right: parent.right
+      visible: nOwner === 2
+      source: sImageThumb
+      asynchronous: true
+      // no autoTransform here
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          pushImgpage()
         }
       }
     }

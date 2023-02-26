@@ -24,7 +24,7 @@
 #define LAYER_GPS_H
 
 #include <glib-object.h>
-
+#include <cairo.h>
 G_BEGIN_DECLS
 
 #define MAEP_TYPE_LAYER_GPS	     (maep_layer_gps_get_type ())
@@ -33,6 +33,8 @@ G_BEGIN_DECLS
 #define MAEP_IS_LAYER_GPS(obj)    (G_TYPE_CHECK_INSTANCE_TYPE(obj, MAEP_TYPE_LAYER_GPS))
 #define MAEP_IS_LAYER_GPS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE(klass, MAEP_TYPE_LAYER_GPS))
 #define MAEP_LAYER_GPS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS(obj, MAEP_TYPE_LAYER_GPS, MaepLayerGpsClass))
+
+#define BOAT_IMG_SIZE 80
 
 typedef struct _MaepLayerGps        MaepLayerGps;
 typedef struct _MaepLayerGpsPrivate MaepLayerGpsPrivate;
@@ -52,6 +54,7 @@ struct _MaepLayerGpsClass
 
 GType maep_layer_gps_get_type(void);
 
+void lgps_init_boat_images(MaepLayerGps *gps, cairo_surface_t** boatImages);
 MaepLayerGps* maep_layer_gps_new(void);
 gboolean maep_layer_gps_set_coordinates(MaepLayerGps *gps, gfloat lat, gfloat lon,
                                         gfloat hprec, gfloat heading);

@@ -3,6 +3,7 @@ import Sailfish.Silica 1.0
 
 Page {
   id: idPage
+  property int nSquare: Math.min(width, height) - 10
   SilicaFlickable {
     anchors.fill: parent
     id: imageFlickable

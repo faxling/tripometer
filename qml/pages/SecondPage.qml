@@ -181,8 +181,8 @@ SilicaListView {
       Text {
         id: idText
         color: "black"
-        font.pixelSize: Theme.fontSizeLarge
-        text: sLength
+        font.pixelSize: Theme.fontSizeMedium
+                           text: sLength
       }
     }
     Component {
@@ -190,12 +190,14 @@ SilicaListView {
       ContextMenu {
 
         MenuItem {
+          height: Theme.itemSizeExtraSmall
           text: "Toggle Select"
           onClicked: {
             bSelected = !bSelected
           }
         }
         MenuItem {
+          height: Theme.itemSizeExtraSmall
           text: "Delete"
           onClicked: {
             var idx = nId
@@ -207,6 +209,9 @@ SilicaListView {
             })
           }
         }
+
+
+        /*
         MenuItem {
           text: "Load/Unload"
           onClicked: {
@@ -223,8 +228,10 @@ SilicaListView {
             }
           }
         }
+        */
         MenuItem {
           text: "Rename"
+          height: Theme.itemSizeExtraSmall
           onClicked: {
             idEditText.readOnly = !idEditText.readOnly
             idEditText.selectAll()
@@ -233,6 +240,7 @@ SilicaListView {
         }
         MenuItem {
           text: "Center"
+          height: Theme.itemSizeExtraSmall
           onClicked: {
             mainMap.loadTrack(aValue, nId)
             idTrackModel.trackCenter(nId)
@@ -241,6 +249,7 @@ SilicaListView {
 
         MenuItem {
           id: idMenue4
+          height: Theme.itemSizeExtraSmall
           text: "Details"
           onClicked: {
             var o = idDetailsFactory.createObject(idObjectList)

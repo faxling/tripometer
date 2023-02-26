@@ -86,6 +86,21 @@ ApplicationWindow {
         front: FirstPage {
           height: idApp.height
           width: idApp.width
+
+          LargeBtn {
+            id: idFlipBtn
+            opacity: 0.5
+            visible: idApp.bAppStarted
+            anchors.right: parent.right
+            anchors.rightMargin: 20
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 20
+
+            onClicked: {
+              idApp.bFlipped = true
+            }
+          }
+
           Rectangle {
             visible: !idApp.bAppStarted
             id: idStartMsgBox

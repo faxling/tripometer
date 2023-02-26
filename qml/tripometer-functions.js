@@ -22,6 +22,7 @@ function newSession() {
   deleteDB()
   mainMap.removePikesInMap()
   idApp.ocSumSize = ["", "", ""]
+  bIsPause = false
   idListModel.klicked2(3)
   idApp.bFlipped = true
   idApp.bAppStarted = true
@@ -229,7 +230,7 @@ function pikeDateTimeStr(o) {
 
 function pikeDateTimeStrNow() {
   var o = new Date()
-  return pikeDateFromStr(o)
+  return pikeDateTimeStr(o)
 }
 
 function pikeDateFromStr(sStr) {

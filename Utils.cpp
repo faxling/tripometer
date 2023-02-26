@@ -9,6 +9,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QImage>
+#include <QImageReader>
 #include <QStandardPaths>
 
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
@@ -94,7 +95,30 @@ void ImageThumb::save(QString s)
 {
   if (s.isEmpty())
     return;
-  QImage oOriginalPixmap(s);
+
+  QImageReader oImageReader(s);
+
+  oImageReader.setAutoTransform(true);
+  QImage oO = oImageReader.read();
+
+  QRect oT;
+  if (oO.height() > oO.width())
+  {
+    oT.setX(0);
+    oT.setY((oO.height() - oO.width()) / 2);
+    oT.setWidth(oO.width());
+    oT.setHeight(oO.width());
+  }
+  else
+  {
+    oT.setY(0);
+    oT.setX((oO.width() - oO.height()) / 2);
+    oT.setWidth(oO.height());
+    oT.setHeight(oO.height());
+  }
+
+  auto oOriginalPixmap = oO.copy(oT);
+
   oOriginalPixmap.scaledToWidth(180).save(mssutils::Hash(s));
 }
 
@@ -235,7 +259,8 @@ QString GpxDatFullName(const QString& sTrackName)
 {
   QString sDataFilePath = StorageDir();
   QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/%ls.dat", (wchar_t*)sDataFilePath.utf16(), (wchar_t*)sTrackName.utf16());
+  sGpxFileName.sprintf("%ls/%ls.dat", (wchar_t*)sDataFilePath.utf16(),
+                       (wchar_t*)sTrackName.utf16());
 
   return sGpxFileName;
 }
@@ -244,7 +269,8 @@ QString GpxFullName(const QString& sTrackName)
 {
   QString sDataFilePath = StorageDir();
   QString sGpxFileName;
-  sGpxFileName.sprintf("%ls/%ls.gpx", (wchar_t*)sDataFilePath.utf16(), (wchar_t*)sTrackName.utf16());
+  sGpxFileName.sprintf("%ls/%ls.gpx", (wchar_t*)sDataFilePath.utf16(),
+                       (wchar_t*)sTrackName.utf16());
   return sGpxFileName;
 }
 
@@ -431,7 +457,8 @@ MarkData GetMarkData(const QString& sTrackName)
 void ScreenOn(bool b)
 {
   QDBusConnection system = QDBusConnection::connectToBus(QDBusConnection::SystemBus, "system");
-  QDBusInterface interface("com.nokia.mce", "/com/nokia/mce/request", "com.nokia.mce.request", system);
+  QDBusInterface interface("com.nokia.mce", "/com/nokia/mce/request", "com.nokia.mce.request",
+                           system);
 
   if (b == true)
   {
@@ -447,7 +474,7 @@ void ScreenOn(bool b)
 
 namespace msslistmodel
 {
-QHash<int, MssListModel*> g_ocInstance;
+  QHash<int, MssListModel*> g_ocInstance;
 }
 
 void MssListModel::Init(int nInstanceId)
