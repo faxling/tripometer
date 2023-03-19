@@ -55,7 +55,10 @@ int main(int argc, char* argv[]) {
   pContext->setContextProperty("oImageThumb", new ImageThumb(app));
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
   qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
+  ScreenCapture::SetView(pU);
   qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
+  qmlRegisterType<ScreenCapture>("harbour.tripometer", 1, 0, "ScreenCapture");
+
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
   qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0,
                                        "GeonamesPlace");

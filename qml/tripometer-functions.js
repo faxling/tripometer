@@ -12,6 +12,7 @@ function initDB() {
     var nRowLen = rs.rows.length
     for (var j = 0; j < nRowLen; j++) {
       var o = rs.rows.item(j)
+      console.log("image  " + o.sImage)
       addPikeEx(Number(o.pike_id), o.nOwner, o.sDate, o.sImage, o.nLen, o.fLo,
                 o.fLa, false)
     }
@@ -131,7 +132,7 @@ function showPike(nOwner) {
 
 function addPikeImage(i, oPModel, sImage) {
   var nId = oPModel.get(i).nId
-  oPModel.get(i).sImage = sImage
+  oPModel.get(i).sImage = String(sImage)
   oImageThumb.save(sImage)
   oPModel.get(i).sImageThumb = String(oImageThumb.name(sImage))
   db.transaction(function (tx) {
@@ -177,7 +178,7 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
 
   calcSizeAndDisplay(nOwner)
   mainMap.loadPikeInMap(nId, nOwner, fLo, fLa)
-  // oPanel.currentIndex = nC - 1
+  oPanel.currentIndex = nC - 1
 }
 
 function centerPike(nId, oPModel) {

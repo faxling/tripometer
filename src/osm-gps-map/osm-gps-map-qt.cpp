@@ -278,7 +278,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
 
   gps = QGeoPositionInfoSource::createDefaultSource(this);
 
-
   if (gps)
   {
     connect(gps, SIGNAL(positionUpdated(QGeoPositionInfo)), this,
@@ -294,24 +293,23 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   else
     g_message("no gps source...");
 
-  
-/* Timer for dev
-  MssTimer* p  = new MssTimer();
+  /* Timer for dev
+    MssTimer* p  = new MssTimer();
 
-  static int nCount = 1;
-  p->SetTimeOut([&] {
-    QGeoPositionInfo o(QGeoCoordinate(60,16.025 + nCount * 0.0005),QDateTime());
+    static int nCount = 1;
+    p->SetTimeOut([&] {
+      QGeoPositionInfo o(QGeoCoordinate(60,16.025 + nCount * 0.0005),QDateTime());
 
-    o.setAttribute(QGeoPositionInfo::HorizontalAccuracy,1000);
-    o.setAttribute(QGeoPositionInfo::Direction, nCount % 360);
+      o.setAttribute(QGeoPositionInfo::HorizontalAccuracy,1000);
+      o.setAttribute(QGeoPositionInfo::Direction, nCount % 360);
 
-    positionUpdate(o);
-    ++nCount;
-  });
+      positionUpdate(o);
+      ++nCount;
+    });
 
-  p->Start(2000);
+    p->Start(2000);
 
-*/
+  */
 
   lastGps = QGeoPositionInfo();
   lgps = maep_layer_gps_new();
@@ -1103,9 +1101,9 @@ static void BoatSvg(QSvgRenderer& renderer, QImage* pImage, int nRotation)
   *pImage = QImage(BOAT_IMG_SIZE, BOAT_IMG_SIZE, QImage::Format_ARGB32);
   pImage->fill(Qt::transparent);
   QPainter painter(pImage);
-  painter.translate(BOAT_IMG_SIZE/2,BOAT_IMG_SIZE/2);
+  painter.translate(BOAT_IMG_SIZE / 2, BOAT_IMG_SIZE / 2);
   painter.rotate(nRotation);
-  painter.translate(-BOAT_IMG_SIZE/2,-BOAT_IMG_SIZE/2);
+  painter.translate(-BOAT_IMG_SIZE / 2, -BOAT_IMG_SIZE / 2);
   renderer.render(&painter);
 }
 
@@ -1118,24 +1116,25 @@ void Maep::GpsMap::initBoatMarkers()
   for (int nRotDeg = 0; nRotDeg < DEG; ++nRotDeg)
   {
     QImage* oImg = new QImage;
-    BoatSvg( renderer, oImg, nRotDeg);
+    BoatSvg(renderer, oImg, nRotDeg);
     //    int nStride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, oImg.width());
     //    qDebug() << oImg.format() << " " << nStride;
 
     ocBoatMarker[nRotDeg] = cairo_image_surface_create_for_data(
         oImg->bits(), CAIRO_FORMAT_ARGB32, oImg->width(), oImg->height(), oImg->width() * 4);
-
   }
 
   lgps_init_boat_images(lgps, ocBoatMarker);
 }
 
-void Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
-                                  QVariant pListTeam2, QString sTeamNameAndSum2, int nMinSize,
-                                  QString sName)
+QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
+                                     QVariant pListTeam2, QString sTeamNameAndSum2,
+                                     QVariant pListTeam3, QString sTeamNameAndSum3, int nMinSize,
+                                     QString sName, int nTeamCount)
 {
-
-  QString sPath = StorageDir() ^ "report.png";
+  QDateTime oNow(QDateTime::currentDateTime());
+  QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sPath = StorageDir() ^ "report" + sTrackName + ".png";
   cairo_surface_write_to_png(surf, sPath.toLatin1().data());
 
   QImage oPaintImage(sPath);
@@ -1148,15 +1147,22 @@ void Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
   START_LINE = START_LINE_BASE;
   static QImage oI1;
   static QImage oI2;
+  static QImage oI3;
   if (oI1.isNull())
   {
     RenderSvg(":/pike1.svg", &oI1);
     RenderSvg(":/pike2.svg", &oI2);
+    RenderSvg(":/pike3.svg", &oI3);
   }
 
   DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize, oI1, &oImagePainter);
-  DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter);
+  if (nTeamCount > 1)
+    DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter);
+  if (nTeamCount > 2)
+    DrawResultForTeam(pListTeam3, sTeamNameAndSum3, nMinSize, oI3, &oImagePainter);
+
   oPaintImage.save(sPath);
+  return sPath;
 }
 
 void Maep::GpsMap::saveMark(int nId)
@@ -1430,9 +1436,6 @@ static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, O
 
   g_object_get(G_OBJECT(map), "latitude", &lat, "longitude", &lon, NULL);
   widget->setCoordinate(lat, lon);
-
-
-
 }
 // QString Maep::GpsMap::orientationTo(QGeoCoordinate coord)
 // {
@@ -1450,7 +1453,7 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo& info)
   // Redraw GPS position.
   maep_layer_gps_set_active(lgps, TRUE);
 
- //  osm_gps_map_draw_gps(map,TRUE);
+  //  osm_gps_map_draw_gps(map,TRUE);
 
   hprec = 0.;
   if (info.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))

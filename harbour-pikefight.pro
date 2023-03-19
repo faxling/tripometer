@@ -11,7 +11,8 @@ INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libsoup-2.4
 
 CONFIG +=  sailfishapp
-PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl
+
+PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl qt5embedwidget
 QT += svg qml quick positioning sensors dbus gui
 LIBS += -ljpeg
 LIBS += -lpng
@@ -107,8 +108,10 @@ DISTFILES += \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
     qml/StepSlider.qml \
+    qml/pages/CameraPage.qml \
     qml/pages/DateTimePage.qml \
     qml/pages/ImagePage.qml \
+    qml/pages/ManPage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/TextList.qml \
     qml/TrippBtn.qml \

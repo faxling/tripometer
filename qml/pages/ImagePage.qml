@@ -3,7 +3,10 @@ import Sailfish.Silica 1.0
 
 Page {
   id: idPage
+  property alias oImgSrc: idImage.source
+  property alias oImgThumbSrc: idThumbImg.source
   property int nSquare: Math.min(width, height) - 10
+
   SilicaFlickable {
     anchors.fill: parent
     id: imageFlickable
@@ -14,7 +17,6 @@ Page {
       id: idImage
       autoTransform: true
       asynchronous: true
-      source: idApp.sImage
       fillMode: Image.PreserveAspectFit
       y: (idPage.height - height) / 2
       width: idPage.width
@@ -29,13 +31,13 @@ Page {
   }
 
   Image {
+    id: idThumbImg
     width: idPage.width
     anchors.fill: parent
     opacity: 0.5
     autoTransform: true
     visible: idPageBusyIndicator.running
     fillMode: Image.PreserveAspectFit
-    source: idApp.sImageThumb
   }
 
   PageBusyIndicator {

@@ -16,7 +16,7 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.1
+Version: 1.2
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
@@ -34,7 +34,9 @@ BuildRequires: pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5Qml)
 BuildRequires: pkgconfig(Qt5Quick)
+BuildRequires: pkgconfig(Qt5Multimedia)
 BuildRequires: pkgconfig(Qt5Svg)
+BuildRequires: pkgconfig(qt5embedwidget)
 BuildRequires: desktop-file-utils
 BuildRequires: pkgconfig(Qt5Positioning)
 BuildRequires: pkgconfig(gobject-2.0)
@@ -47,9 +49,8 @@ BuildRequires: pkgconfig(libcurl)
 BuildRequires: libjpeg-turbo-devel
 
 %description
-Maep is a tile based map utility for services like OpenStreetMap, Google maps
-and Virtual earth. This is the same map renderer that is also being used by
-GPXView and OSM2Go.
+Pike Fight Uses Maep. Maep is a tile based map utility for services like OpenStreetMap, Google maps
+and Virtual earth.
 
 
 %prep

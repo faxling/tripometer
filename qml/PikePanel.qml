@@ -38,7 +38,6 @@ DockedPanel {
     height: idDockedPanel.height - Theme.itemSizeLarge - idSlider1.height
     model: oModel
     onCurrentIndexChanged: {
-
       if (idApp.bAppStarted === false)
         return
       if (currentIndex < 0) {

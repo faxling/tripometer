@@ -1,10 +1,16 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Sailfish.Share 1.0
 
 //import harbour.maep.qt 1.0
 Item {
   id: page
   // SilicaFlickable to get the dropdown menue
+  ShareAction {
+    id: idShare
+    mimeType: "image/png"
+    title: "Share Pike Report"
+  }
   SilicaFlickable {
     // anchors.fill: parent
     height: 120
@@ -31,20 +37,41 @@ Item {
           idListModel.klicked2(2)
         }
       }
+
+      MenuItem {
+        text: "Help"
+        onClicked: {
+          pageStack.push("ManPage.qml")
+        }
+      }
+
+      MenuItem {
+        text: "Share Report"
+        onClicked: {
+          idShare.resources = [idApp.sReportPath]
+          idShare.trigger()
+        }
+      }
+
       MenuItem {
         text: "Make Report"
         onClicked: {
           mainMap.markPikeInMap(-1)
-          mainMap.savePikeReport(
-                idPikeModel1, idApp.ocTeamName[1] + " " + idApp.ocSumSize[0],
-                idPikeModel2, idApp.ocTeamName[2] + " " + idApp.ocSumSize[1],
-                idApp.nMinSize, idApp.ocTeamName[0])
-        }
-      }
-      MenuItem {
-        text: "MAP"
-        onClicked: {
-          idApp.bFlipped = true
+          idApp.sReportPath
+              = mainMap.savePikeReport(idPikeModel1, idApp.ocTeamName[1] + " "
+                                       + idApp.ocSumSize[0], idPikeModel2,
+                                       idApp.ocTeamName[2] + " "
+                                       + idApp.ocSumSize[1], idPikeModel3,
+                                       idApp.ocTeamName[3] + " "
+                                       + idApp.ocSumSize[2], idApp.nMinSize,
+                                       idApp.ocTeamName[0], idApp.nNrTeams)
+
+          // idApp.ocTeamName[0] The name of the day
+          // idApp.sImage = idApp.sReportPath
+          // idApp.sImage
+          pageStack.push("ImagePage.qml", {
+                           "oImgSrc": idApp.sReportPath
+                         })
         }
       }
     }

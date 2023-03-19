@@ -3,7 +3,9 @@
 
 #include "src/track.h"
 #include <QAbstractItemModel>
+#include <QImage>
 #include <QObject>
+#include <QQuickPaintedItem>
 #include <QUrl>
 #include <QVector>
 #include <functional>
@@ -114,6 +116,28 @@ public:
   Q_INVOKABLE QUrl name(QString s);
 };
 
+class QQuickView;
+
+class ScreenCapture : public QQuickPaintedItem
+{
+  Q_OBJECT
+public:
+  static void SetView(QQuickView* parent);
+  Q_INVOKABLE void saveImgIfSelected();
+  bool IsSelected = false;
+  ScreenCapture();
+  ~ScreenCapture();
+  void paint(QPainter* ppainter) override;
+  Q_INVOKABLE void capture(QQuickItem * p);
+  Q_INVOKABLE void save();
+signals:
+  void addImage(QUrl urlImg);
+private:
+
+  QImage m_oImagePreview;
+  QImage m_oImage;
+};
+
 class MssListModel : public QAbstractItemModel
 {
   Q_OBJECT
@@ -141,7 +165,10 @@ public:
   int AddRow(const QVector<QVariant>& ocRow);
   QVariant virtual data(const QModelIndex& index, int role) const override;
   int FindRow(const QVariant&, int nCol);
-  QVariant Data(int nRow, int nUserRole) const { return (data(index(nRow, 0), Qt::UserRole + nUserRole)); }
+  QVariant Data(int nRow, int nUserRole) const
+  {
+    return (data(index(nRow, 0), Qt::UserRole + nUserRole));
+  }
   QHash<int, QByteArray> roleNames() const override;
   int rowCount(const QModelIndex&) const override;
   int columnCount(const QModelIndex&) const override;

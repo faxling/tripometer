@@ -2,6 +2,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
+
 import "tripometer-functions.js" as Lib
 
 // import QtQuick.Controls 1.0

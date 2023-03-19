@@ -4,12 +4,17 @@
 #include <QBasicTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QImage>
 #include <QImageReader>
+#include <QPainter>
+#include <QPixmap>
+#include <QQuickItemGrabResult>
+#include <QQuickView>
 #include <QStandardPaths>
 
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
@@ -87,6 +92,81 @@ QString mssutils::Hash(const QString& s)
   return (sCasheDir ^ sRet) + Ext(s);
 }
 
+QQuickView* currentView_ = nullptr;
+ScreenCapture* screenCapture_ = nullptr;
+
+void ScreenCapture::SetView(QQuickView* parent)
+{
+  currentView_ = parent;
+}
+
+ScreenCapture::ScreenCapture()
+{
+}
+
+ScreenCapture::~ScreenCapture()
+{
+  qDebug() << "~S";
+}
+
+void ScreenCapture::save()
+{
+  if (this->IsSelected)
+  {
+    this->IsSelected = false;
+    update();
+    return;
+  }
+  if (screenCapture_ != nullptr)
+  {
+    screenCapture_->IsSelected = false;
+    screenCapture_->update();
+  }
+  screenCapture_ = this;
+  screenCapture_->IsSelected = true;
+  screenCapture_->update();
+}
+
+void ScreenCapture::saveImgIfSelected()
+{
+  if (IsSelected)
+  {
+    QDateTime oNow(QDateTime::currentDateTime());
+    QString sImgkName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+    QString sPath = StorageDir() ^ "img" + sImgkName + ".png";
+    m_oImage.save(sPath);
+    emit addImage(sPath);
+    screenCapture_ = nullptr;
+  }
+}
+
+void ScreenCapture::capture(QQuickItem* p)
+{
+  qDebug() << "capture";
+  QEventLoop oLoop;
+  oLoop.processEvents();
+  m_oImage = currentView_->grabWindow();
+  m_oImagePreview = m_oImage.scaledToHeight(height());
+  update();
+}
+
+void ScreenCapture::paint(QPainter* p)
+{
+  p->drawImage(0, 0, m_oImagePreview);
+  int nPenW = 2;
+  auto nColor = Qt::white;
+  if (IsSelected)
+  {
+    nColor = Qt::green;
+    nPenW = 6;
+  }
+
+  QPen oPen(nColor, nPenW);
+  p->setPen(oPen);
+  QRect o(nPenW / 2, nPenW / 2, width() - nPenW * 2, height() - nPenW * 2);
+  p->drawRect(o);
+}
+
 ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
 {
 }
@@ -95,6 +175,8 @@ void ImageThumb::save(QString s)
 {
   if (s.isEmpty())
     return;
+
+  qDebug() << s;
 
   QImageReader oImageReader(s);
 

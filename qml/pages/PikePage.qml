@@ -44,14 +44,40 @@ SilicaListView {
   highlightFollowsCurrentItem: true
   highlight: highlightClass
   signal pikePressed(int nId)
+  function pushImgpage(sImagePar1, sImagePar2, nIndex) {
+    // R val from model
+    if (sImagePar2[0] === '/') {
 
+      // Image has been selected
+      // idApp.sImage = sImagePar1
+      // idApp.sImageThumb = sImagePar2
+      pageStack.push("ImagePage.qml", {
+                       "oImgSrc": sImagePar1,
+                       "oImgThumbSrc": sImagePar2
+                     })
+    } else {
+      idListView.currentIndex = nIndex
+      pageStack.push("CameraPage.qml", {
+                       "indexM": nIndex,
+                       "oModel": idListView.model
+                     })
+
+      //      pageStack.push(idImagePickerPage)
+    }
+  }
   delegate: ListItem {
     id: idListItem
+    function showRemorseItem() {
+      idRemorse.execute(idListItem, "Deleting", function () {
+        Lib.removePike(nId, idListView.model, idListView.nOwner)
+      })
+    }
     menu: ContextMenu {
 
       onActiveChanged: {
-
-        if (idListView.highlightItem instanceof highlightClass)
+        console.log("highligt " + idListView.highlightItem)
+        if (idListView.highlightItem != null)
+          //   if (idListView.highlightItem instanceof highlightClass)
           idListView.highlightItem.visible = !active
       }
 
@@ -74,6 +100,17 @@ SilicaListView {
         onClicked: {
           idListView.currentIndex = index
           pageStack.push(idImagePickerPage)
+        }
+      }
+
+      MenuItem {
+        text: "Camera"
+        onClicked: {
+          idListView.currentIndex = index
+          pageStack.push("CameraPage.qml", {
+                           "indexM": index,
+                           "oModel": idListView.model
+                         })
         }
       }
       MenuItem {
@@ -109,20 +146,18 @@ SilicaListView {
     // width: ListView.view.width
     Row {
       id: idRow
-      function pushImgpage() {
-        idApp.sImage = sImage
-        idApp.sImageThumb = sImageThumb
-        pageStack.push("ImagePage.qml")
-      }
+
+      // Left side if panel from left
       Image {
         visible: nOwner === 1 || nOwner === 3
+        // from model
         source: sImageThumb
         asynchronous: true
         // no autoTransform here
         MouseArea {
           anchors.fill: parent
           onClicked: {
-            pushImgpage()
+            pushImgpage(sImage, sImageThumb, index)
           }
         }
       }
@@ -147,7 +182,7 @@ SilicaListView {
       MouseArea {
         anchors.fill: parent
         onClicked: {
-          pushImgpage()
+          pushImgpage(sImage, sImageThumb, index)
         }
       }
     }
