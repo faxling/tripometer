@@ -123,17 +123,19 @@ class ScreenCapture : public QQuickPaintedItem
   Q_OBJECT
 public:
   static void SetView(QQuickView* parent);
-  Q_INVOKABLE void saveImgIfSelected();
+  Q_INVOKABLE void setPageAndModel(QObject* pPage, QObject* pModel, int nIndexM);
   bool IsSelected = false;
   ScreenCapture();
   ~ScreenCapture();
-  void paint(QPainter* ppainter) override;
-  Q_INVOKABLE void capture(QQuickItem * p);
+  Q_INVOKABLE void capture();
   Q_INVOKABLE void save();
-signals:
-  void addImage(QUrl urlImg);
-private:
 
+  void paint(QPainter* ppainter) override;
+
+private:
+  QObject* m_pPage;
+  QObject* m_pModel;
+  int m_nIndex;
   QImage m_oImagePreview;
   QImage m_oImage;
 };

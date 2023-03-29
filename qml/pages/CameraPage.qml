@@ -10,39 +10,25 @@ Page {
   property int indexM
   property var oModel
   property int nImgNo
-
-  // width: 640
-  // height: 360
+  property var oListView
   Component {
     id: idImageFactory
     ScreenCapture {
       id: idScreenCapture
-      Component.onDestruction: {
-        saveImgIfSelected()
-      }
-      onAddImage: {
-        console.log("addimage " + urlImg)
-        Lib.addPikeImage(indexM, oModel, urlImg)
-      }
+
+
       MouseArea {
         anchors.fill: parent
         onClicked: {
-          backNavigation = false
           idScreenCapture.save()
-          backNavigation = true
         }
-      }
-      Rectangle {
-        width: 10
-        height: 10
-        color: "green"
       }
     }
   }
 
   Camera {
     id: camera
-    metaData.orientation: 270
+    // metaData.orientation: 270
     // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
 
@@ -53,23 +39,10 @@ Page {
     }
 */
     flash.mode: Camera.FlashOff
-
-    imageCapture {
-      onImageSaved: {
-        // photoPreview.source = path
-        console.log("save " + path)
-        sPath = path
-        idBusy.running = false
-        var o = idImageFactory.createObject(idImageGrid)
-        o.width = parent.width / 4
-        o.height = parent.height / 4
-        o.source = path
-      }
-      onImageCaptured: {
-        // does not work: missing SailfishOS feature
-        console.log("preview " + preview)
-        photoPreview.source = preview // Show the preview in an Image
-      }
+    focus {
+      focusMode: Camera.FocusMacro + Camera.FocusContinuous
+      focusPointMode: Camera.FocusPointCustom
+      customFocusPoint: Qt.point(0.5, 0.5)
     }
   }
 
@@ -96,8 +69,9 @@ Page {
         o.width = parent.width / 4
         o.height = parent.height / 4
         showOverlays(false)
-        o.capture(idVideo)
+        o.capture()
         showOverlays(true)
+        o.setPageAndModel(oListView, oModel, indexM)
         //  idBusy.running = true
         // camera.imageCapture.capture()
       }
@@ -119,40 +93,17 @@ Page {
     columns: 4
   }
 
-  Text {
-    id: idSavedText
-    opacity: 0
-    anchors.centerIn: parent
-    font.family: Theme.fontFamilyHeading
-    font.bold: true
-    color: Theme.primaryColor
-    font.pixelSize: Theme.fontSizeHuge
-    text: "Image Updated"
-    Behavior on opacity {
-      NumberAnimation {
-        duration: 500
-        easing.type: Easing.InOutQuad
-      }
-    }
-  }
   BusyIndicator {
     id: idBusy
     size: BusyIndicatorSize.Large
     anchors.centerIn: parent
   }
 
-  Image {
+  IconButton {
     id: idShotMark
     anchors.centerIn: parent
-    source: "image://theme/icon-m-dot"
+    width: Theme.itemSizeSmall
+    height: Theme.itemSizeSmall
+    icon.source: "image://theme/icon-m-dot?" + (down ? Theme.highlightColor : Theme.primaryColor)
   }
-
-
-  /*
-  ScreenCapture {
-    id: photoPreview
-    width: parent.width / 4
-    height: parent.height / 4
-  }
-  */
 }

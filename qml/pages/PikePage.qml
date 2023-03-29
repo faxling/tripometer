@@ -51,6 +51,7 @@ SilicaListView {
       // Image has been selected
       // idApp.sImage = sImagePar1
       // idApp.sImageThumb = sImagePar2
+      console.log("img src " + sImagePar1)
       pageStack.push("ImagePage.qml", {
                        "oImgSrc": sImagePar1,
                        "oImgThumbSrc": sImagePar2
@@ -59,14 +60,32 @@ SilicaListView {
       idListView.currentIndex = nIndex
       pageStack.push("CameraPage.qml", {
                        "indexM": nIndex,
-                       "oModel": idListView.model
+                       "oModel": oModel,
+                       "oListView": idListView
                      })
 
       //      pageStack.push(idImagePickerPage)
     }
   }
+
+  function addImageStart(indexM) {
+    // idListView.contentItem.children[indexM].bBusyInd = true
+    idListView.model.get(indexM).tBusy = true
+    console.log("addImageStart " + indexM)
+    console.log("nId " + idListView.model.get(indexM).nId)
+  }
+
+  function addImageGo(indexM, oModel, urlImg) {
+    console.log("addImageGo index " + indexM)
+    Lib.addPikeImage(indexM, oModel, urlImg)
+    idListView.model.get(indexM).tBusy = false
+    //ListView.contentItem.children[indexM].bBusyInd = false
+    // console.log("addImageGo " + urlImg)
+  }
+
   delegate: ListItem {
     id: idListItem
+
     function showRemorseItem() {
       idRemorse.execute(idListItem, "Deleting", function () {
         Lib.removePike(nId, idListView.model, idListView.nOwner)
@@ -75,7 +94,6 @@ SilicaListView {
     menu: ContextMenu {
 
       onActiveChanged: {
-        console.log("highligt " + idListView.highlightItem)
         if (idListView.highlightItem != null)
           //   if (idListView.highlightItem instanceof highlightClass)
           idListView.highlightItem.visible = !active
@@ -109,7 +127,8 @@ SilicaListView {
           idListView.currentIndex = index
           pageStack.push("CameraPage.qml", {
                            "indexM": index,
-                           "oModel": idListView.model
+                           "oModel": idListView.model,
+                           "oListView": idListView
                          })
         }
       }
@@ -137,12 +156,6 @@ SilicaListView {
       id: idRemorse
     }
 
-    function showRemorseItem() {
-      idRemorse.execute(idListItem, "Deleting", function () {
-        Lib.removePike(nId, idListView.model, idListView.nOwner)
-      })
-    }
-
     // width: ListView.view.width
     Row {
       id: idRow
@@ -157,10 +170,19 @@ SilicaListView {
         MouseArea {
           anchors.fill: parent
           onClicked: {
-            pushImgpage(sImage, sImageThumb, index)
+            console.log("img " + idListView.model.get(index).sImage)
+            pushImgpage(idListView.model.get(index).sImage, sImageThumb, index)
           }
         }
+
+        BusyIndicator {
+          id: idBusy
+          running: tBusy
+          size: BusyIndicatorSize.Medium
+          anchors.centerIn: parent
+        }
       }
+
       TextList {
         width: idListItem.width / 2 + 30
         text: sDate

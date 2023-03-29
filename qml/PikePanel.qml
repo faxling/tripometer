@@ -31,6 +31,8 @@ DockedPanel {
 
   PikePage {
     id: idPikePage
+    clip: true
+    property alias oModel: idDockedPanel.oModel
     property alias nOwner: idDockedPanel.nOwner
     y: Theme.itemSizeLarge
     // anchors.bottomMargin: idSlider1.height

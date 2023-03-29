@@ -76,6 +76,7 @@ function calcSizeAndDisplay(nOwner, value) {
   if (value !== undefined) {
     var nLen = Math.round(value)
     var nId = oPModel.get(nCurrentIndex).nId
+    // setProperty built in ListModel
     oPModel.setProperty(nCurrentIndex, "nLen", nLen)
     oPModel.setProperty(nCurrentIndex, "sLength", nLen + " cm")
     db.transaction(function (tx) {
@@ -171,7 +172,8 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
                    "sLength": sLenText,
                    "nLen": nLen,
                    "fLo": fLo,
-                   "fLa": fLa
+                   "fLa": fLa,
+                   "tBusy": false
                  })
 
   var nC = oPModel.count

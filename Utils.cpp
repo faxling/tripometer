@@ -16,6 +16,7 @@
 #include <QQuickItemGrabResult>
 #include <QQuickView>
 #include <QStandardPaths>
+#include <chrono>
 
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
 
@@ -106,6 +107,31 @@ ScreenCapture::ScreenCapture()
 
 ScreenCapture::~ScreenCapture()
 {
+  if (IsSelected)
+  {
+    auto oW = std::thread(
+        [](QObject* p, QObject* pModel, QImage oImg, int nIndex) {
+          QMetaObject::invokeMethod(p, "addImageStart", Q_ARG(QVariant, nIndex));
+          qDebug() << "async";
+          QDateTime oNow(QDateTime::currentDateTime());
+          QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+          QString sPath = StorageDir() ^ "img" + sImgName + ".png";
+          oImg.save(sPath);
+          screenCapture_ = nullptr;
+          qDebug() << "async done " << sPath;
+
+          QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
+                                    Q_ARG(QVariant, QVariant::fromValue(pModel)),
+                                    Q_ARG(QVariant, sPath));
+
+          qDebug() << "async done2 ";
+        },
+        m_pPage, m_pModel, m_oImage, m_nIndex);
+
+    oW.detach();
+
+    qDebug() << "Selected";
+  }
   qDebug() << "~S";
 }
 
@@ -127,22 +153,15 @@ void ScreenCapture::save()
   screenCapture_->update();
 }
 
-void ScreenCapture::saveImgIfSelected()
+void ScreenCapture::setPageAndModel(QObject* pPage, QObject* pModel, int nIndex)
 {
-  if (IsSelected)
-  {
-    QDateTime oNow(QDateTime::currentDateTime());
-    QString sImgkName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-    QString sPath = StorageDir() ^ "img" + sImgkName + ".png";
-    m_oImage.save(sPath);
-    emit addImage(sPath);
-    screenCapture_ = nullptr;
-  }
+  m_nIndex = nIndex;
+  m_pModel = pModel;
+  m_pPage = pPage;
 }
 
-void ScreenCapture::capture(QQuickItem* p)
+void ScreenCapture::capture()
 {
-  qDebug() << "capture";
   QEventLoop oLoop;
   oLoop.processEvents();
   m_oImage = currentView_->grabWindow();
