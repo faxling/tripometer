@@ -16,7 +16,7 @@
 #include <QQuickItemGrabResult>
 #include <QQuickView>
 #include <QStandardPaths>
-#include <chrono>
+#include <thread>
 
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
 
@@ -111,44 +111,44 @@ ScreenCapture::~ScreenCapture()
   {
     auto oW = std::thread(
         [](QObject* p, QObject* pModel, QImage oImg, int nIndex) {
-          QMetaObject::invokeMethod(p, "addImageStart", Q_ARG(QVariant, nIndex));
-          qDebug() << "async";
+
           QDateTime oNow(QDateTime::currentDateTime());
           QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
           QString sPath = StorageDir() ^ "img" + sImgName + ".png";
           oImg.save(sPath);
           screenCapture_ = nullptr;
-          qDebug() << "async done " << sPath;
+          qDebug() << "save image " << sPath;
 
           QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
                                     Q_ARG(QVariant, QVariant::fromValue(pModel)),
                                     Q_ARG(QVariant, sPath));
 
-          qDebug() << "async done2 ";
         },
         m_pPage, m_pModel, m_oImage, m_nIndex);
 
     oW.detach();
 
-    qDebug() << "Selected";
   }
-  qDebug() << "~S";
+
 }
 
 void ScreenCapture::save()
 {
   if (this->IsSelected)
   {
+    QMetaObject::invokeMethod(m_pPage, "addImageStop", Q_ARG(QVariant, m_nIndex));
     this->IsSelected = false;
     update();
     return;
   }
   if (screenCapture_ != nullptr)
   {
+    QMetaObject::invokeMethod(m_pPage, "addImageStop", Q_ARG(QVariant, screenCapture_->m_nIndex));
     screenCapture_->IsSelected = false;
     screenCapture_->update();
   }
   screenCapture_ = this;
+  QMetaObject::invokeMethod(m_pPage, "addImageStart", Q_ARG(QVariant, screenCapture_->m_nIndex));
   screenCapture_->IsSelected = true;
   screenCapture_->update();
 }
@@ -194,8 +194,6 @@ void ImageThumb::save(QString s)
 {
   if (s.isEmpty())
     return;
-
-  qDebug() << s;
 
   QImageReader oImageReader(s);
 

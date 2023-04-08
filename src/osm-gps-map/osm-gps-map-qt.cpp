@@ -1046,7 +1046,7 @@ const static MssFont BigFont1(72, QFont::Normal);
 const static MssFont BigFont(42, QFont::Bold);
 
 void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum, int nMinSize,
-                                     QImage& oImg, QPainter* pPainter)
+                                     QImage& oImg, QPainter* pPainter, double fQuote)
 {
   QAbstractListModel* pp = qvariant_cast<QAbstractListModel*>(pListTeam);
   int nC = pp->rowCount();
@@ -1081,7 +1081,9 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     double fLo = pp->data(pp->index(i), 1).toDouble();
     int x, y;
     osm_gps_map_from_deg(map, fLo, fLa, &x, &y);
-    pPainter->drawText(x, y + 20, sNum);
+    NormalFont.setStrikeOut(false);
+    pPainter->setFont(NormalFont);
+    pPainter->drawText(x * fQuote-8, y * fQuote+ 23, sNum);
   }
 
   START_LINE += (LINE_SPACING * (nC + 4));
@@ -1138,7 +1140,9 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
   cairo_surface_write_to_png(surf, sPath.toLatin1().data());
 
   QImage oPaintImage(sPath);
-  oPaintImage = oPaintImage.scaledToWidth(1200);
+  static const double REPORT_WIDTH = 1200;
+  double fQuote = REPORT_WIDTH / oPaintImage.width();
+  oPaintImage = oPaintImage.scaledToWidth(REPORT_WIDTH);
   QPainter oImagePainter(&oPaintImage);
   oImagePainter.setRenderHints(QPainter::Antialiasing);
   oImagePainter.setFont(BigFont1);
@@ -1155,11 +1159,11 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
     RenderSvg(":/pike3.svg", &oI3);
   }
 
-  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize, oI1, &oImagePainter);
+  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize, oI1, &oImagePainter, fQuote);
   if (nTeamCount > 1)
-    DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter);
+    DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter, fQuote);
   if (nTeamCount > 2)
-    DrawResultForTeam(pListTeam3, sTeamNameAndSum3, nMinSize, oI3, &oImagePainter);
+    DrawResultForTeam(pListTeam3, sTeamNameAndSum3, nMinSize, oI3, &oImagePainter, fQuote);
 
   oPaintImage.save(sPath);
   return sPath;

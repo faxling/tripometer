@@ -484,7 +484,7 @@ namespace Maep
   private:
     void initBoatMarkers();
     int START_LINE = 0;
-    void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize,QImage& sImg,  QPainter* p);
+    void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize,QImage& sImg,  QPainter* p,double fQuote);
 
     static int countSearchResults(QQmlListProperty<GeonamesPlace>* prop)
     {

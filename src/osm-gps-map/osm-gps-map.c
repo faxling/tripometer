@@ -128,9 +128,6 @@ struct _OsmGpsMapPrivate
   int ui_gps_point_inner_radius;
   int ui_gps_point_outer_radius;
 
-
-
-
   guint fullscreen : 1;
   guint is_disposed : 1;
   guint double_pixel : 1;
@@ -198,7 +195,7 @@ G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
 static int inspect_map_uri(const gchar* repo_uri, gboolean* the_google);
 static void osm_gps_map_print_images(OsmGpsMap* map);
-//static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
+// static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 #if USE_LIBSOUP22
 static void osm_gps_map_tile_download_complete(SoupMessage* msg, gpointer user_data);
 #else
@@ -730,8 +727,6 @@ static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
 
   g_debug("Queing redraw");
 
-
-
   if (priv->osm_gps_valid)
   {
 
@@ -823,7 +818,7 @@ static void osm_gps_map_blit_surface(OsmGpsMap* map, cairo_surface_t* cr_surf, i
 {
   OsmGpsMapPrivate* priv = map->priv;
 
- // g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
+  // g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
   if (priv->double_pixel)
   {
     modulo *= 2;
@@ -3185,12 +3180,13 @@ coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
   return coord;
 }
 
-void osm_gps_map_from_deg(OsmGpsMap* map, double log, double lat, int* pixel_x, int* pixel_y)
+void osm_gps_map_from_deg(OsmGpsMap* map, double logDeg, double latDeg, int* px, int* py)
 {
   coord_t pos;
-  pos.rlat = deg2rad(lat);
-  pos.rlon = deg2rad(log);
-  osm_gps_map_from_co_ordinates(map, &pos, pixel_x, pixel_y);
+  pos.rlat = deg2rad(latDeg);
+  pos.rlon = deg2rad(logDeg);
+
+  osm_gps_map_from_co_ordinates(map, &pos, px, py);
 }
 
 void osm_gps_map_from_co_ordinates(OsmGpsMap* map, coord_t* coord, int* pixel_x, int* pixel_y)

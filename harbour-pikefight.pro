@@ -108,10 +108,12 @@ DISTFILES += \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
     qml/StepSlider.qml \
+    qml/pages/BusyIndPike.qml \
     qml/pages/CameraPage.qml \
     qml/pages/DateTimePage.qml \
     qml/pages/ImagePage.qml \
     qml/pages/ManPage.qml \
+    qml/pages/PikePageImage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/TextList.qml \
     qml/TrippBtn.qml \

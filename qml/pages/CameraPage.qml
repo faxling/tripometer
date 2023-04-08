@@ -16,7 +16,6 @@ Page {
     ScreenCapture {
       id: idScreenCapture
 
-
       MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -27,7 +26,7 @@ Page {
   }
 
   Camera {
-    id: camera
+    id: idCamera
     // metaData.orientation: 270
     // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
@@ -40,7 +39,7 @@ Page {
 */
     flash.mode: Camera.FlashOff
     focus {
-      focusMode: Camera.FocusMacro + Camera.FocusContinuous
+      focusMode: Camera.FocusAuto
       focusPointMode: Camera.FocusPointCustom
       customFocusPoint: Qt.point(0.5, 0.5)
     }
@@ -54,7 +53,7 @@ Page {
 
   VideoOutput {
     id: idVideo
-    source: camera
+    source: idCamera
     anchors.fill: parent
     focus: visible // to receive focus and capture key events when visible
     MouseArea {
@@ -72,8 +71,6 @@ Page {
         o.capture()
         showOverlays(true)
         o.setPageAndModel(oListView, oModel, indexM)
-        //  idBusy.running = true
-        // camera.imageCapture.capture()
       }
     }
   }
@@ -93,17 +90,26 @@ Page {
     columns: 4
   }
 
-  BusyIndicator {
-    id: idBusy
-    size: BusyIndicatorSize.Large
-    anchors.centerIn: parent
-  }
-
-  IconButton {
+  Rectangle {
     id: idShotMark
     anchors.centerIn: parent
-    width: Theme.itemSizeSmall
-    height: Theme.itemSizeSmall
-    icon.source: "image://theme/icon-m-dot?" + (down ? Theme.highlightColor : Theme.primaryColor)
+    width: Theme.itemSizeLarge
+    height: Theme.itemSizeLarge
+    color: "transparent"
+    border.color: "orange"
+    border.width: 3
+    radius: width * 0.5
+    MouseArea {
+      anchors.fill: parent
+      onClicked: {
+        idCamera.searchAndLock()
+      }
+    }
+    BusyIndPike {
+      anchors.centerIn: parent
+      visible: running
+      running: idCamera.lockStatus == Camera.Searching
+    }
   }
+
 }
