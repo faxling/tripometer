@@ -53,6 +53,7 @@ int main(int argc, char* argv[]) {
   oSW.Stop();
   pSearchResultModel->Init(1);
   pContext->setContextProperty("oImageThumb", new ImageThumb(app));
+  pContext->setContextProperty("oFileMgr", new FileMgr());
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
   qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");
   ScreenCapture::SetView(pU);

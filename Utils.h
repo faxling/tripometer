@@ -5,10 +5,13 @@
 #include <QAbstractItemModel>
 #include <QImage>
 #include <QObject>
+#include <QOrientationReading>
 #include <QQuickPaintedItem>
 #include <QUrl>
 #include <QVector>
 #include <functional>
+#include <QOrientationSensor>
+
 
 void ScreenOn(bool b);
 QString FormatKmH(double f);
@@ -112,8 +115,16 @@ class ImageThumb : public QObject
   Q_OBJECT
 public:
   ImageThumb(QObject* parent = 0);
-  Q_INVOKABLE void save(QString s);
+  Q_INVOKABLE void save(QString s, int nOrientation);
   Q_INVOKABLE QUrl name(QString s);
+};
+
+class FileMgr : public QObject
+{
+  Q_OBJECT
+public:
+  FileMgr();
+  Q_INVOKABLE void remove(QString s);
 };
 
 class QQuickView;
@@ -127,17 +138,23 @@ public:
   bool IsSelected = false;
   ScreenCapture();
   ~ScreenCapture();
+
+  // saves orientation
   Q_INVOKABLE void capture();
   Q_INVOKABLE void save();
 
   void paint(QPainter* ppainter) override;
 
 private:
-  QObject* m_pPage;
-  QObject* m_pModel;
-  int m_nIndex;
+  void StartBusyInd();
+  void StopBusyInd();
+
+  QObject* m_pPage = nullptr;
+  QObject* m_pModel = nullptr;
+  int m_nIndex = -1;
   QImage m_oImagePreview;
   QImage m_oImage;
+  int m_nOrientation = 0;
 };
 
 class MssListModel : public QAbstractItemModel

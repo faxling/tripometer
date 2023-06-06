@@ -7,7 +7,9 @@ import "tripometer-functions.js" as Lib
 import "pages"
 
 Item {
+  id: idPikePage
 
+  //// property bool bShowBtns: true
   GpsMap {
     id: idMap
     track_capture: !idApp.bIsPause
@@ -21,8 +23,11 @@ Item {
     }
 
     onTrippleDrag: {
-      map_controls2.visible = !map_controls2.visible
-      map_controls.visible = !map_controls.visible
+
+      if (idPikePage.state === "")
+        idPikePage.state = "menuVisible"
+      else
+        idPikePage.state = ""
     }
 
     Component.onCompleted: {
@@ -98,6 +103,27 @@ Item {
       onDoubleClicked: {
         idMap.noDbPoint()
       }
+    }
+  }
+
+  states: [
+    State {
+      name: "menuVisible"
+      PropertyChanges {
+        target: map_controls2
+        opacity: 0.0
+      }
+      PropertyChanges {
+        target: map_controls
+        opacity: 0.0
+      }
+    }
+  ]
+
+  transitions: Transition {
+    NumberAnimation {
+      property: "opacity"
+      duration: 300
     }
   }
 

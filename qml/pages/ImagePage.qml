@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import Sailfish.Silica 1.0
+
 // ImagePage
 Page {
   id: idPage
@@ -15,17 +16,29 @@ Page {
 
     Image {
       id: idImage
+      y: (idPage.height - height) / 2
+      x: (idPage.width - width) / 2
       autoTransform: true
       asynchronous: true
       fillMode: Image.PreserveAspectFit
-      y: (idPage.height - height) / 2
       width: idPage.width
       PinchArea {
+
+        // pinch.dragAxis: Pinch.NoDrag
         pinch.dragAxis: Pinch.XAndYAxis
         anchors.fill: parent
         pinch.target: parent
         pinch.minimumScale: 1
-        pinch.maximumScale: 8
+        pinch.maximumScale: 10
+
+        TapArea {
+          anchors.fill: parent
+          onTap: {
+            idImage.x = 0
+            idImage.y = 0
+            idImage.scale = 1
+          }
+        }
       }
     }
   }

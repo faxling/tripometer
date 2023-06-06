@@ -11,11 +11,14 @@
 #include <QFile>
 #include <QImage>
 #include <QImageReader>
+#include <QOrientationReading>
 #include <QPainter>
 #include <QPixmap>
 #include <QQuickItemGrabResult>
 #include <QQuickView>
 #include <QStandardPaths>
+#include <QtMultimedia/QMediaObject>
+#include <QtMultimedia/QtMultimedia>
 #include <thread>
 
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
@@ -93,16 +96,29 @@ QString mssutils::Hash(const QString& s)
   return (sCasheDir ^ sRet) + Ext(s);
 }
 
-QQuickView* currentView_ = nullptr;
-ScreenCapture* screenCapture_ = nullptr;
+static QQuickView* g_currentView = nullptr;
+static ScreenCapture* g_selectedScreenCapture = nullptr;
+static QOrientationSensor* m_oOrientationSensor = nullptr;
+
+
+void ScreenCapture::StartBusyInd()
+{
+  QMetaObject::invokeMethod(m_pPage, "addImageStart", Q_ARG(QVariant, m_nIndex));
+}
+
+void ScreenCapture::StopBusyInd()
+{
+  QMetaObject::invokeMethod(m_pPage, "addImageStop", Q_ARG(QVariant, m_nIndex));
+}
 
 void ScreenCapture::SetView(QQuickView* parent)
 {
-  currentView_ = parent;
+  g_currentView = parent;
 }
 
 ScreenCapture::ScreenCapture()
 {
+
 }
 
 ScreenCapture::~ScreenCapture()
@@ -110,47 +126,44 @@ ScreenCapture::~ScreenCapture()
   if (IsSelected)
   {
     auto oW = std::thread(
-        [](QObject* p, QObject* pModel, QImage oImg, int nIndex) {
-
+        [](QObject* p, QObject* pModel, QImage oImg, int nIndex,  int nO) {
           QDateTime oNow(QDateTime::currentDateTime());
           QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-          QString sPath = StorageDir() ^ "img" + sImgName + ".png";
+          QString sPath = StorageDir() ^ ("img" + sImgName + ".jpg");
           oImg.save(sPath);
-          screenCapture_ = nullptr;
-          qDebug() << "save image " << sPath;
+          g_selectedScreenCapture = nullptr;
+          qDebug() << "save image " << sPath <<  " oo " << nO;
 
           QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
                                     Q_ARG(QVariant, QVariant::fromValue(pModel)),
-                                    Q_ARG(QVariant, sPath));
-
+                                    Q_ARG(QVariant, sPath), Q_ARG(QVariant, nO));
         },
-        m_pPage, m_pModel, m_oImage, m_nIndex);
+        m_pPage, m_pModel, m_oImage,m_nIndex, m_nOrientation);
 
     oW.detach();
-
   }
-
 }
 
 void ScreenCapture::save()
 {
   if (this->IsSelected)
   {
-    QMetaObject::invokeMethod(m_pPage, "addImageStop", Q_ARG(QVariant, m_nIndex));
     this->IsSelected = false;
+    StopBusyInd();
     update();
     return;
   }
-  if (screenCapture_ != nullptr)
+  if (g_selectedScreenCapture != nullptr)
   {
-    QMetaObject::invokeMethod(m_pPage, "addImageStop", Q_ARG(QVariant, screenCapture_->m_nIndex));
-    screenCapture_->IsSelected = false;
-    screenCapture_->update();
+    g_selectedScreenCapture->IsSelected = false;
+    g_selectedScreenCapture->update();
   }
-  screenCapture_ = this;
-  QMetaObject::invokeMethod(m_pPage, "addImageStart", Q_ARG(QVariant, screenCapture_->m_nIndex));
-  screenCapture_->IsSelected = true;
-  screenCapture_->update();
+
+  StartBusyInd();
+
+  g_selectedScreenCapture = this;
+  g_selectedScreenCapture->IsSelected = true;
+  g_selectedScreenCapture->update();
 }
 
 void ScreenCapture::setPageAndModel(QObject* pPage, QObject* pModel, int nIndex)
@@ -164,8 +177,16 @@ void ScreenCapture::capture()
 {
   QEventLoop oLoop;
   oLoop.processEvents();
-  m_oImage = currentView_->grabWindow();
+  m_oImage = g_currentView->grabWindow();
   m_oImagePreview = m_oImage.scaledToHeight(height());
+  if (m_oOrientationSensor == nullptr)
+    m_oOrientationSensor = new QOrientationSensor;
+  if (!m_oOrientationSensor->isActive())
+  {
+    m_oOrientationSensor->start();
+  }
+  m_nOrientation = m_oOrientationSensor->reading()->orientation();
+
   update();
 }
 
@@ -186,18 +207,30 @@ void ScreenCapture::paint(QPainter* p)
   p->drawRect(o);
 }
 
+FileMgr::FileMgr()
+{
+}
+
+void FileMgr::remove(QString s)
+{
+  QFile::remove(s);
+}
+
 ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
 {
 }
 
-void ImageThumb::save(QString s)
+void ImageThumb::save(QString s, int nOrientation)
 {
   if (s.isEmpty())
     return;
 
-  QImageReader oImageReader(s);
+  qDebug() << " " << nOrientation << "\n";
 
-  oImageReader.setAutoTransform(true);
+  QImageReader oImageReader(s);
+  if (nOrientation == 0)
+    oImageReader.setAutoTransform(true);
+
   QImage oO = oImageReader.read();
 
   QRect oT;
@@ -218,7 +251,12 @@ void ImageThumb::save(QString s)
 
   auto oOriginalPixmap = oO.copy(oT);
 
-  oOriginalPixmap.scaledToWidth(180).save(mssutils::Hash(s));
+  oOriginalPixmap = oOriginalPixmap.scaledToWidth(180);
+  if (nOrientation == 4)
+    oOriginalPixmap = oOriginalPixmap.transformed(QMatrix().rotate(270.0));
+  if (nOrientation == 3)
+    oOriginalPixmap = oOriginalPixmap.transformed(QMatrix().rotate(90.0));
+  oOriginalPixmap.save(mssutils::Hash(s));
 }
 
 QUrl ImageThumb::name(QString s)

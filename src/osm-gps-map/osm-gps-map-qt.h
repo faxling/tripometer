@@ -547,6 +547,7 @@ namespace Maep
     /* Marker images */
     QHash<int, cairo_surface_t*> m_ocMarkers;
     QHash<int, cairo_surface_t*> m_ocPikeMarkers;
+    QElapsedTimer m_oElapsed;
   };
 
   class GpsMapCover : public QQuickPaintedItem

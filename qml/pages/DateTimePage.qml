@@ -11,13 +11,6 @@ Page {
   property alias date: idDatePicker.date
   property alias time: idTimePicker.time
 
-  Component.onDestruction: {
-    var o = new Date(date)
-    o.setMinutes(minute)
-    o.setHours(hour)
-    fnDateTimeChanged(o)
-  }
-
   PageHeader {
     id: idHeader
     title: "Set date/time"
@@ -35,6 +28,22 @@ Page {
     Label {
       anchors.centerIn: parent
       text: idDatePicker.dateText + " " + parent.timeText
+    }
+  }
+
+  IconButton {
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    width: Theme.itemSizeMedium
+    height: Theme.itemSizeMedium
+    anchors.rightMargin: Theme.paddingLarge
+    anchors.bottomMargin: Theme.paddingLarge
+    icon.source: "image://theme/icon-m-accept?" + (down ? Theme.highlightColor : Theme.primaryColor)
+    onClicked: {
+      var o = new Date(date)
+      o.setMinutes(minute)
+      o.setHours(hour)
+      fnDateTimeChanged(o)
     }
   }
 }

@@ -7,5 +7,7 @@
         <file>boat.svg</file>
         <file>pike2.svg</file>
         <file>pike3.svg</file>
+        <file>qml/symPike.png</file>
+        <file>busy.png</file>
     </qresource>
 </RCC>

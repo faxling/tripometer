@@ -57,8 +57,8 @@ SilicaListView {
     idListView.model.get(indexM).tBusy = false
   }
 
-  function addImageGo(indexM, oModel, urlImg) {
-    Lib.addPikeImage(indexM, oModel, urlImg)
+  function addImageGo(indexM, oModel, urlImg, nOrientaion) {
+    Lib.addPikeImage(indexM, oModel, urlImg, nOrientaion)
     idListView.model.get(indexM).tBusy = false
   }
 

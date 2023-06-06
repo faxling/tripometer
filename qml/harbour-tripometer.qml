@@ -4,7 +4,6 @@ import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
 import QtQuick.LocalStorage 2.0 as Sql
 import "tripometer-functions.js" as Lib
-
 // import QtQuick.Controls 1.0
 import "pages"
 

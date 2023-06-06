@@ -10,10 +10,13 @@ INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\cai
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)/usr/include/c++\4.8.3
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libsoup-2.4
 
+QT += multimedia svg qml quick positioning sensors dbus gui
+
 CONFIG +=  sailfishapp
 
 PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl qt5embedwidget
-QT += svg qml quick positioning sensors dbus gui
+
+
 LIBS += -ljpeg
 LIBS += -lpng
 
@@ -111,10 +114,12 @@ DISTFILES += \
     qml/pages/BusyIndPike.qml \
     qml/pages/CameraPage.qml \
     qml/pages/DateTimePage.qml \
+    qml/pages/GalleryPage.qml \
     qml/pages/ImagePage.qml \
     qml/pages/ManPage.qml \
     qml/pages/PikePageImage.qml \
     qml/pages/SettingsPage.qml \
+    qml/pages/TapArea.qml \
     qml/pages/TextList.qml \
     qml/TrippBtn.qml \
     qml/tripometer-functions.js \

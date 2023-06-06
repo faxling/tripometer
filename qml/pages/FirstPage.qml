@@ -8,7 +8,7 @@ Item {
   // SilicaFlickable to get the dropdown menue
   ShareAction {
     id: idShare
-    mimeType: "image/png"
+    mimeType: "image/jpg"
     title: "Share Pike Report"
   }
   SilicaFlickable {
@@ -42,6 +42,13 @@ Item {
         text: "Help"
         onClicked: {
           pageStack.push("ManPage.qml")
+        }
+      }
+
+      MenuItem {
+        text: "Gallery"
+        onClicked: {
+          pageStack.push("GalleryPage.qml")
         }
       }
 

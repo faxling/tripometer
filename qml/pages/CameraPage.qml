@@ -11,6 +11,7 @@ Page {
   property var oModel
   property int nImgNo
   property var oListView
+
   Component {
     id: idImageFactory
     ScreenCapture {
@@ -27,7 +28,8 @@ Page {
 
   Camera {
     id: idCamera
-    // metaData.orientation: 270
+
+    metaData.orientation: 270
     // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
 
@@ -38,6 +40,7 @@ Page {
     }
 */
     flash.mode: Camera.FlashOff
+
     focus {
       focusMode: Camera.FocusAuto
       focusPointMode: Camera.FocusPointCustom
@@ -49,6 +52,7 @@ Page {
     idImageGrid.visible = bVisible
     idShotMark.visible = false
     backNavigation = bVisible
+    idExposure.visible = false
   }
 
   VideoOutput {
@@ -58,10 +62,12 @@ Page {
     focus: visible // to receive focus and capture key events when visible
     MouseArea {
       anchors.fill: parent
+
       onClicked: {
         if (idImageGrid.visible) {
           idImageGrid.visible = false
           idShotMark.visible = true
+          idExposure.visible = true
           return
         }
         var o = idImageFactory.createObject(idImageGrid)
@@ -102,6 +108,7 @@ Page {
     MouseArea {
       anchors.fill: parent
       onClicked: {
+        idCamera.unlock()
         idCamera.searchAndLock()
       }
     }
@@ -112,4 +119,75 @@ Page {
     }
   }
 
+  Slider {
+    id: idExposure
+    onValueChanged: idCamera.exposure.exposureCompensation = value / 10
+    width: parent.width
+    minimumValue: -50
+    maximumValue: 50
+    value: 0
+    stepSize: 1
+    valueText: (value / 10)
+  }
+
+
+  /*
+  ComboBox {
+
+    visible: false
+    width: 480
+    label: "Exposure Compensation"
+    onCurrentIndexChanged: {
+      switch (currentIndex) {
+      case 0:
+        idCamera.exposure.exposureCompensation = 0
+        break
+      case 1:
+        idCamera.exposure.exposureCompensation = 1
+        break
+      case 2:
+        idCamera.exposure.exposureCompensation = 2
+        break
+      case 3:
+        idCamera.exposure.exposureCompensation = 2
+        break
+      case 4:
+        idCamera.exposure.exposureCompensation = -1
+        break
+      case 5:
+        idCamera.exposure.exposureCompensation = -2
+        break
+      case 6:
+        idCamera.exposure.exposureCompensation = -3
+        break
+      }
+    }
+
+    menu: ContextMenu {
+      MenuItem {
+        text: "Default"
+      }
+      MenuItem {
+        text: "Some 1"
+      }
+      MenuItem {
+        text: "More 2"
+      }
+      MenuItem {
+        text: "Max 3"
+      }
+      MenuItem {
+        text: "Little -1"
+      }
+      MenuItem {
+        text: "Less -2"
+      }
+      MenuItem {
+        text: "Min -3"
+      }
+    }
+  }
+
+
+  */
 }

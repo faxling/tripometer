@@ -12,7 +12,6 @@ function initDB() {
     var nRowLen = rs.rows.length
     for (var j = 0; j < nRowLen; j++) {
       var o = rs.rows.item(j)
-      console.log("image  " + o.sImage)
       addPikeEx(Number(o.pike_id), o.nOwner, o.sDate, o.sImage, o.nLen, o.fLo,
                 o.fLa, false)
     }
@@ -131,10 +130,12 @@ function showPike(nOwner) {
   }
 }
 
-function addPikeImage(i, oPModel, sImage) {
+function addPikeImage(i, oPModel, sImage, nOrientaion) {
   var nId = oPModel.get(i).nId
   oPModel.get(i).sImage = String(sImage)
-  oImageThumb.save(sImage)
+
+  // nOrientaion could be undefined and then become 0
+  oImageThumb.save(sImage, nOrientaion)
   oPModel.get(i).sImageThumb = String(oImageThumb.name(sImage))
   db.transaction(function (tx) {
     tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])

@@ -11,7 +11,6 @@
 #include <QStandardPaths>
 #include <QtGlobal>
 
-#include "QtSensors/QAccelerometer"
 #include "Utils.h"
 #include "math.h"
 #include "time.h"

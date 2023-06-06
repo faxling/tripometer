@@ -744,10 +744,13 @@ void Maep::GpsMap::keyPressEvent(QKeyEvent* event)
 // }
 void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
 {
+  int nTDist = 0;
   static int nTDistLast = 0;
-  static int nTripple = 0;
   static int nLastDeltaX = 0;
   static int nLastDeltaY = 0;
+  static QTouchEvent::TouchPoint tBeginPoint;
+  static QTouchEvent::TouchPoint tEndPoint;
+
   switch (touchEvent->type())
   {
   case QEvent::TouchBegin:
@@ -758,6 +761,11 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     zooming = false;
     nLastDeltaX = 0;
     nLastDeltaY = 0;
+    if (dragging)
+    {
+      m_oElapsed.start();
+      tBeginPoint = touchPoints.first();
+    }
 
     // g_message("touch begin %d", dragging);
     return;
@@ -766,16 +774,8 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
   {
     // g_message("touch update %d", haveMouseEvent);
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    if (touchPoints.count() == 3)
-    {
-      if (nTripple == 0)
-      {
-        nTripple = 1;
-        emit trippleDrag();
-      }
-      return;
-    }
 
+    tEndPoint =  touchPoints.first();
     if (touchPoints.count() == 2 && dragging)
     {
       dragging = false;
@@ -817,7 +817,11 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     return;
   }
   case QEvent::TouchEnd:
-    nTripple = 0;
+    tEndPoint = touchEvent->touchPoints().first();
+
+    nTDist = QLineF(tBeginPoint.pos(), tEndPoint.pos()).length();
+    if ((m_oElapsed.elapsed() < 200) && (nTDist  < 50))
+      emit trippleDrag();
     break;
   default:
     QQuickItem::touchEvent(touchEvent);
@@ -1083,7 +1087,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     osm_gps_map_from_deg(map, fLo, fLa, &x, &y);
     NormalFont.setStrikeOut(false);
     pPainter->setFont(NormalFont);
-    pPainter->drawText(x * fQuote-8, y * fQuote+ 23, sNum);
+    pPainter->drawText(x * fQuote - 8, y * fQuote + 23, sNum);
   }
 
   START_LINE += (LINE_SPACING * (nC + 4));

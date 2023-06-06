@@ -5,6 +5,6 @@ import Sailfish.WebView 1.0
 WebViewPage {
   WebView {
     anchors.fill: parent
-    url: "https://faxling.github.io/WordQuizWin/index.html"
+    url: "https://faxling.github.io/tripometer/pikeFight.html"
   }
 }
