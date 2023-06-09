@@ -81,13 +81,16 @@ Page {
     ComboBox {
       width: parent.width
       label: "Pikes Counted"
-      currentIndex: nPikesCounted - 1
+      currentIndex: nPikesCounted
       onCurrentIndexChanged: {
-        idApp.nPikesCounted = currentIndex + 1
+        idApp.nPikesCounted = currentIndex
         if (idApp.nPikesCounted === 7)
           idApp.nPikesCounted = null
       }
       menu: ContextMenu {
+        MenuItem {
+          text: "Don't count"
+        }
         MenuItem {
           text: "1"
         }

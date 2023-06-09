@@ -16,13 +16,6 @@ Item {
     height: 120
     width: page.width
     PullDownMenu {
-      MenuItem {
-        text: "Settings"
-
-        onClicked: {
-          pageStack.push("SettingsPage.qml")
-        }
-      }
 
       MenuItem {
         text: bScreenallwaysOn ? "Turn On Powersaver" : "Turn Off Powersaver"
@@ -46,6 +39,13 @@ Item {
       }
 
       MenuItem {
+        text: "Settings"
+        onClicked: {
+          pageStack.push("SettingsPage.qml")
+        }
+      }
+
+      MenuItem {
         text: "Gallery"
         onClicked: {
           pageStack.push("GalleryPage.qml")
@@ -64,14 +64,26 @@ Item {
         text: "Make Report"
         onClicked: {
           mainMap.markPikeInMap(-1)
-          idApp.sReportPath
-              = mainMap.savePikeReport(idPikeModel1, idApp.ocTeamName[1] + " "
-                                       + idApp.ocSumSize[0], idPikeModel2,
-                                       idApp.ocTeamName[2] + " "
-                                       + idApp.ocSumSize[1], idPikeModel3,
-                                       idApp.ocTeamName[3] + " "
-                                       + idApp.ocSumSize[2], idApp.nMinSize,
-                                       idApp.ocTeamName[0], idApp.nNrTeams)
+
+          if (idApp.nPikesCounted !== 0) {
+            idApp.sReportPath
+                = mainMap.savePikeReport(idPikeModel1, idApp.ocTeamName[1] + " "
+                                         + idApp.ocSumSize[0], idPikeModel2,
+                                         idApp.ocTeamName[2] + " "
+                                         + idApp.ocSumSize[1], idPikeModel3,
+                                         idApp.ocTeamName[3] + " "
+                                         + idApp.ocSumSize[2], idApp.nMinSize,
+                                         idApp.ocTeamName[0], idApp.nNrTeams)
+          } else {
+            idApp.sReportPath = mainMap.savePikeReport(idPikeModel1,
+                                                       idApp.ocTeamName[1],
+                                                       idPikeModel2,
+                                                       idApp.ocTeamName[2],
+                                                       idPikeModel3,
+                                                       idApp.ocTeamName[3], 0,
+                                                       idApp.ocTeamName[0],
+                                                       idApp.nNrTeams)
+          }
 
           // idApp.ocTeamName[0] The name of the day
           // idApp.sImage = idApp.sReportPath

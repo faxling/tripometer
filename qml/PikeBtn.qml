@@ -27,6 +27,7 @@ Rectangle {
   }
   Text {
     id: idSize3
+    visible: idApp.nPikesCounted !== 0
     font.pixelSize: Theme.fontSizeMedium
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom

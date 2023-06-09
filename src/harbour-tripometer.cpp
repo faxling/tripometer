@@ -80,10 +80,13 @@ int main(int argc, char* argv[]) {
   pU->rootObject()->setProperty("nUnit", oSettings.value("nUnit", 1));
   pInfoListModel->klicked2(5);
   oSW.Stop();
-  pU->rootObject()->setProperty("nPikesCounted",
-                                oSettings.value("nPikesCounted", 6));
+
   pU->rootObject()->setProperty("nMinSize", oSettings.value("nMinSize", 60));
   pU->rootObject()->setProperty("nNrTeams", oSettings.value("nNrTeams", 2));
+  pU->rootObject()->setProperty("nPikesCounted",
+                                oSettings.value("nPikesCounted", 6));
+
+
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName",

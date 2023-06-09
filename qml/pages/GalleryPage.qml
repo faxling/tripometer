@@ -25,10 +25,12 @@ Page {
       id: folderModel
       sortField: FolderListModel.Time
       folder: "file:///home/nemo/Documents/pikeFight"
-      nameFilters: ["img*.png","img*.jpg"]
+      nameFilters: ["img*.png", "img*.jpg"]
     }
 
     delegate: GridItem {
+      id: idGridItem
+
       function remove() {
         remorseDelete(function () {
           oFileMgr.remove(folderModel.get(index, "filePath"))
@@ -47,9 +49,11 @@ Page {
           MenuItem {
             text: "View"
             onClicked: {
+
               pageStack.push("ImagePage.qml", {
                                "oImgSrc": filePath
                              })
+              idGrid.currentIndex = index
             }
           }
           MenuItem {
@@ -58,6 +62,7 @@ Page {
           }
         }
       }
+
       Thumbnail {
         width: idGrid.cellHeight
         height: idGrid.cellHeight
@@ -65,15 +70,24 @@ Page {
         sourceSize.width: width
         sourceSize.height: height
 
-
-        /*
         MouseArea {
           anchors.fill: parent
-          onClicked: pageStack.push("ImagePage.qml", {
-                                      "oImgSrc": filePath
-                                    })
+          anchors.topMargin: idGrid.cellHeight / 2
+
+          onClicked: {
+            pageStack.push("ImagePage.qml", {
+                             "oImgSrc": filePath
+                           })
+            idGrid.currentIndex = index
+          }
         }
-        */
+      }
+
+      Rectangle {
+        visible: index === idGrid.currentIndex
+        anchors.fill: parent
+        color: "blue"
+        opacity: 0.3
       }
     }
 

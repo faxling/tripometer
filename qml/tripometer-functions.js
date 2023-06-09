@@ -50,7 +50,14 @@ function deleteDB() {
   idApp.ocPikeCount = [0, 0, 0, 0]
 }
 
+function reCalcSizeAndDisplay() {
+  for (var i = 1; i <= idApp.nNrTeams; ++i) {
+    calcSizeAndDisplay(i)
+  }
+}
+
 function calcSizeAndDisplay(nOwner, value) {
+
   var oPModel
   var nCurrentIndex
   var oSizeText
@@ -72,6 +79,14 @@ function calcSizeAndDisplay(nOwner, value) {
     oPModel = idPikeModel3
   }
 
+  var nC = oPModel.count
+  if (idApp.nPikesCounted === 0) {
+    var ocNewPikeCount = idApp.ocPikeCount
+    ocNewPikeCount[nOwner] = nC
+    idApp.ocPikeCount = ocNewPikeCount
+    return
+  }
+
   if (value !== undefined) {
     var nLen = Math.round(value)
     var nId = oPModel.get(nCurrentIndex).nId
@@ -82,8 +97,6 @@ function calcSizeAndDisplay(nOwner, value) {
       tx.executeSql('UPDATE Catch_V2 SET nLen=? WHERE pike_id=?', [nLen, nId])
     })
   }
-
-  var nC = oPModel.count
 
   var ocLength = []
   for (var i = 0; i < nC; ++i) {
@@ -112,7 +125,7 @@ function calcSizeAndDisplay(nOwner, value) {
   t[nOwner - 1] = oSizeText
   idApp.ocSumSize = t
 
-  var ocNewPikeCount = idApp.ocPikeCount
+  ocNewPikeCount = idApp.ocPikeCount
   ocNewPikeCount[nOwner] = nC
   idApp.ocPikeCount = ocNewPikeCount
 }

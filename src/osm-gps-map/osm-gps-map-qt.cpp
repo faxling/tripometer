@@ -385,7 +385,7 @@ Maep::GpsMap::~GpsMap()
 
   // gconf_set_bool(GCONF_KEY_TRACK_CAPTURE, track_capture);
 
-  gconf_set_bool(GCONF_KEY_SCREEN_ROTATE, screenRotation);
+  // gconf_set_bool(GCONF_KEY_SCREEN_ROTATE, screenRotation);
 
   gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
 
@@ -775,7 +775,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     // g_message("touch update %d", haveMouseEvent);
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
 
-    tEndPoint =  touchPoints.first();
+    tEndPoint = touchPoints.first();
     if (touchPoints.count() == 2 && dragging)
     {
       dragging = false;
@@ -820,7 +820,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     tEndPoint = touchEvent->touchPoints().first();
 
     nTDist = QLineF(tBeginPoint.pos(), tEndPoint.pos()).length();
-    if ((m_oElapsed.elapsed() < 200) && (nTDist  < 50))
+    if ((m_oElapsed.elapsed() < 200) && (nTDist < 50))
       emit trippleDrag();
     break;
   default:
@@ -1072,12 +1072,16 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     QString sLen = pp->data(pp->index(i), 7).toString();
     QString sNum = QString::number(i + 1);
     QString sThumb = pp->data(pp->index(i), 6).toString();
-    NormalFont.setStrikeOut(pp->data(pp->index(i), 3).toInt() < nMinSize);
+    if (nMinSize > 0)
+    {
+      NormalFont.setStrikeOut(pp->data(pp->index(i), 3).toInt() < nMinSize);
+    }
     pPainter->setFont(NormalFont);
     int nY = START_LINE + i * LINE_SPACING;
     int nYImg = START_LINE + (i / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING;
     pPainter->drawText(INDENT1, nY, sDate);
-    pPainter->drawText(INDENT2, nY, sLen);
+	  if (nMinSize > 0)
+  	  pPainter->drawText(INDENT2, nY, sLen);
     pPainter->drawText(INDENT, nY, sNum);
     pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (i % IMG_COLUMNS) + 100, nYImg,
                         QImage(sThumb).scaledToHeight(LINE_SPACING * IMG_COLUMNS - 2));
@@ -1163,7 +1167,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
     RenderSvg(":/pike3.svg", &oI3);
   }
 
-  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize, oI1, &oImagePainter, fQuote);
+  DrawResultForTeam(pListTeam1, sTeamNameAndSum1,nTeamCount==0 ? 0 : nMinSize  , oI1, &oImagePainter, fQuote);
   if (nTeamCount > 1)
     DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter, fQuote);
   if (nTeamCount > 2)
@@ -1237,8 +1241,9 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
   oF.close();
   t.nType = 0;
   t.len = fLen;
-  t.la = lastGps.coordinate().latitude();
-  t.lo = lastGps.coordinate().longitude();
+
+  t.la = currentPos().latitude();
+  t.lo = currentPos().longitude();
   t.speed = g_fMaxSpeed;
   t.nTime = time(0);
 

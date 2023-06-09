@@ -13,7 +13,9 @@ Item {
   GpsMap {
     id: idMap
     track_capture: !idApp.bIsPause
-
+    function reCalc() {
+      Lib.reCalcSizeAndDisplay()
+    }
     Component.onDestruction: {
 
     }

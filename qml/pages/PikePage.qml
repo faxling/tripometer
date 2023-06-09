@@ -146,6 +146,7 @@ SilicaListView {
         text: sDate
       }
       TextList {
+        visible: idApp.nPikesCounted !== 0
         width: idListItem.width / 4 - 20
         font.strikeout: nLen < idApp.nMinSize
         // font.italic:

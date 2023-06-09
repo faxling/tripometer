@@ -20,7 +20,9 @@ DockedPanel {
     font.bold: true
     color: "black"
     font.pixelSize: Theme.fontSizeHuge
-    text: idApp.ocTeamName[nOwner] + " " + ocSumSize[nOwner - 1]
+    text: idApp.nPikesCounted !== 0 ? idApp.ocTeamName[nOwner] + " "
+                                      + ocSumSize[nOwner - 1] : idApp.ocTeamName[nOwner]
+
     MouseArea {
       // strange, this is needed for the docked panel to be enabled:
       // to respond on this area
@@ -52,7 +54,7 @@ DockedPanel {
 
   StepSlider {
     id: idSlider1
-    visible: idPikePage.currentIndex >= 0
+    visible: idPikePage.currentIndex >= 0 && idApp.nPikesCounted !== 0
     anchors.bottom: parent.bottom
     stepSize: 0.005
     width: parent.width
