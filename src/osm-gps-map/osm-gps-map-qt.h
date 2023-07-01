@@ -406,6 +406,7 @@ namespace Maep
     Q_INVOKABLE void centerTrack(const QString& sTrackName);
     Q_INVOKABLE void renameTrack(const QString& sTrackName, int nId);
 
+    Q_INVOKABLE void centerCurrentGps();
     Q_INVOKABLE inline QString sourceLabel(Source id) const
     {
       return QString(osm_gps_map_source_get_friendly_name((OsmGpsMapSource_t)id));

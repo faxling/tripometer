@@ -11,6 +11,7 @@ Item {
 
   //// property bool bShowBtns: true
   GpsMap {
+
     id: idMap
     track_capture: !idApp.bIsPause
     function reCalc() {
@@ -26,10 +27,12 @@ Item {
 
     onTrippleDrag: {
 
-      if (idPikePage.state === "")
-        idPikePage.state = "menuVisible"
-      else
+      if (idPikePage.state === "") {
+        idPikePage.state = "menuInvisible"
+        map_controls3.state = ""
+      } else {
         idPikePage.state = ""
+      }
     }
 
     Component.onCompleted: {
@@ -41,6 +44,7 @@ Item {
     anchors.fill: parent
   }
   PikeBtn {
+
     id: idPikeBtn1
     src: "symPikeL.png"
     nOwner: 1
@@ -69,6 +73,53 @@ Item {
   }
 
   Column {
+    id: map_controls3
+    spacing: 20
+    anchors.top: map_controls2.top
+    x: -map_controls3.width
+    TrippBtn {
+      id: idSat
+      src: "btnSat.png"
+      onClicked: {
+        idMap.setSource(11)
+      }
+    }
+
+    TrippBtn {
+      id: idEniro
+      src: "btnSeaMap.png"
+      onClicked: {
+        idMap.setSource(17)
+      }
+    }
+
+    TrippBtn {
+      id: idWorld
+      src: "btnMap.png"
+      onClicked: {
+        idMap.setSource(1)
+      }
+    }
+
+    states: [
+      State {
+        name: "menuMapVisible"
+        PropertyChanges {
+          target: map_controls3
+          x: map_controls2.x + map_controls2.width + 20
+        }
+      }
+    ]
+
+    transitions: Transition {
+      NumberAnimation {
+        property: "x"
+        duration: 300
+      }
+    }
+  }
+
+  Column {
     id: map_controls2
     spacing: 20
     anchors.bottom: map_controls.top
@@ -76,23 +127,23 @@ Item {
     anchors.left: parent.left
     anchors.leftMargin: 20
     z: idMap.z + 1
+    TrippBtn {
+      id: idBtnMap
+      src: "btnWorld.png"
+
+      onClicked: {
+        if (map_controls3.state === "")
+          map_controls3.state = "menuMapVisible"
+        else
+          map_controls3.state = ""
+      }
+    }
 
     TrippBtn {
       id: idSearch
       src: "btnSearch.png"
       onClicked: {
         idSearchPageDockedPanel.open = !idSearchPageDockedPanel.open
-      }
-    }
-
-    TrippBtn {
-      id: idSat
-      src: "btnSat.png"
-      onClicked: {
-        idMap.setSource(11)
-      }
-      onDoubleClicked: {
-        idMap.setSource(1)
       }
     }
 
@@ -106,17 +157,49 @@ Item {
         idMap.noDbPoint()
       }
     }
+
+    TrippBtn {
+      id: idCenterde
+      src: "btnCenter.png"
+      onClicked: {
+        idMap.auto_center = !idMap.auto_center
+      }
+
+      Rectangle {
+        visible: idMap.auto_center
+        anchors.centerIn: parent
+        color: "#f9535c"
+        height: 17
+        width: 17
+        radius: 3
+      }
+    }
+
+    TrippBtn {
+      id: idMarker
+      src: "btnMarker.png"
+      onClicked: {
+        idMap.saveMark(idTrackModel.nextId())
+      }
+    }
   }
 
   states: [
     State {
-      name: "menuVisible"
+      name: "menuInvisible"
       PropertyChanges {
         target: map_controls2
         opacity: 0.0
       }
       PropertyChanges {
         target: map_controls
+        opacity: 0.0
+      }
+    },
+    State {
+      name: "menu2Invisible"
+      PropertyChanges {
+        target: map_controls2
         opacity: 0.0
       }
     }
@@ -126,6 +209,19 @@ Item {
     NumberAnimation {
       property: "opacity"
       duration: 300
+    }
+  }
+
+  LargeBtn {
+    id: idCenterBtn
+    visible: !idMap.auto_center
+    src: "btnLrgCenter.png"
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: idLeftBtn.top
+    anchors.bottomMargin: 20
+    onClicked: {
+      idMap.centerCurrentGps()
     }
   }
 
@@ -164,29 +260,6 @@ Item {
         idMap.zoomIn()
       }
     }
-    TrippBtn {
-      id: idCenterde
-      src: "btnCenter.png"
-      onClicked: {
-        idMap.auto_center = !idMap.auto_center
-      }
-
-      Rectangle {
-        visible: idMap.auto_center
-        anchors.centerIn: parent
-        color: "#f9535c"
-        height: 17
-        width: 17
-        radius: 3
-      }
-    }
-    TrippBtn {
-      id: idMarker
-      src: "btnMarker.png"
-      onClicked: {
-        idMap.saveMark(idTrackModel.nextId())
-      }
-    }
 
     TrippBtn {
       id: idTrack
@@ -211,6 +284,10 @@ Item {
       src: "btnTracks.png"
       onClicked: {
         idTrackPanel.open = !idTrackPanel.open
+        if (idTrackPanel.open)
+          idPikePage.state = "menu2Invisible"
+        else
+          idPikePage.state = ""
       }
     }
   }

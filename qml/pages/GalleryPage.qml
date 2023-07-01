@@ -24,7 +24,7 @@ Page {
     FolderListModel {
       id: folderModel
       sortField: FolderListModel.Time
-      folder: "file:///home/nemo/Documents/pikeFight"
+      folder: pikeFightDocFolder
       nameFilters: ["img*.png", "img*.jpg"]
     }
 

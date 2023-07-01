@@ -3,7 +3,6 @@
 #include <QtQuick>
 #endif
 
-#include <sailfishapp.h>
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -12,6 +11,7 @@
 #include <QSettings>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/QtPositioning>
+#include <sailfishapp.h>
 
 #include "osm-gps-map/osm-gps-map-qt.h"
 
@@ -26,8 +26,10 @@
 QObject* g_pTheTrackModel;
 QObject* g_pTheMap;
 
-int main(int argc, char* argv[]) {
-
+int main(int argc, char* argv[])
+{
+  // Xperia 10 III /home/defaultuser
+  //
   // /home/nemo/Documents/pikefight
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
@@ -48,10 +50,10 @@ int main(int argc, char* argv[]) {
 
   g_pTheTrackModel = new TrackModel;
   pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
-  MssListModel* pSearchResultModel =
-      new MssListModel("name", "lat", "lo", "type");
+  MssListModel* pSearchResultModel = new MssListModel("name", "lat", "lo", "type");
   oSW.Stop();
   pSearchResultModel->Init(1);
+  pContext->setContextProperty("pikeFightDocFolder", StorageDir());
   pContext->setContextProperty("oImageThumb", new ImageThumb(app));
   pContext->setContextProperty("oFileMgr", new FileMgr());
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
@@ -61,8 +63,7 @@ int main(int argc, char* argv[]) {
   qmlRegisterType<ScreenCapture>("harbour.tripometer", 1, 0, "ScreenCapture");
 
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
-  qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0,
-                                       "GeonamesPlace");
+  qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
   // &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
@@ -73,8 +74,8 @@ int main(int argc, char* argv[]) {
   QSettings oSettings("harbour-pikefight", "PikeFight");
   qDebug() << "settings file " << oSettings.fileName();
 
-  QString filePath = QStandardPaths::writableLocation(
-      QStandardPaths::StandardLocation::AppLocalDataLocation);
+  QString filePath =
+      QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppLocalDataLocation);
 
   qDebug() << "local storage " << filePath;
   pU->rootObject()->setProperty("nUnit", oSettings.value("nUnit", 1));
@@ -83,14 +84,11 @@ int main(int argc, char* argv[]) {
 
   pU->rootObject()->setProperty("nMinSize", oSettings.value("nMinSize", 60));
   pU->rootObject()->setProperty("nNrTeams", oSettings.value("nNrTeams", 2));
-  pU->rootObject()->setProperty("nPikesCounted",
-                                oSettings.value("nPikesCounted", 6));
-
+  pU->rootObject()->setProperty("nPikesCounted", oSettings.value("nPikesCounted", 6));
 
   pU->rootObject()->setProperty(
       "ocTeamName",
-      oSettings.value("ocTeamName",
-                      QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));
+      oSettings.value("ocTeamName", QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));
   MssTimer oTimer([] {
     if (InfoListModel::m_pRoot == 0)
       return;
@@ -106,8 +104,7 @@ int main(int argc, char* argv[]) {
   app->exec();
   oSettings.setValue("ocTeamName", pU->rootObject()->property("ocTeamName"));
 
-  oSettings.setValue("nPikesCounted",
-                     pU->rootObject()->property("nPikesCounted"));
+  oSettings.setValue("nPikesCounted", pU->rootObject()->property("nPikesCounted"));
   oSettings.setValue("nUnit", pU->rootObject()->property("nUnit"));
   oSettings.setValue("nMinSize", pU->rootObject()->property("nMinSize"));
   oSettings.setValue("nNrTeams", pU->rootObject()->property("nNrTeams"));

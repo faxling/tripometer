@@ -16,7 +16,7 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.4
+Version: 1.4.1
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
@@ -67,17 +67,17 @@ rm -rf %{buildroot}
 # Copy here the blacklisted libraries
 
 install -d %{buildroot}/usr/share/%{name}/lib
-install -m 644 -p /usr/lib/libjpeg.so.62 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libcairo.so.2 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libsoup-2.4.so.1 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libdconf.so.1 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libsqlite3.so.0 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libpixman-1.so.0 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libfreetype.so.6 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicui18n.so.68 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicuuc.so.68 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libicudata.so.68 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p /usr/lib/libpsl.so %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libjpeg.so.62 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libcairo.so.2 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libsoup-2.4.so.1 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libdconf.so.1 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libsqlite3.so.0 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libpixman-1.so.0 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libfreetype.so.6 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicui18n.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicuuc.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicudata.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libpsl.so %{buildroot}/usr/share/%{name}/lib/
 %files
 %defattr(644,root,root,-)
 #/usr/share/applications

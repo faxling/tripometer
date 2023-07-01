@@ -43,6 +43,7 @@ OTHER_FILES += \
     qml/pages/SecondPage.qml \
     qml/symFia.png \
     qml/btnTracks.png \
+    qml/btnSeaMap.png \
     rpm/harbour-pikefight.spec
 
 HEADERS += \

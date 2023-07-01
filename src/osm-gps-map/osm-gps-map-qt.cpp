@@ -859,6 +859,19 @@ void Maep::GpsMap::clearTrack()
   osm_gps_map_clear_tracks(map);
 }
 
+void Maep::GpsMap::centerCurrentGps()
+{
+
+
+  if (lastGps.isValid() == true)
+  {
+    osm_gps_map_set_center(map, lastGps.coordinate().latitude(),lastGps.coordinate().longitude());
+
+  }
+
+}
+
+
 void Maep::GpsMap::centerTrack(const QString& sTrackName)
 {
   MarkData t = GetMarkData(sTrackName);
@@ -1146,7 +1159,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
   QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
   QString sPath = StorageDir() ^ "report" + sTrackName + ".png";
   cairo_surface_write_to_png(surf, sPath.toLatin1().data());
-
+  int nHeight = cairo_image_surface_get_height(surf);
   QImage oPaintImage(sPath);
   static const double REPORT_WIDTH = 1200;
   double fQuote = REPORT_WIDTH / oPaintImage.width();
@@ -1155,7 +1168,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
   oImagePainter.setRenderHints(QPainter::Antialiasing);
   oImagePainter.setFont(BigFont1);
   oImagePainter.drawText(250, 100, sName);
-  static const int START_LINE_BASE = 1200;
+  static const int START_LINE_BASE = nHeight - 700;
   START_LINE = START_LINE_BASE;
   static QImage oI1;
   static QImage oI2;
@@ -1167,7 +1180,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
     RenderSvg(":/pike3.svg", &oI3);
   }
 
-  DrawResultForTeam(pListTeam1, sTeamNameAndSum1,nTeamCount==0 ? 0 : nMinSize  , oI1, &oImagePainter, fQuote);
+  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize  , oI1, &oImagePainter, fQuote);
   if (nTeamCount > 1)
     DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter, fQuote);
   if (nTeamCount > 2)
@@ -1186,6 +1199,7 @@ void Maep::GpsMap::saveMark(int nId)
 
   char* szSymName = find_file("qml/symFia.png");
   cairo_surface_t* pSurface = cairo_image_surface_create_from_png(szSymName);
+
   g_free(szSymName);
 
   MarkData t;

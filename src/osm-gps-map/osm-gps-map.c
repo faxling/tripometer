@@ -421,9 +421,9 @@ static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int z
       // g_debug("FOUND " URI_MARKER_Q0);
       break;
     case URI_HAS_YS:
-      //              s = g_strdup_printf("%d", y);
-      //              url = replace_string(url, URI_MARKER_YS, s);
-      g_warning("FOUND " URI_MARKER_YS " NOT IMPLEMENTED");
+      s = g_strdup_printf("%d", (1 << (zoom)) - y - 1);
+      url = replace_string(url, URI_MARKER_YS, s);
+      //  g_warning("FOUND " URI_MARKER_YS " NOT IMPLEMENTED");
       //            retval = g_strdup_printf(repo->url,
       //                    tilex,
       //                    (1 << (MAX_ZOOM - zoom)) - tiley - 1,
@@ -675,7 +675,7 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
     pixel_y = lat2pixel(priv->map_zoom, im->pt.rlat);
     /*
         g_debug("Image %dx%d @: %f,%f (%d,%d)",
-                im->w, im->h,
+                im->w, im->h,K
                 im->pt.rlat, im->pt.rlon,
                 pixel_x, pixel_y);
     */
@@ -1301,9 +1301,14 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
   tile_x0 = floor((float)fmap_x / (float)tilesize);
   tile_y0 = floor((float)fmap_y / (float)tilesize);
   // TODO: implement wrap around
+  int nRows = (tile_y0 + tiles_ny);
+
+  //   int offset_yn_top = tilesize * (nRows-1) + offset_yn;
+  int offset_yn_top = offset_yn;
+  offset_yn = offset_yn_top;
   for (i = tile_x0; i < (tile_x0 + tiles_nx); i++)
   {
-    for (j = tile_y0; j < (tile_y0 + tiles_ny); j++)
+    for (j = tile_y0; j < nRows; j++)
     {
       if (j < 0 || i < 0 || i >= exp(priv->map_zoom * M_LN2) || j >= exp(priv->map_zoom * M_LN2))
       {
@@ -1316,7 +1321,7 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
       offset_yn += tilesize;
     }
     offset_xn += tilesize;
-    offset_yn = offset_y + 0.5 * priv->viewport_height * (1.5 - 1. / priv->map_factor);
+    offset_yn = offset_yn_top;
   }
 }
 
@@ -2370,7 +2375,8 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
      */
     return NULL;
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
-    return "http://t1.openseamap.org/seamark/#Z/#X/#Y.png";
+    return "https://map04.eniro.com/geowebcache/service/tms1.0.0/nautical/#Z/#X/#U.png?";
+    // return "http://t1.openseamap.org/seamark/#Z/#X/#Y.png";
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
     return "http://otile1.mqcdn.com/tiles/1.0.0/osm/#Z/#X/#Y.png";
     /* return "http://tah.openstreetmap.org/Tiles/tile/#Z/#X/#Y.png"; */
@@ -2757,6 +2763,8 @@ static gboolean _set_zoom(OsmGpsMap* map, int zoom)
 
   return TRUE;
 }
+
+
 
 void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude)
 {

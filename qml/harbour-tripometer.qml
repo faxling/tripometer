@@ -34,6 +34,8 @@ ApplicationWindow {
   property string sReportPath
   // Total , team 1 , team 2 ..
   property var ocPikeCount: [0, 0, 0, 0]
+
+  // Title , team 1 , team 2 ..
   property var ocTeamName: []
   onNPikesCountedChanged: {
     mainMap.reCalc()

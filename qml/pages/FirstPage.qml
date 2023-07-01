@@ -81,8 +81,7 @@ Item {
                                                        idApp.ocTeamName[2],
                                                        idPikeModel3,
                                                        idApp.ocTeamName[3], 0,
-                                                       idApp.ocTeamName[0],
-                                                       idApp.nNrTeams)
+                                                       idApp.ocTeamName[0], idApp.nNrTeams)
           }
 
           // idApp.ocTeamName[0] The name of the day
