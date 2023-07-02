@@ -11,7 +11,6 @@ Item {
 
   //// property bool bShowBtns: true
   GpsMap {
-
     id: idMap
     track_capture: !idApp.bIsPause
     function reCalc() {
@@ -42,6 +41,22 @@ Item {
 
     enable_compass: true
     anchors.fill: parent
+    states: [
+      State {
+        name: "mapRotate"
+        PropertyChanges {
+          target: idMap
+          rotation: 180
+        }
+      }
+    ]
+
+    transitions: Transition {
+      NumberAnimation {
+        property: "rotation"
+        duration: 500
+      }
+    }
   }
   PikeBtn {
 
@@ -79,6 +94,7 @@ Item {
     x: -map_controls3.width
     TrippBtn {
       id: idSat
+      bSelected: idMap.source === 11
       src: "btnSat.png"
       onClicked: {
         idMap.setSource(11)
@@ -87,6 +103,7 @@ Item {
 
     TrippBtn {
       id: idEniro
+      bSelected: idMap.source === 17
       src: "btnSeaMap.png"
       onClicked: {
         idMap.setSource(17)
@@ -95,9 +112,19 @@ Item {
 
     TrippBtn {
       id: idWorld
+      bSelected: idMap.source === 1
       src: "btnMap.png"
       onClicked: {
         idMap.setSource(1)
+      }
+    }
+
+    TrippBtn {
+      id: idCenterde
+      bSelected: idMap.auto_center
+      src: "btnCenter.png"
+      onClicked: {
+        idMap.auto_center = !idMap.auto_center
       }
     }
 
@@ -159,23 +186,6 @@ Item {
     }
 
     TrippBtn {
-      id: idCenterde
-      src: "btnCenter.png"
-      onClicked: {
-        idMap.auto_center = !idMap.auto_center
-      }
-
-      Rectangle {
-        visible: idMap.auto_center
-        anchors.centerIn: parent
-        color: "#f9535c"
-        height: 17
-        width: 17
-        radius: 3
-      }
-    }
-
-    TrippBtn {
       id: idMarker
       src: "btnMarker.png"
       onClicked: {
@@ -209,6 +219,22 @@ Item {
     NumberAnimation {
       property: "opacity"
       duration: 300
+    }
+  }
+
+  LargeBtn {
+    id: idRotateBtn
+    src: idMap.state
+         === "" ? "image://theme/icon-m-rotate-right" : "image://theme/icon-m-rotate-left"
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: idCenterBtn.top
+    anchors.bottomMargin: 20
+    onClicked: {
+      if (idMap.state === "")
+        idMap.state = "mapRotate"
+      else
+        idMap.state = ""
     }
   }
 

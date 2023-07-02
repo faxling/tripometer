@@ -862,15 +862,11 @@ void Maep::GpsMap::clearTrack()
 void Maep::GpsMap::centerCurrentGps()
 {
 
-
   if (lastGps.isValid() == true)
   {
-    osm_gps_map_set_center(map, lastGps.coordinate().latitude(),lastGps.coordinate().longitude());
-
+    osm_gps_map_set_center(map, lastGps.coordinate().latitude(), lastGps.coordinate().longitude());
   }
-
 }
-
 
 void Maep::GpsMap::centerTrack(const QString& sTrackName)
 {
@@ -1074,12 +1070,20 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
   static const int INDENT = 25;
   static const int INDENT1 = 70;
   static const int INDENT2 = 400;
+  static const int MAX_THUMBS_COUNT = 32;
   pPainter->setFont(BigFont);
   pPainter->drawText(INDENT1, START_LINE - LINE_SPACING * 2, sTeamNameAndSum);
   pPainter->drawImage(0, START_LINE - LINE_SPACING * 2 - (40), oImg);
   const static int IMG_COLUMNS = 4;
   const static int IMG_COLUMN_WIDTH = 150;
-  for (int i = 0; i < nC; i++)
+  int nStart = 0;
+  if (nC > MAX_THUMBS_COUNT)
+  {
+    nStart = nC - MAX_THUMBS_COUNT;
+  }
+
+  int nCount = 0;
+  for (int i = nStart; i < nC; i++)
   {
     QString sDate = pp->data(pp->index(i), 4).toString();
     QString sLen = pp->data(pp->index(i), 7).toString();
@@ -1090,11 +1094,11 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
       NormalFont.setStrikeOut(pp->data(pp->index(i), 3).toInt() < nMinSize);
     }
     pPainter->setFont(NormalFont);
-    int nY = START_LINE + i * LINE_SPACING;
-    int nYImg = START_LINE + (i / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING;
+    int nY = START_LINE + nCount * LINE_SPACING;
+    int nYImg = START_LINE + (nCount / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING;
     pPainter->drawText(INDENT1, nY, sDate);
-	  if (nMinSize > 0)
-  	  pPainter->drawText(INDENT2, nY, sLen);
+    if (nMinSize > 0)
+      pPainter->drawText(INDENT2, nY, sLen);
     pPainter->drawText(INDENT, nY, sNum);
     pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (i % IMG_COLUMNS) + 100, nYImg,
                         QImage(sThumb).scaledToHeight(LINE_SPACING * IMG_COLUMNS - 2));
@@ -1105,6 +1109,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     NormalFont.setStrikeOut(false);
     pPainter->setFont(NormalFont);
     pPainter->drawText(x * fQuote - 8, y * fQuote + 23, sNum);
+    ++nCount;
   }
 
   START_LINE += (LINE_SPACING * (nC + 4));
@@ -1180,7 +1185,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
     RenderSvg(":/pike3.svg", &oI3);
   }
 
-  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize  , oI1, &oImagePainter, fQuote);
+  DrawResultForTeam(pListTeam1, sTeamNameAndSum1, nMinSize, oI1, &oImagePainter, fQuote);
   if (nTeamCount > 1)
     DrawResultForTeam(pListTeam2, sTeamNameAndSum2, nMinSize, oI2, &oImagePainter, fQuote);
   if (nTeamCount > 2)

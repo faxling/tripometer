@@ -8,10 +8,15 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sun Jul 02 2023 Fredrik Axling <faxling11@gmail.com> 1.4.2
+- Ver 1.4.2
+- Center button
+- Rotate button
+- Submenue for maps
+
 * Fri Jun 09 2023 Fredrik Axling <faxling11@gmail.com> 1.4
 - Ver 1.4
 - Option no length calc , set Pikes Counted to 0 (Don't Count)
-
 
 * Sat Jun 03 2023 Fredrik Axling <faxling11@gmail.com> 1.4
 - New features

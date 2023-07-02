@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="btn.svg"
-   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnMinus.png"
+   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -251,7 +251,7 @@
      inkscape:zoom="7.7781746"
      inkscape:cx="37.738222"
      inkscape:cy="45.056661"
-     inkscape:current-layer="g4020"
+     inkscape:current-layer="g4052"
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
@@ -298,9 +298,9 @@
      id="layer1"
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     transform="translate(0,32)"
-     style="display:inline;opacity:1"
-     sodipodi:insensitive="true">
+     style="display:none;opacity:1"
+     sodipodi:insensitive="true"
+     transform="translate(0,32)">
     <ellipse
        style="fill:none;stroke:none"
        id="path3823"
@@ -316,6 +316,90 @@
        cy="16"
        rx="33.947395"
        ry="33.985703" />
+  </g>
+  <g
+     style="display:inline;opacity:1"
+     inkscape:label="Center"
+     id="g4052"
+     inkscape:groupmode="layer">
+    <ellipse
+       style="fill:#000000;fill-opacity:0;stroke:none"
+       id="path4058"
+       cx="-171.09091"
+       cy="-23.272728"
+       rx="19.09091"
+       ry="17.818182" />
+    <path
+       sodipodi:type="star"
+       style="fill:#000000;fill-opacity:0;stroke:#000000"
+       id="path4060"
+       sodipodi:sides="5"
+       sodipodi:cx="-216"
+       sodipodi:cy="-60.727272"
+       sodipodi:r1="29.597857"
+       sodipodi:r2="14.798932"
+       sodipodi:arg1="0.82884906"
+       sodipodi:arg2="1.4571676"
+       inkscape:flatsided="false"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m -196,-38.90909 -18.32203,-7.114685 -16.24795,11.059823 1.10464,-19.623848 -15.53941,-12.035047 19.00475,-5.013519 6.64407,-18.497892 10.64092,16.525323 19.64567,0.602721 -12.42828,15.22673 z"
+       inkscape:transform-center-x="1.0370408"
+       inkscape:transform-center-y="-1.8218328" />
+    <ellipse
+       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4062"
+       cx="-140.36363"
+       cy="-10.181818"
+       rx="22.90909"
+       ry="17.454546" />
+    <ellipse
+       style="fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4064"
+       cx="47.684216"
+       cy="48"
+       rx="26.252972"
+       ry="25.316488"
+       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="M 31.052632,48 H 2 v 0"
+       id="path4505"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;stroke:#000000;stroke-width:3.64879537;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="m -18,-52 h -12 v 0"
+       id="path4505-15"
+       inkscape:connector-curvature="0" />
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="M 94,48 H 64.947368 v 0"
+       id="path4505-7"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="m 47.192982,2 v 28.551724 0"
+       id="path4505-7-6"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       d="M 47.192982,65.448276 V 94 94"
+       id="path4505-7-1"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -396,7 +480,7 @@
        ry="13.090909" />
   </g>
   <g
-     style="display:inline"
+     style="display:none"
      inkscape:label="Minus"
      id="g4020"
      inkscape:groupmode="layer">
@@ -460,8 +544,7 @@
      inkscape:groupmode="layer"
      id="g4026"
      inkscape:label="Plus"
-     style="display:none"
-     sodipodi:insensitive="true">
+     style="display:none">
     <rect
        style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.98799646px;marker:none;enable-background:accumulate"
        id="rect4030"
@@ -481,90 +564,6 @@
        rx="1.1231299e-08"
        ry="13.090909"
        transform="rotate(90)" />
-  </g>
-  <g
-     style="display:none;opacity:0.38399999"
-     inkscape:label="Center"
-     id="g4052"
-     inkscape:groupmode="layer">
-    <ellipse
-       style="fill:#000000;fill-opacity:0;stroke:none"
-       id="path4058"
-       cx="-171.09091"
-       cy="-23.272728"
-       rx="19.09091"
-       ry="17.818182" />
-    <path
-       sodipodi:type="star"
-       style="fill:#000000;fill-opacity:0;stroke:#000000"
-       id="path4060"
-       sodipodi:sides="5"
-       sodipodi:cx="-216"
-       sodipodi:cy="-60.727272"
-       sodipodi:r1="29.597857"
-       sodipodi:r2="14.798932"
-       sodipodi:arg1="0.82884906"
-       sodipodi:arg2="1.4571676"
-       inkscape:flatsided="false"
-       inkscape:rounded="0"
-       inkscape:randomized="0"
-       d="m -196,-38.90909 -18.32203,-7.114685 -16.24795,11.059823 1.10464,-19.623848 -15.53941,-12.035047 19.00475,-5.013519 6.64407,-18.497892 10.64092,16.525323 19.64567,0.602721 -12.42828,15.22673 z"
-       inkscape:transform-center-x="1.0370408"
-       inkscape:transform-center-y="-1.8218328" />
-    <ellipse
-       style="fill:#000000;fill-opacity:0;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="path4062"
-       cx="-140.36363"
-       cy="-10.181818"
-       rx="22.90909"
-       ry="17.454546" />
-    <ellipse
-       style="fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:4.05216837;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="path4064"
-       cx="47.192989"
-       cy="47.5"
-       rx="25.798477"
-       ry="24.853218"
-       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="M 31.052632,48 H 2 v 0"
-       id="path4505"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;stroke:#000000;stroke-width:3.64879537;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="m -18,-52 h -12 v 0"
-       id="path4505-15"
-       inkscape:connector-curvature="0" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="M 94,48 H 64.947368 v 0"
-       id="path4505-7"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="m 47.192982,2 v 28.551724 0"
-       id="path4505-7-6"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
-    <path
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;stroke:#ffffff;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-       d="M 47.192982,65.448276 V 94 94"
-       id="path4505-7-1"
-       inkscape:connector-curvature="0"
-       inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -1282,7 +1281,7 @@
      inkscape:groupmode="layer"
      id="layer13"
      inkscape:label="OpenStreetMap"
-     style="display:none">
+     style="display:none;opacity:0.99900004">
     <path
        style="stroke-width:1.54483545"
        inkscape:connector-curvature="0"

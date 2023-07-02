@@ -387,7 +387,7 @@ QString GpxNewName(const QString& _sTrackName)
   QString sTrackName = _sTrackName;
   while (QFile::exists(GpxDatFullName(sTrackName)) == true)
   {
-    sTrackName.sprintf("%ls(%d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
+    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
   }
   return sTrackName;
 }

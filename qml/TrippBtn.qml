@@ -7,6 +7,9 @@ Rectangle {
   signal doubleClicked
   signal clicked
   radius: 9
+  property bool bSelected
+  border.width: bSelected ? 10 : 0
+  border.color: Theme.highlightColor
   property alias src: idImg.source
   color: idApp.background.color
   opacity: idMouseArea.pressed ? 0.9 : 1
