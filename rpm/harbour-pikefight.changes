@@ -8,11 +8,23 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Fri Jul 07 2023 Fredrik Axling <faxling11@gmail.com> 1.4.3
+- Ver 1.4.3
+- Share Position
+- Fix Black frame bug on images
+- Camera resolution 1920x1080
+- Disable hiden buttons
+-- Fade maplayer buttons
+- Image List page. Scolling between images.
+-- Use in PikeList
+- Track distance & duration
+
 * Sun Jul 02 2023 Fredrik Axling <faxling11@gmail.com> 1.4.2
 - Ver 1.4.2
 - Center button
 - Rotate button
 - Submenue for maps
+- Indicate selected map on button
 
 * Fri Jun 09 2023 Fredrik Axling <faxling11@gmail.com> 1.4
 - Ver 1.4

@@ -161,13 +161,12 @@ SilicaListView {
           // @disable-check M325
           if (text === aValue)
             return
-
-          idTrackModel.trackRename(text, nId)
-          mainMap.renameTrack(text, nId)
         }
 
         Keys.onPressed: {
           if (event.key === Qt.Key_Return) {
+            idTrackModel.trackRename(text, nId)
+            mainMap.renameTrack(text, nId)
             idEditText.readOnly = true
           }
         }
@@ -182,7 +181,7 @@ SilicaListView {
         id: idText
         color: "black"
         font.pixelSize: Theme.fontSizeMedium
-                           text: sLength
+        text: sLength
       }
     }
     Component {

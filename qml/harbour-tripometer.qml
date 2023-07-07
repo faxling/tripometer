@@ -2,6 +2,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
+import Qt.labs.folderlistmodel 2.1
 import QtQuick.LocalStorage 2.0 as Sql
 import "tripometer-functions.js" as Lib
 // import QtQuick.Controls 1.0
@@ -82,6 +83,15 @@ ApplicationWindow {
   ListModel {
     id: idPikeModel3
   }
+
+  FolderListModel {
+    id: folderModel
+    sortReversed: true
+    sortField: FolderListModel.Time
+    folder: pikeFightDocFolder
+    nameFilters: ["img*.png", "img*.jpg"]
+  }
+
   initialPage: Component {
     Page {
       Flipable {

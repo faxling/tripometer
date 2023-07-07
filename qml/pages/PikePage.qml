@@ -5,9 +5,16 @@ import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
 import "../tripometer-functions.js" as Lib
+import Sailfish.Share 1.0
 
 SilicaListView {
   id: idListView
+
+  ShareAction {
+    id: idShare
+    mimeType: "text/plain"
+    title: "Share Postion"
+  }
 
   Component {
     id: idImagePickerPage
@@ -32,13 +39,17 @@ SilicaListView {
   highlightFollowsCurrentItem: true
   highlight: highlightClass
   signal pikePressed(int nId)
-  function pushImgpage(sImagePar1, sImagePar2, nIndex) {
+  function pushImgpage(sImageFile, nIndex) {
     // R val from model
-    if (sImagePar2[0] === '/') {
-      pageStack.push("ImagePage.qml", {
-                       "oImgSrc": sImagePar1,
-                       "oImgThumbSrc": sImagePar2
-                     })
+    if (sImageFile[0] === '/') {
+
+      var oImageList = pageStack.push("ImageList.qml", {
+                                        "model": folderModel
+                                      })
+
+      var nI = folderModel.indexOf("file://" + sImageFile)
+      oImageList.setIndex(nI)
+
     } else {
       idListView.currentIndex = nIndex
       pageStack.push("CameraPage.qml", {
@@ -55,6 +66,11 @@ SilicaListView {
 
   function addImageStop(indexM) {
     idListView.model.get(indexM).tBusy = false
+  }
+
+  function sharePos(fLo, fLa) {
+    idShare.resources = Lib.makeSharePosObj(fLo, fLa)
+    idShare.trigger()
   }
 
   function addImageGo(indexM, oModel, urlImg, nOrientaion) {
@@ -110,6 +126,14 @@ SilicaListView {
                          })
         }
       }
+
+      MenuItem {
+        text: "Share Pos"
+        onClicked: {
+          sharePos(fLo, fLa)
+        }
+      }
+
       MenuItem {
         text: "Set Date/Time"
         onClicked: {

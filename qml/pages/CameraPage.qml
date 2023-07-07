@@ -29,7 +29,7 @@ Page {
   Camera {
     id: idCamera
 
-    metaData.orientation: 270
+
     // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
 
@@ -38,7 +38,12 @@ Page {
       exposureCompensation: -1.0
       exposureMode: Camera.ExposurePortrait
     }
+
+    viewfinder.resolution.width: 1920
+    viewfinder.resolution.height: 1080
 */
+    viewfinder.resolution.width: oImageThumb.HEIGHT
+    viewfinder.resolution.height: oImageThumb.WIDTH
     flash.mode: Camera.FlashOff
 
     focus {
@@ -49,6 +54,42 @@ Page {
   }
 
   function showOverlays(bVisible) {
+
+
+    /*
+    var oc = idCamera.supportedViewfinderResolutions()
+        176x144
+        240x320
+        320x240
+        352x288
+        640x360
+        640x400
+        640x480
+        720x480
+        800x480
+        864x480
+        800x600
+        1024x738
+        1024x768
+        720x1280
+        1280x720
+        1280x768
+        1080x1080
+        1280x960
+        1440x1080
+        1600x1200
+        1920x1080
+        1920x1440
+
+
+
+
+        screen 1080x2520
+    for (var nI = 0; nI < oc.length; nI++) {
+      console.log(oc[nI].width + "x" + oc[nI].height)
+    }
+        */
+    //console.log(oc.length)
     idImageGrid.visible = bVisible
     idShotMark.visible = false
     backNavigation = bVisible

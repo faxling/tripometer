@@ -99,7 +99,18 @@ QString mssutils::Hash(const QString& s)
 static QQuickView* g_currentView = nullptr;
 static ScreenCapture* g_selectedScreenCapture = nullptr;
 static QOrientationSensor* m_oOrientationSensor = nullptr;
+Q_PROPERTY(int HEIGHT READ CONSTANT)
+Q_PROPERTY(int WIDTH READ CONSTANT)
 
+int ImageThumb::HEIGHT()
+{
+  return 1920;
+}
+
+int ImageThumb::WIDTH()
+{
+  return 1080;
+}
 
 void ScreenCapture::StartBusyInd()
 {
@@ -118,7 +129,6 @@ void ScreenCapture::SetView(QQuickView* parent)
 
 ScreenCapture::ScreenCapture()
 {
-
 }
 
 ScreenCapture::~ScreenCapture()
@@ -126,19 +136,24 @@ ScreenCapture::~ScreenCapture()
   if (IsSelected)
   {
     auto oW = std::thread(
-        [](QObject* p, QObject* pModel, QImage oImg, int nIndex,  int nO) {
+        [](QObject* p, QObject* pModel, QImage oImg, int nIndex, int nO) {
           QDateTime oNow(QDateTime::currentDateTime());
           QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
           QString sPath = StorageDir() ^ ("img" + sImgName + ".jpg");
-          oImg.save(sPath);
+
+          int nW = ImageThumb::WIDTH();
+          int nH = ImageThumb::HEIGHT();
+          int nY = (oImg.height() - nH) / 2;
+          QRect tRect(0, nY, nW, nH);
+          oImg.copy(tRect).save(sPath);
           g_selectedScreenCapture = nullptr;
-          qDebug() << "save image " << sPath <<  " oo " << nO;
+          qDebug() << "save image " << sPath << " oo " << nO;
 
           QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
                                     Q_ARG(QVariant, QVariant::fromValue(pModel)),
                                     Q_ARG(QVariant, sPath), Q_ARG(QVariant, nO));
         },
-        m_pPage, m_pModel, m_oImage,m_nIndex, m_nOrientation);
+        m_pPage, m_pModel, m_oImage, m_nIndex, m_nOrientation);
 
     oW.detach();
   }
@@ -381,13 +396,21 @@ QString StorageDir()
   return sRet;
 }
 
-QString GpxNewName(const QString& _sTrackName)
+QString GpxNewName(const QString& _sTrackName, int nCount)
 {
-  int nCount = 0;
-  QString sTrackName = _sTrackName;
-  while (QFile::exists(GpxDatFullName(sTrackName)) == true)
+  QString sTrackName;
+  for (;;)
   {
-    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
+    if (nCount != -1)
+      sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
+    else
+    {
+      sTrackName = _sTrackName;
+      nCount = 0;
+    }
+
+    if (QFile::exists(GpxDatFullName(sTrackName)) == false)
+      break;
   }
   return sTrackName;
 }

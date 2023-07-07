@@ -31,6 +31,15 @@ Page {
     delegate: GridItem {
       id: idGridItem
 
+      onReleased: {
+        if (_menuItem === null) {
+          pageStack.push("ImagePage.qml", {
+                           "oImgSrc": filePath
+                         })
+          idGrid.currentIndex = index
+        }
+      }
+
       function remove() {
         remorseDelete(function () {
           oFileMgr.remove(folderModel.get(index, "filePath"))
@@ -42,6 +51,7 @@ Page {
       }
       menu: Component {
         ContextMenu {
+
           MenuItem {
             text: "Share"
             onClicked: share()
@@ -69,18 +79,6 @@ Page {
         source: filePath
         sourceSize.width: width
         sourceSize.height: height
-
-        MouseArea {
-          anchors.fill: parent
-          anchors.topMargin: idGrid.cellHeight / 2
-
-          onClicked: {
-            pageStack.push("ImagePage.qml", {
-                             "oImgSrc": filePath
-                           })
-            idGrid.currentIndex = index
-          }
-        }
       }
 
       Rectangle {

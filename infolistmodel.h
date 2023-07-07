@@ -75,6 +75,8 @@ class InfoListModel : public QAbstractListModel {
   SaveStruct p;
   //   double m_fGpsSpeedMs;
   double m_fLastTimeSec;
+  double m_fLastMidTimeSec;
+  double m_fMidDist = 0;
 };
 
 #endif  // INFOLISTMODEL_H

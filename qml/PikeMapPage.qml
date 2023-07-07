@@ -90,8 +90,12 @@ Item {
   Column {
     id: map_controls3
     spacing: 20
+    opacity: 0
+    enabled: false
     anchors.top: map_controls2.top
-    x: -map_controls3.width
+    anchors.left: map_controls2.right
+    anchors.leftMargin: 20
+
     TrippBtn {
       id: idSat
       bSelected: idMap.source === 11
@@ -133,14 +137,18 @@ Item {
         name: "menuMapVisible"
         PropertyChanges {
           target: map_controls3
-          x: map_controls2.x + map_controls2.width + 20
+          opacity: 1
+        }
+        PropertyChanges {
+          target: map_controls3
+          enabled: true
         }
       }
     ]
 
     transitions: Transition {
       NumberAnimation {
-        property: "x"
+        property: "opacity"
         duration: 300
       }
     }
@@ -202,8 +210,16 @@ Item {
         opacity: 0.0
       }
       PropertyChanges {
+        target: map_controls2
+        enabled: false
+      }
+      PropertyChanges {
         target: map_controls
         opacity: 0.0
+      }
+      PropertyChanges {
+        target: map_controls
+        enabled: false
       }
     },
     State {
@@ -212,6 +228,10 @@ Item {
         target: map_controls2
         opacity: 0.0
       }
+      PropertyChanges {
+        target: map_controls2
+        enabled: false
+      }
     }
   ]
 
@@ -219,6 +239,19 @@ Item {
     NumberAnimation {
       property: "opacity"
       duration: 300
+    }
+  }
+
+  LargeBtn {
+    id: idCenterBtn
+    visible: !idMap.auto_center
+    src: "btnLrgCenter.png"
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: idLeftBtn.top
+    anchors.bottomMargin: 20
+    onClicked: {
+      idMap.centerCurrentGps()
     }
   }
 
@@ -235,19 +268,6 @@ Item {
         idMap.state = "mapRotate"
       else
         idMap.state = ""
-    }
-  }
-
-  LargeBtn {
-    id: idCenterBtn
-    visible: !idMap.auto_center
-    src: "btnLrgCenter.png"
-    anchors.right: parent.right
-    anchors.rightMargin: 20
-    anchors.bottom: idLeftBtn.top
-    anchors.bottomMargin: 20
-    onClicked: {
-      idMap.centerCurrentGps()
     }
   }
 
@@ -300,6 +320,8 @@ Item {
 
           idTrackModel.markAllUnload()
           idMap.setTrack(o)
+
+          idListModel.klicked2(6)
         } else {
           idMap.saveTrack(0)
         }

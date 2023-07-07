@@ -116,6 +116,7 @@ DISTFILES += \
     qml/pages/CameraPage.qml \
     qml/pages/DateTimePage.qml \
     qml/pages/GalleryPage.qml \
+    qml/pages/ImageList.qml \
     qml/pages/ImagePage.qml \
     qml/pages/ManPage.qml \
     qml/pages/PikePageImage.qml \

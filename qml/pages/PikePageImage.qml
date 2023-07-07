@@ -19,8 +19,7 @@ Image {
     id: idPageTimer1
     interval: 100
     repeat: false
-    onTriggered: pushImgpage(idListView.model.get(index).sImage,
-                             sImageThumb, index)
+    onTriggered: pushImgpage(idListView.model.get(index).sImage, index)
   }
   MouseArea {
     anchors.fill: parent

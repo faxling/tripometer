@@ -6,12 +6,11 @@
 #include <QImage>
 #include <QObject>
 #include <QOrientationReading>
+#include <QOrientationSensor>
 #include <QQuickPaintedItem>
 #include <QUrl>
 #include <QVector>
 #include <functional>
-#include <QOrientationSensor>
-
 
 void ScreenOn(bool b);
 QString FormatKmH(double f);
@@ -36,7 +35,7 @@ QString Ext(const QString& sFileName);
 QString operator^(const QString& s, const QString& s2);
 
 QString StorageDir();
-QString GpxNewName(const QString& sTrackName);
+QString GpxNewName(const QString& sTrackName, int nCount = -1);
 QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
 
@@ -113,7 +112,12 @@ namespace mssutils
 class ImageThumb : public QObject
 {
   Q_OBJECT
+  Q_PROPERTY(int HEIGHT READ HEIGHT CONSTANT)
+  Q_PROPERTY(int WIDTH READ WIDTH CONSTANT)
+
 public:
+  static int HEIGHT();
+  static int WIDTH();
   ImageThumb(QObject* parent = 0);
   Q_INVOKABLE void save(QString s, int nOrientation);
   Q_INVOKABLE QUrl name(QString s);

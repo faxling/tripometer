@@ -5,8 +5,6 @@ import Sailfish.Silica 1.0
 Page {
   id: idPage
   property alias oImgSrc: idImage.source
-  property alias oImgThumbSrc: idThumbImg.source
-  property int nSquare: Math.min(width, height) - 10
 
   SilicaFlickable {
     anchors.fill: parent
@@ -35,7 +33,7 @@ Page {
           anchors.fill: parent
           onTap: {
             idImage.x = 0
-            idImage.y = 0
+            idImage.y = (idPage.height - idImage.height) / 2
             idImage.scale = 1
           }
         }

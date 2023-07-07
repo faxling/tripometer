@@ -123,7 +123,6 @@ QString FormatCurrentDate()
   return szStr;
 }
 
-
 QString FormatDurationSec(unsigned int nTime)
 {
   char szStr[20];
@@ -163,7 +162,9 @@ enum TRIP_FIELDS
 {
   GPS_SPEED,
   DISTANS,
+  DISTANS_MID,
   DURATION,
+  DURATION_MID,
   CURRENTTIME,
   CURRENTDATE,
   TIMEKM,
@@ -208,6 +209,7 @@ void InfoListModel::UpdateOnTimer()
   }
 
   m_nData[nUnit][DURATION].f = FormatDurationSec(p.m_fDurationSec);
+  m_nData[nUnit][DURATION_MID].f = FormatDurationSec(fCurTime - m_fLastMidTimeSec);
   m_pRoot->setProperty("sDur", FormatDurationSec(p.m_fDurationSec));
 
   // oc.push_back(ValueRole);
@@ -260,8 +262,10 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   m_nData[1].resize(LAST_VAL);
 
   m_nData[0][DISTANS] = Data("km", "Distans");
+  m_nData[0][DISTANS_MID] = Data("km", "Distans Track");
   m_nData[0][TIMEKM] = Data("time", "Time/km");
   m_nData[0][DURATION] = Data("time", "Duration");
+  m_nData[0][DURATION_MID] = Data("time", "Duration Track");
   m_nData[0][BEARING] = Data("deg", "Bearing");
   m_nData[0][COMPASS] = Data("deg", "Compass");
   m_nData[0][ELEVATION] = Data("m", "Elevation");
@@ -276,8 +280,10 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   m_nData[0][PREC] = Data("m", "Precision");
 
   m_nData[1][DISTANS] = Data("NM", "Distans");
+  m_nData[1][DISTANS_MID] = Data("NM", "Distans Track");
   m_nData[1][TIMEKM] = Data("time", "Time/NM");
   m_nData[1][DURATION] = Data("time", "Duration");
+  m_nData[1][DURATION_MID] = Data("time", "Duration Track");
   m_nData[1][BEARING] = Data("deg", "Bearing");
   m_nData[1][COMPASS] = Data("deg", "Compass");
   m_nData[1][ELEVATION] = Data("m", "Elevation");
@@ -308,6 +314,7 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
       fFactorDist = 1.852;
     }
     m_nData[i][DISTANS].f = FormatKm(p.m_fDist / fFactorDist / 1000.0);
+    m_nData[i][DISTANS_MID].f = FormatKm(m_fMidDist / fFactorDist / 1000.0);
     m_nData[i][MAXSPEED].f = FormatKmH(p.m_fMaxSpeed * fFactor);
     m_nData[i][AVERAGE_SPEED].f = FormatKmH((p.m_fDist / p.m_fDurationSec) * fFactor);
   }
@@ -315,6 +322,8 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
 
 void InfoListModel::ResetData()
 {
+  m_fMidDist = 0;
+  m_fLastMidTimeSec = QDateTime::currentMSecsSinceEpoch() / 1000.0;
   m_oLastPos = QGeoCoordinate();
   m_fLastTimeSec = 0;
   for (auto& oJ : m_nData)
@@ -400,6 +409,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   {
     double fStep = m_oLastPos.distanceTo(o.coordinate());
     p.m_fDist += fStep;
+    m_fMidDist += fStep;
   }
 
   for (int i = 0; i < 2; ++i)
@@ -429,51 +439,25 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
         m_nData[i][TIMEKM].f = FormatDurationSec(1000 * fFactorDist / fSpeed);
     }
 
-    // if (fStep < 0.5 )
-    // {
-    // m_nData[0].f = "0";
-    // emit dataChanged(index(0), index(0),oc);
-    // m_ocSpeedVal.clear();
-    //  return;
-    // }
-    // double fTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-    // m_ocSpeedVal.push_back(SpeedStruct(fTimestamp, fStep));
     m_nData[i][DISTANCE_TO_HOME].f =
         FormatKm(QGeoCoordinate(p.m_oStartPosLat, p.m_oStartPosLong).distanceTo(o.coordinate()) /
                  fFactorDist / 1000.0);
 
     m_nData[i][DISTANS].f = FormatKm(p.m_fDist / fFactorDist / 1000.0);
-
-    // if (m_ocSpeedVal.size() > 10)
-    //     m_ocSpeedVal.removeFirst();
-
-    // double fAvgSpeed  = 0;
-    // double fTimeSegment = 0;
-    // double fDistSegment = 0;
-
-    // for ( auto oI = m_ocSpeedVal.begin()+1; oI != m_ocSpeedVal.end() ; ++oI)
-    //{
-    //    fTimeSegment+= (oI->fTimeSec - (oI - 1)->fTimeSec);
-    //    fDistSegment+= oI->fDistM;
-    //}
-
-    // if (fabs(fTimeSegment) > 0.1)
-    //   fAvgSpeed = fDistSegment / fTimeSegment ;
+    m_nData[i][DISTANS_MID].f = FormatKm(m_fMidDist / fFactorDist / 1000.0);
 
     if (o.hasAttribute(QGeoPositionInfo::Attribute::Direction) == true)
       m_nData[i][BEARING].f = FormatBearing(o.attribute(QGeoPositionInfo::Attribute::Direction));
     else
       m_nData[i][BEARING].f = "-";
 
-    // m_nData[SPEED].f = FormatKmH(fAvgSpeed*3.6);
     if (p.m_fDurationSec != 0)
       m_nData[i][AVERAGE_SPEED].f = FormatKmH((p.m_fDist / p.m_fDurationSec) * fFactor);
 
     m_nData[i][ELEVATION].f = FormatM(o.coordinate().altitude());
   }
   m_oLastPos = o.coordinate();
-  // qDebug() << m_fLastSpeed;
-  // qDebug(QString("Speed %1").arg(fSpeed));
+
 }
 
 int InfoListModel::rowCount(const QModelIndex&) const
@@ -574,6 +558,11 @@ void InfoListModel::klicked2(int nCmd)
     oc.push_back(UnitRole);
     oc.push_back(LabelRole);
     emit dataChanged(index(0), index(LAST_VAL - 1), oc);
+  }
+  if (nCmd == 6)
+  {
+    m_fMidDist = 0;
+    m_fLastMidTimeSec = QDateTime::currentMSecsSinceEpoch() / 1000.0;
   }
 }
 

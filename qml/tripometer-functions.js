@@ -38,6 +38,7 @@ function viewSession() {
   idApp.bFlipped = true
   idApp.bAppStarted = true
 }
+
 function deleteDB() {
 
   db.transaction(function (tx) {
@@ -231,6 +232,16 @@ function removePike(nId, oPModel, nOwnerIn) {
 
   mainMap.removePikeInMap(nId)
   calcSizeAndDisplay(nOwner)
+}
+
+function makeSharePosObj(fLo, fLa) {
+  var oRet = [{
+                "data": "https://maps.google.com/maps?q=loc:" + fLa + "," + fLo,
+                "name": "Position"
+              }]
+
+  // sImageThumb
+  return oRet
 }
 
 function zN(nValue) {
