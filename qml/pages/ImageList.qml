@@ -1,6 +1,8 @@
 import QtQuick 2.5
 import Sailfish.Silica 1.0
 import Qt.labs.folderlistmodel 2.1
+import ".."
+import Sailfish.Share 1.0
 
 // ImagePage
 Page {
@@ -10,6 +12,7 @@ Page {
 
   function setIndex(nI) {
     idView.positionViewAtIndex(nI, ListView.Center)
+    idView.currentIndex = nI
   }
 
   SilicaListView {
@@ -57,6 +60,22 @@ Page {
           }
         }
       }
+    }
+  }
+  ShareAction {
+    id: idShare
+    mimeType: "image/jpg"
+    title: "Share Pike Report"
+  }
+  LargeBtn {
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: 20
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    src: "image://theme/icon-m-share"
+    onClicked: {
+      idShare.resources = [idView.model.get(idView.currentIndex, "filePath")]
+      idShare.trigger()
     }
   }
 }

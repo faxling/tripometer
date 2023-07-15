@@ -46,9 +46,20 @@ Item {
       }
 
       MenuItem {
-        text: "Gallery"
+        text: "Pike Gallery"
         onClicked: {
           pageStack.push("GalleryPage.qml")
+        }
+      }
+      MenuItem {
+        text: "Screenshot Gallery"
+        onClicked: {
+          pageStack.push("GalleryPage.qml", {
+                           "folderPath": StandardPaths.pictures + "/Screenshots/",
+                           "nameFilters": ["*.png"]
+                         })
+
+          console.log(StandardPaths.pictures + "/Screenshots/")
         }
       }
 

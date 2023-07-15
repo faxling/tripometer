@@ -231,6 +231,22 @@ void FileMgr::remove(QString s)
   QFile::remove(s);
 }
 
+QString FileMgr::renameToAscii(QString s)
+{
+  QString sRet;
+  bool bRename = false;
+  for (auto o : s)
+    if (o < 0x7f)
+      sRet.push_back(o);
+    else
+      bRename = true;
+
+  if (bRename)
+    QFile::rename(s, sRet);
+
+  return sRet;
+}
+
 ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
 {
 }

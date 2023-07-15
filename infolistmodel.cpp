@@ -405,11 +405,13 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     }
   }
 
+  double fStep = m_oLastPos.distanceTo(o.coordinate());
+  m_fMidDist += fStep;
+
   if (m_pRoot->property("bIsPause").toBool() == false)
   {
-    double fStep = m_oLastPos.distanceTo(o.coordinate());
+
     p.m_fDist += fStep;
-    m_fMidDist += fStep;
   }
 
   for (int i = 0; i < 2; ++i)
@@ -457,7 +459,6 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
     m_nData[i][ELEVATION].f = FormatM(o.coordinate().altitude());
   }
   m_oLastPos = o.coordinate();
-
 }
 
 int InfoListModel::rowCount(const QModelIndex&) const

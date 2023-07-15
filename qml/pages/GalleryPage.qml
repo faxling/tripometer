@@ -8,6 +8,8 @@ import Sailfish.Share 1.0
 Page {
   id: idPage
 
+  property alias folderPath: folderModel.folder
+  property alias nameFilters: folderModel.nameFilters
   ShareAction {
     id: idShare
     mimeType: "image/jpg"
@@ -46,7 +48,8 @@ Page {
         })
       }
       function share() {
-        idShare.resources = [folderModel.get(index, "filePath")]
+        var oFP = oFileMgr.renameToAscii(folderModel.get(index, "filePath"))
+        idShare.resources = [oFP]
         idShare.trigger()
       }
       menu: Component {
@@ -58,6 +61,8 @@ Page {
           }
           MenuItem {
             text: "View"
+
+
             onClicked: {
 
               pageStack.push("ImagePage.qml", {

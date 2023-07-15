@@ -476,14 +476,10 @@ Item {
     }
 
     Row {
+      x: (Screen.width - width) / 2
       id: idButtonRow
-      x: 30
       y: 10
       spacing: 10
-      Item {
-        height: 1
-        width: Theme.itemSizeLarge
-      }
 
       Button {
         width: Theme.itemSizeLarge
@@ -517,6 +513,12 @@ Item {
         onClicked: idTrackModel.unloadSelected()
       }
 
+      Button {
+        color: "black"
+        width: Theme.itemSizeLarge
+        text: "GPX"
+        onClicked: pageStack.push(idDownloadPickerPage)
+      }
       Item {
         height: 1
         width: Theme.itemSizeLarge

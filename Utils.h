@@ -129,6 +129,7 @@ class FileMgr : public QObject
 public:
   FileMgr();
   Q_INVOKABLE void remove(QString s);
+  Q_INVOKABLE QString renameToAscii(QString s);
 };
 
 class QQuickView;
