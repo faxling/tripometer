@@ -465,6 +465,8 @@ Item {
 
     RemorseItem {
       id: idDeleteRemorse
+
+
     }
 
     SecondPage {

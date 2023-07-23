@@ -39,17 +39,27 @@ SilicaListView {
   highlightFollowsCurrentItem: true
   highlight: highlightClass
   signal pikePressed(int nId)
+
+  function hasImg(sImageFile) {
+    if (sImageFile[0] !== '/')
+      return -1
+
+    var nI = folderModel.indexOf("file://" + sImageFile)
+    if (nI < 0)
+      return -1
+
+    return nI
+  }
+
   function pushImgpage(sImageFile, nIndex) {
     // R val from model
-    if (sImageFile[0] === '/') {
-
+    var nI = hasImg(sImageFile)
+    if (nI >= 0) {
       var oImageList = pageStack.push("ImageList.qml", {
                                         "model": folderModel
                                       })
 
-      var nI = folderModel.indexOf("file://" + sImageFile)
       oImageList.setIndex(nI)
-
     } else {
       idListView.currentIndex = nIndex
       pageStack.push("CameraPage.qml", {

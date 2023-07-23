@@ -1100,7 +1100,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     if (nMinSize > 0)
       pPainter->drawText(INDENT2, nY, sLen);
     pPainter->drawText(INDENT, nY, sNum);
-    pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (i % IMG_COLUMNS) + 100, nYImg,
+    pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (nCount % IMG_COLUMNS) + 100, nYImg,
                         QImage(sThumb).scaledToHeight(LINE_SPACING * IMG_COLUMNS - 2));
     double fLa = pp->data(pp->index(i), 0).toDouble();
     double fLo = pp->data(pp->index(i), 1).toDouble();

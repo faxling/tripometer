@@ -194,12 +194,7 @@ void InfoListModel::UpdateOnTimer()
       p.m_fDurationSec += (fCurTime - m_fLastTimeSec);
   }
   m_fLastTimeSec = fCurTime;
-  QVector<int> oc;
-  oc.push_back(ValueRole);
-
-  m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
-  m_nData[nUnit][CURRENTDATE].f = FormatCurrentDate();
-
+  bool bFlip = m_pRoot->property("bFlipped").toBool();
   // var tioned
 
   if ((((int)(p.m_fDurationSec)) % 10) == 0)
@@ -207,6 +202,16 @@ void InfoListModel::UpdateOnTimer()
     m_pDataFile.seek(0);
     m_pDataFile.write((char*)&p, sizeof p);
   }
+
+  if (bFlip == true)
+    return;
+
+  QVector<int> oc;
+  oc.push_back(ValueRole);
+
+  m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
+  m_nData[nUnit][CURRENTDATE].f = FormatCurrentDate();
+
 
   m_nData[nUnit][DURATION].f = FormatDurationSec(p.m_fDurationSec);
   m_nData[nUnit][DURATION_MID].f = FormatDurationSec(fCurTime - m_fLastMidTimeSec);
