@@ -150,7 +150,7 @@ function addPikeImage(i, oPModel, sImage, nOrientaion) {
 
   // nOrientaion could be undefined and then become 0
   oImageThumb.save(sImage, nOrientaion)
-  oPModel.get(i).sImageThumb = String(oImageThumb.name(sImage))
+  oPModel.get(i).sImageThumb = String(oCaptureThumbMaker.name(sImage))
   db.transaction(function (tx) {
     tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])
   })
@@ -183,7 +183,7 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
                    "nId": Number(nId),
                    "sDate": sDate,
                    "sImage": sImage,
-                   "sImageThumb": String(oImageThumb.name(sImage)),
+                   "sImageThumb": String(oCaptureThumbMaker.name(sImage)),
                    "sLength": sLenText,
                    "nLen": nLen,
                    "fLo": fLo,

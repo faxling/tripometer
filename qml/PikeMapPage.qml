@@ -5,6 +5,7 @@ import Sailfish.Pickers 1.0
 import QtQuick.LocalStorage 2.0 as Sql
 import "tripometer-functions.js" as Lib
 import "pages"
+import ".."
 
 Item {
   id: idPikePage
@@ -208,17 +209,27 @@ Item {
       PropertyChanges {
         target: map_controls2
         opacity: 0.0
-      }
-      PropertyChanges {
-        target: map_controls2
         enabled: false
       }
       PropertyChanges {
         target: map_controls
         opacity: 0.0
+        enabled: false
+      }
+
+      PropertyChanges {
+        target: idPikeBtn1
+        opacity: 0.0
+        enabled: false
       }
       PropertyChanges {
-        target: map_controls
+        target: idPikeBtn2
+        opacity: 0.0
+        enabled: false
+      }
+      PropertyChanges {
+        target: idPikeBtn3
+        opacity: 0.0
         enabled: false
       }
     },
@@ -465,8 +476,6 @@ Item {
 
     RemorseItem {
       id: idDeleteRemorse
-
-
     }
 
     SecondPage {

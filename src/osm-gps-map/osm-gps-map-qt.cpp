@@ -1026,7 +1026,7 @@ oPModel.append({
                  "nId": Number(nId),
                  "sDate": sDate,
                  "sImage": sImage,
-                 "sImageThumb": String(oImageThumb.name(sImage)),
+                 "sImageThumb": String(oCaptureThumbMaker.name(sImage)),
                  "sLength": sLenText,
                  "nLen": nLen,
                  "fLo": fLo,

@@ -2,6 +2,7 @@ import QtQuick 2.5
 import Sailfish.Silica 1.0
 import QtMultimedia 5.6
 import harbour.tripometer 1.0
+import ".."
 import "../tripometer-functions.js" as Lib
 
 // T
@@ -11,7 +12,7 @@ Page {
   property var oModel
   property int nImgNo
   property var oListView
-  forwardNavigation: oImageThumb.HasSelectedCapture
+  forwardNavigation: oCaptureThumbMaker.HasSelectedCapture
   Component {
     id: idImageFactory
     ScreenCapture {
@@ -22,7 +23,7 @@ Page {
         onClicked: {
           idScreenCapture.save()
 
-          if (oImageThumb.HasSelectedCapture)
+          if (oCaptureThumbMaker.HasSelectedCapture)
 
             pageStack.pushAttached("ImagePage.qml", {
                                      "oImgSrc": "image://capturedImage/selected",
@@ -33,25 +34,20 @@ Page {
     }
   }
 
+  Component.onCompleted: {
+
+    var nC = QtMultimedia.availableCameras.length
+    for (var i = 0; i < nC; ++i) {
+      console.log(QtMultimedia.availableCameras[i].deviceId + " "
+                  + QtMultimedia.availableCameras[i].displayName)
+    }
+  }
   Camera {
     id: idCamera
-
-    // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
-
-
-    /*
-    exposure {
-      exposureCompensation: -1.0
-      exposureMode: Camera.ExposurePortrait
-    }
-
-    viewfinder.resolution.width: 1920
-    viewfinder.resolution.height: 1080
-*/
-    viewfinder.resolution.width: oImageThumb.HEIGHT
-    viewfinder.resolution.height: oImageThumb.WIDTH
+    viewfinder.resolution.width: oCaptureThumbMaker.HEIGHT
+    viewfinder.resolution.height: oCaptureThumbMaker.WIDTH
     flash.mode: Camera.FlashOff
-
+    position: Camera.BackFace
     focus {
       focusMode: Camera.FocusAuto
       focusPointMode: Camera.FocusPointCustom
@@ -100,6 +96,7 @@ Page {
     idShotMark.visible = false
     backNavigation = bVisible
     idExposure.visible = false
+    idBackFronBtn.visible = false
   }
 
   VideoOutput {
@@ -115,6 +112,7 @@ Page {
           idImageGrid.visible = false
           idShotMark.visible = true
           idExposure.visible = true
+          idBackFronBtn.visible = true
           return
         }
         var o = idImageFactory.createObject(idImageGrid)
@@ -128,15 +126,6 @@ Page {
     }
   }
 
-
-  /*
-  Timer {
-    id: idAddTimer
-    interval: 500
-    repeat: false
-    onTriggered: Lib.addPikeImage(indexM, oModel, sPath)
-  }
-  */
   Grid {
     id: idImageGrid
     visible: false
@@ -175,6 +164,20 @@ Page {
     value: 0
     stepSize: 1
     valueText: (value / 10)
+  }
+  LargeBtn {
+    id: idBackFronBtn
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: 20
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    src: "image://theme/icon-camera-switch"
+    onClicked: {
+      if (idCamera.position != Camera.FrontFace)
+        idCamera.position = Camera.FrontFace
+      else
+        idCamera.position = Camera.BackFace
+    }
   }
   ScreenCapture {
     anchors.centerIn: parent

@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   oSW.Stop();
   pSearchResultModel->Init(1);
   pContext->setContextProperty("pikeFightDocFolder", StorageDir());
-  pContext->setContextProperty("oImageThumb", new ImageThumb(app));
+  pContext->setContextProperty("oCaptureThumbMaker", new CaptureThumbMaker(app));
   pContext->setContextProperty("oFileMgr", new FileMgr());
   pContext->setContextProperty("idSearchResultModel", pSearchResultModel);
   qRegisterMetaType<QGeoCoordinate>("QGeoCoordinate");

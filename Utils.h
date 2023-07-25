@@ -110,14 +110,14 @@ namespace mssutils
 } // namespace mssutils
 
 // ImageThumb maker
-class ImageThumb : public QObject
+class CaptureThumbMaker : public QObject
 {
   Q_OBJECT
 public:
   static int HEIGHT();
   static int WIDTH();
   bool HasSelectedCapture();
-  ImageThumb(QObject* parent = 0);
+  CaptureThumbMaker(QObject* parent = 0);
 
   // The captured image height/width
   Q_PROPERTY(int HEIGHT READ HEIGHT CONSTANT)

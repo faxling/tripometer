@@ -99,10 +99,9 @@ QString mssutils::Hash(const QString& s)
 static QQuickView* g_currentView = nullptr;
 static ScreenCapture* g_selectedScreenCapture = nullptr;
 static QOrientationSensor* g_oOrientationSensor = nullptr;
+static CaptureThumbMaker* g_oCaptureThumbMaker = nullptr;
 
-static ImageThumb* g_oImageThumb = nullptr;
-
-bool ImageThumb::HasSelectedCapture()
+bool CaptureThumbMaker::HasSelectedCapture()
 {
   if (g_selectedScreenCapture == nullptr)
     return false;
@@ -110,12 +109,12 @@ bool ImageThumb::HasSelectedCapture()
   return g_selectedScreenCapture->IsSelected;
 }
 
-int ImageThumb::HEIGHT()
+int CaptureThumbMaker::HEIGHT()
 {
   return 1920;
 }
 
-int ImageThumb::WIDTH()
+int CaptureThumbMaker::WIDTH()
 {
   return 1080;
 }
@@ -124,9 +123,8 @@ ScreenCapturedImg::ScreenCapturedImg() : QQuickImageProvider(QQuickImageProvider
 {
 }
 
-QImage ScreenCapturedImg::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
+QImage ScreenCapturedImg::requestImage(const QString&, QSize* size, const QSize&)
 {
-
   if (g_selectedScreenCapture == nullptr)
     return QImage();
 
@@ -165,13 +163,13 @@ ScreenCapture::~ScreenCapture()
           QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
           QString sPath = StorageDir() ^ ("img" + sImgName + ".jpg");
 
-          int nW = ImageThumb::WIDTH();
-          int nH = ImageThumb::HEIGHT();
+          int nW = CaptureThumbMaker::WIDTH();
+          int nH = CaptureThumbMaker::HEIGHT();
           int nY = (oImg.height() - nH) / 2;
           QRect tRect(0, nY, nW, nH);
           oImg.copy(tRect).save(sPath);
 
-          emit g_oImageThumb->hasSelectedCaptureChanged();
+          emit g_oCaptureThumbMaker->hasSelectedCaptureChanged();
           qDebug() << "save image " << sPath << " oo " << nO;
 
           QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
@@ -191,7 +189,7 @@ void ScreenCapture::save()
     this->IsSelected = false;
     StopBusyInd();
     update();
-    emit g_oImageThumb->hasSelectedCaptureChanged();
+    emit g_oCaptureThumbMaker->hasSelectedCaptureChanged();
     return;
   }
   if (g_selectedScreenCapture != nullptr)
@@ -205,7 +203,7 @@ void ScreenCapture::save()
   g_selectedScreenCapture = this;
   g_selectedScreenCapture->IsSelected = true;
   g_selectedScreenCapture->update();
-  emit g_oImageThumb->hasSelectedCaptureChanged();
+  emit g_oCaptureThumbMaker->hasSelectedCaptureChanged();
 }
 
 void ScreenCapture::setPageAndModel(QObject* pPage, QObject* pModel, int nIndex)
@@ -274,12 +272,12 @@ QString FileMgr::renameToAscii(QString s)
   return sRet;
 }
 
-ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
+CaptureThumbMaker::CaptureThumbMaker(QObject* parent) : QObject(parent)
 {
-  g_oImageThumb = this;
+  g_oCaptureThumbMaker = this;
 }
 
-void ImageThumb::save(QString s, int nOrientation)
+void CaptureThumbMaker::save(QString s, int nOrientation)
 {
   if (s.isEmpty())
     return;
@@ -318,7 +316,7 @@ void ImageThumb::save(QString s, int nOrientation)
   oOriginalPixmap.save(mssutils::Hash(s));
 }
 
-QUrl ImageThumb::name(QString s)
+QUrl CaptureThumbMaker::name(QString s)
 {
   QString sRet;
   if (s.startsWith("/") == false)
