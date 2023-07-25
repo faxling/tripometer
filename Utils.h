@@ -11,7 +11,7 @@
 #include <QUrl>
 #include <QVector>
 #include <functional>
-
+#include <QQuickImageProvider>
 void ScreenOn(bool b);
 QString FormatKmH(double f);
 QString FormatDuration(unsigned int nTime);
@@ -109,19 +109,26 @@ namespace mssutils
 
 } // namespace mssutils
 
+// ImageThumb maker
 class ImageThumb : public QObject
 {
   Q_OBJECT
-  Q_PROPERTY(int HEIGHT READ HEIGHT CONSTANT)
-  Q_PROPERTY(int WIDTH READ WIDTH CONSTANT)
-
 public:
   static int HEIGHT();
   static int WIDTH();
+  bool HasSelectedCapture();
   ImageThumb(QObject* parent = 0);
+
+  // The captured image height/width
+  Q_PROPERTY(int HEIGHT READ HEIGHT CONSTANT)
+  Q_PROPERTY(int WIDTH READ WIDTH CONSTANT)
+  Q_PROPERTY(bool HasSelectedCapture READ HasSelectedCapture NOTIFY hasSelectedCaptureChanged)
   Q_INVOKABLE void save(QString s, int nOrientation);
   Q_INVOKABLE QUrl name(QString s);
+signals:
+  void hasSelectedCaptureChanged();
 };
+
 
 class FileMgr : public QObject
 {
@@ -133,6 +140,14 @@ public:
 };
 
 class QQuickView;
+
+class ScreenCapturedImg : public QQuickImageProvider
+{
+public:
+  ScreenCapturedImg();
+  QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
+
+};
 
 class ScreenCapture : public QQuickPaintedItem
 {
@@ -149,6 +164,7 @@ public:
   Q_INVOKABLE void save();
 
   void paint(QPainter* ppainter) override;
+  friend class ScreenCapturedImg;
 
 private:
   void StartBusyInd();

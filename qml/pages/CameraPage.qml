@@ -11,7 +11,7 @@ Page {
   property var oModel
   property int nImgNo
   property var oListView
-
+  forwardNavigation: oImageThumb.HasSelectedCapture
   Component {
     id: idImageFactory
     ScreenCapture {
@@ -21,6 +21,13 @@ Page {
         anchors.fill: parent
         onClicked: {
           idScreenCapture.save()
+
+          if (oImageThumb.HasSelectedCapture)
+
+            pageStack.pushAttached("ImagePage.qml", {
+                                     "oImgSrc": "image://capturedImage/selected",
+                                     "cache": false
+                                   })
         }
       }
     }
@@ -28,7 +35,6 @@ Page {
 
   Camera {
     id: idCamera
-
 
     // imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
 
@@ -170,65 +176,15 @@ Page {
     stepSize: 1
     valueText: (value / 10)
   }
+  ScreenCapture {
+    anchors.centerIn: parent
+    id: idScreenCaptureBig
 
-
-  /*
-  ComboBox {
-
-    visible: false
-    width: 480
-    label: "Exposure Compensation"
-    onCurrentIndexChanged: {
-      switch (currentIndex) {
-      case 0:
-        idCamera.exposure.exposureCompensation = 0
-        break
-      case 1:
-        idCamera.exposure.exposureCompensation = 1
-        break
-      case 2:
-        idCamera.exposure.exposureCompensation = 2
-        break
-      case 3:
-        idCamera.exposure.exposureCompensation = 2
-        break
-      case 4:
-        idCamera.exposure.exposureCompensation = -1
-        break
-      case 5:
-        idCamera.exposure.exposureCompensation = -2
-        break
-      case 6:
-        idCamera.exposure.exposureCompensation = -3
-        break
-      }
-    }
-
-    menu: ContextMenu {
-      MenuItem {
-        text: "Default"
-      }
-      MenuItem {
-        text: "Some 1"
-      }
-      MenuItem {
-        text: "More 2"
-      }
-      MenuItem {
-        text: "Max 3"
-      }
-      MenuItem {
-        text: "Little -1"
-      }
-      MenuItem {
-        text: "Less -2"
-      }
-      MenuItem {
-        text: "Min -3"
+    MouseArea {
+      anchors.fill: parent
+      onClicked: {
+        idScreenCaptureBig.visible = false
       }
     }
   }
-
-
-  */
 }

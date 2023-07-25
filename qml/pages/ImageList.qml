@@ -17,6 +17,7 @@ Page {
     idView.positionViewAtIndex(nI, ListView.Center)
   }
 
+
   SilicaListView {
     id: idView
     snapMode: ListView.SnapToItem
@@ -28,47 +29,43 @@ Page {
     RemorsePopup {
       id: idRemorsePop
     }
-    delegate: ListItem {
-      property alias imgObj: idImage
+    delegate: SilicaFlickable {
+      // anchors.fill: parent
       height: idPage.height
       width: idPage.width
-      SilicaFlickable {
+      id: imageFlickable
 
-        id: imageFlickable
+      //enabled: false
+      //interactive: false
+      // anchors.fill: parent
+      contentWidth: idImage.width
+      contentHeight: idImage.height
 
-        //enabled: false
-        //interactive: false
-        anchors.fill: parent
+      Image {
 
-        contentWidth: idImage.width
-        contentHeight: idImage.height
+        id: idImage
+        y: (idPage.height - idImage.height) / 2
+        source: filePath
+        // autoTransform: true
+        asynchronous: true
+        fillMode: Image.PreserveAspectFit
+        width: idPage.width
 
-        Image {
+        PinchArea {
 
-          id: idImage
-          y: (idPage.height - idImage.height) / 2
-          source: filePath
-          // autoTransform: true
-          asynchronous: true
-          fillMode: Image.PreserveAspectFit
-          width: idPage.width
+          // pinch.dragAxis: Pinch.NoDrag
+          pinch.dragAxis: Pinch.XAndYAxis
+          anchors.fill: parent
+          pinch.target: parent
+          pinch.minimumScale: 1
+          pinch.maximumScale: 10
 
-          PinchArea {
-
-            // pinch.dragAxis: Pinch.NoDrag
-            pinch.dragAxis: Pinch.XAndYAxis
+          TapArea {
             anchors.fill: parent
-            pinch.target: parent
-            pinch.minimumScale: 1
-            pinch.maximumScale: 10
-
-            TapArea {
-              anchors.fill: parent
-              onTap: {
-                idImage.x = 0
-                idImage.y = (idPage.height - idImage.height) / 2
-                idImage.scale = 1
-              }
+            onTap: {
+              idImage.x = 0
+              idImage.y = (idPage.height - idImage.height) / 2
+              idImage.scale = 1
             }
           }
         }

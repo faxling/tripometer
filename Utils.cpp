@@ -98,9 +98,17 @@ QString mssutils::Hash(const QString& s)
 
 static QQuickView* g_currentView = nullptr;
 static ScreenCapture* g_selectedScreenCapture = nullptr;
-static QOrientationSensor* m_oOrientationSensor = nullptr;
-Q_PROPERTY(int HEIGHT READ CONSTANT)
-Q_PROPERTY(int WIDTH READ CONSTANT)
+static QOrientationSensor* g_oOrientationSensor = nullptr;
+
+static ImageThumb* g_oImageThumb = nullptr;
+
+bool ImageThumb::HasSelectedCapture()
+{
+  if (g_selectedScreenCapture == nullptr)
+    return false;
+
+  return g_selectedScreenCapture->IsSelected;
+}
 
 int ImageThumb::HEIGHT()
 {
@@ -110,6 +118,21 @@ int ImageThumb::HEIGHT()
 int ImageThumb::WIDTH()
 {
   return 1080;
+}
+
+ScreenCapturedImg::ScreenCapturedImg() : QQuickImageProvider(QQuickImageProvider::Image)
+{
+}
+
+QImage ScreenCapturedImg::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
+{
+
+  if (g_selectedScreenCapture == nullptr)
+    return QImage();
+
+  *size = g_selectedScreenCapture->m_oImage.size();
+
+  return g_selectedScreenCapture->m_oImage;
 }
 
 void ScreenCapture::StartBusyInd()
@@ -133,6 +156,7 @@ ScreenCapture::ScreenCapture()
 
 ScreenCapture::~ScreenCapture()
 {
+  g_selectedScreenCapture = nullptr;
   if (IsSelected)
   {
     auto oW = std::thread(
@@ -146,7 +170,8 @@ ScreenCapture::~ScreenCapture()
           int nY = (oImg.height() - nH) / 2;
           QRect tRect(0, nY, nW, nH);
           oImg.copy(tRect).save(sPath);
-          g_selectedScreenCapture = nullptr;
+
+          emit g_oImageThumb->hasSelectedCaptureChanged();
           qDebug() << "save image " << sPath << " oo " << nO;
 
           QMetaObject::invokeMethod(p, "addImageGo", Q_ARG(QVariant, nIndex),
@@ -166,6 +191,7 @@ void ScreenCapture::save()
     this->IsSelected = false;
     StopBusyInd();
     update();
+    emit g_oImageThumb->hasSelectedCaptureChanged();
     return;
   }
   if (g_selectedScreenCapture != nullptr)
@@ -179,6 +205,7 @@ void ScreenCapture::save()
   g_selectedScreenCapture = this;
   g_selectedScreenCapture->IsSelected = true;
   g_selectedScreenCapture->update();
+  emit g_oImageThumb->hasSelectedCaptureChanged();
 }
 
 void ScreenCapture::setPageAndModel(QObject* pPage, QObject* pModel, int nIndex)
@@ -194,13 +221,13 @@ void ScreenCapture::capture()
   oLoop.processEvents();
   m_oImage = g_currentView->grabWindow();
   m_oImagePreview = m_oImage.scaledToHeight(height());
-  if (m_oOrientationSensor == nullptr)
-    m_oOrientationSensor = new QOrientationSensor;
-  if (!m_oOrientationSensor->isActive())
+  if (g_oOrientationSensor == nullptr)
+    g_oOrientationSensor = new QOrientationSensor;
+  if (!g_oOrientationSensor->isActive())
   {
-    m_oOrientationSensor->start();
+    g_oOrientationSensor->start();
   }
-  m_nOrientation = m_oOrientationSensor->reading()->orientation();
+  m_nOrientation = g_oOrientationSensor->reading()->orientation();
 
   update();
 }
@@ -249,6 +276,7 @@ QString FileMgr::renameToAscii(QString s)
 
 ImageThumb::ImageThumb(QObject* parent) : QObject(parent)
 {
+  g_oImageThumb = this;
 }
 
 void ImageThumb::save(QString s, int nOrientation)

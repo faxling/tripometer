@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
 
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
   qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
+  pU->engine()->addImageProvider("capturedImage", new ScreenCapturedImg());
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
   // &QGuiApplication::quit,Qt::DirectConnection);
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));

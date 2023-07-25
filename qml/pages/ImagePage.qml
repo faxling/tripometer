@@ -5,7 +5,7 @@ import Sailfish.Silica 1.0
 Page {
   id: idPage
   property alias oImgSrc: idImage.source
-
+  property alias cache: idImage.cache
   SilicaFlickable {
     anchors.fill: parent
     id: imageFlickable
