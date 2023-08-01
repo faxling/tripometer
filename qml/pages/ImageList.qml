@@ -3,6 +3,7 @@ import Sailfish.Silica 1.0
 import Qt.labs.folderlistmodel 2.1
 import ".."
 import Sailfish.Share 1.0
+import "../tripometer-functions.js" as Lib
 
 // ImagePage
 Page {
@@ -10,65 +11,77 @@ Page {
 
   property alias model: idView.model
 
-  property int nII
-
+  //  property int nII
   function setIndex(nI) {
-    nII = nI
     idView.positionViewAtIndex(nI, ListView.Center)
   }
-
 
   SilicaListView {
     id: idView
     snapMode: ListView.SnapToItem
 
     anchors.fill: parent
+
+
+    /*
     onCountChanged: {
       idView.positionViewAtIndex(nII, ListView.Center)
     }
+    */
     RemorsePopup {
       id: idRemorsePop
     }
-    delegate: SilicaFlickable {
-      // anchors.fill: parent
+
+    delegate: Item {
       height: idPage.height
       width: idPage.width
-      id: imageFlickable
+      SilicaFlickable {
+        anchors.fill: parent
 
-      //enabled: false
-      //interactive: false
-      // anchors.fill: parent
-      contentWidth: idImage.width
-      contentHeight: idImage.height
+        id: imageFlickable
+        contentWidth: idImage.width
+        contentHeight: idImage.height
 
-      Image {
+        Image {
 
-        id: idImage
-        y: (idPage.height - idImage.height) / 2
-        source: filePath
-        // autoTransform: true
-        asynchronous: true
-        fillMode: Image.PreserveAspectFit
-        width: idPage.width
+          id: idImage
+          y: (idPage.height - idImage.height) / 2
+          source: filePath
+          // autoTransform: true
+          asynchronous: true
+          fillMode: Image.PreserveAspectFit
+          width: idPage.width
 
-        PinchArea {
+          PinchArea {
 
-          // pinch.dragAxis: Pinch.NoDrag
-          pinch.dragAxis: Pinch.XAndYAxis
-          anchors.fill: parent
-          pinch.target: parent
-          pinch.minimumScale: 1
-          pinch.maximumScale: 10
-
-          TapArea {
+            // pinch.dragAxis: Pinch.NoDrag
+            pinch.dragAxis: Pinch.XAndYAxis
             anchors.fill: parent
-            onTap: {
-              idImage.x = 0
-              idImage.y = (idPage.height - idImage.height) / 2
-              idImage.scale = 1
+            pinch.target: parent
+            pinch.minimumScale: 1
+            pinch.maximumScale: 10
+
+            TapArea {
+              anchors.fill: parent
+              onTap: {
+                idImage.x = 0
+                idImage.y = (idPage.height - idImage.height) / 2
+                idImage.scale = 1
+              }
             }
           }
         }
+      }
+      Text {
+        id: idText
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Theme.fontSizeMedium
+        anchors.leftMargin: Theme.fontSizeMedium
+        anchors.left: parent.left
+        font.family: Theme.fontFamilyHeading
+        text: Lib.pikeDateTimeStr(fileModified)
+        font.pixelSize: Theme.fontSizeLarge
+        color: Theme.primaryColor
       }
     }
   }
@@ -109,18 +122,9 @@ Page {
     onClicked: {
       var oCur = getCurrent()
       idRemorsePop.execute("Deleting Image", function () {
+        idView.positionViewAtIndex(oCur.index - 1, ListView.Center)
         oFileMgr.remove(idView.model.get(oCur.index, "filePath"))
-        nII = oCur.index - 1
       })
-
-
-      /*
-      idRemorse.execute(oCur.item.imgObj, "Deleting Image", function () {
-        oFileMgr.remove(idView.model.get(oCur.index, "filePath"))
-        nII = oCur.index - 1
-      })
-      */
-      // idRemorse.highlighted = true
     }
   }
 }

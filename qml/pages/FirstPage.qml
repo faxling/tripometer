@@ -58,8 +58,6 @@ Item {
                            "folderPath": StandardPaths.pictures + "/Screenshots/",
                            "nameFilters": ["*.png"]
                          })
-
-          console.log(StandardPaths.pictures + "/Screenshots/")
         }
       }
 
@@ -139,7 +137,7 @@ Item {
         font.family: Theme.fontFamilyHeading
         text: aValue
         font.pixelSize: Theme.fontSizeHuge
-        color: delegate.highlighted ? Theme.highlightColor : Theme.primaryColor
+        color: Theme.primaryColor
       }
 
       Text {
@@ -149,13 +147,6 @@ Item {
         text: aUnit
         font.pixelSize: Theme.fontSizeTiny
         color: Theme.primaryColor
-      }
-      onPressed: {
-
-      }
-
-      onPressAndHold: {
-
       }
     }
   }

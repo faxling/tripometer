@@ -16,7 +16,6 @@ Page {
       id: idImage
       y: (idPage.height - height) / 2
       x: (idPage.width - width) / 2
-      autoTransform: true
       asynchronous: true
       fillMode: Image.PreserveAspectFit
       width: idPage.width
@@ -46,7 +45,6 @@ Page {
     width: idPage.width
     anchors.fill: parent
     opacity: 0.5
-    autoTransform: true
     visible: idPageBusyIndicator.running
     fillMode: Image.PreserveAspectFit
   }

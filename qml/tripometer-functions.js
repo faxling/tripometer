@@ -149,7 +149,7 @@ function addPikeImage(i, oPModel, sImage, nOrientaion) {
   oPModel.get(i).sImage = String(sImage)
 
   // nOrientaion could be undefined and then become 0
-  oImageThumb.save(sImage, nOrientaion)
+  oCaptureThumbMaker.save(sImage, nOrientaion)
   oPModel.get(i).sImageThumb = String(oCaptureThumbMaker.name(sImage))
   db.transaction(function (tx) {
     tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])

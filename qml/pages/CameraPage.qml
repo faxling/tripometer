@@ -36,11 +36,14 @@ Page {
 
   Component.onCompleted: {
 
+
+    /*
     var nC = QtMultimedia.availableCameras.length
     for (var i = 0; i < nC; ++i) {
       console.log(QtMultimedia.availableCameras[i].deviceId + " "
                   + QtMultimedia.availableCameras[i].displayName)
     }
+    */
   }
   Camera {
     id: idCamera
