@@ -139,9 +139,11 @@ Item {
         PropertyChanges {
           target: map_controls3
           opacity: 1
+          enabled: true
         }
         PropertyChanges {
-          target: map_controls3
+          target: map_controls4
+          opacity: 1
           enabled: true
         }
       }
@@ -151,6 +153,33 @@ Item {
       NumberAnimation {
         property: "opacity"
         duration: 300
+      }
+    }
+  }
+
+  Column {
+    id: map_controls4
+    spacing: 20
+    opacity: 0
+    enabled: false
+    anchors.top: map_controls3.top
+    anchors.left: map_controls3.right
+    anchors.leftMargin: 20
+
+    TrippBtn {
+      id: idNavonics1
+      bSelected: idMap.source === 22
+      src: "btnSeaMap.png"
+      onClicked: {
+        idMap.setSource(22)
+      }
+    }
+    TrippBtn {
+      id: idNavonics2
+      bSelected: idMap.source === 23
+      src: "btnSeaMap.png"
+      onClicked: {
+        idMap.setSource(23)
       }
     }
   }
@@ -238,10 +267,11 @@ Item {
       PropertyChanges {
         target: map_controls2
         opacity: 0.0
+        enabled: false
       }
       PropertyChanges {
-        target: map_controls2
-        enabled: false
+        target: map_controls3
+        state: ""
       }
     }
   ]
@@ -487,6 +517,12 @@ Item {
     }
 
     Row {
+
+      /*
+      onWidthChanged: {
+        console.log("width " + width)
+      }
+*/
       x: (Screen.width - width) / 2
       id: idButtonRow
       y: 10
@@ -530,10 +566,14 @@ Item {
         text: "GPX"
         onClicked: pageStack.push(idDownloadPickerPage)
       }
+
+
+      /*
       Item {
         height: 1
         width: Theme.itemSizeLarge
       }
+      */
     }
   }
 }

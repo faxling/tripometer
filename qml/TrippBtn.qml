@@ -11,9 +11,9 @@ Rectangle {
   border.width: bSelected ? 10 : 0
   border.color: Theme.highlightColor
   property alias src: idImg.source
-  color: idApp.background.color
-  opacity: idMouseArea.pressed ? 0.9 : 1
-  // color: idMouseArea.pressed ? "#ff808080" : "#af808080"
+  //  color: idApp.background.color
+  //  opacity: idMouseArea.pressed ? 0.9 : 1
+  color: idMouseArea.pressed ? "#ff808080" : "#af808080"
   width: 160
   height: 160
   Image {

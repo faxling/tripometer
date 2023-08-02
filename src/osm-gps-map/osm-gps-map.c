@@ -98,8 +98,8 @@ struct _OsmGpsMapPrivate
   char* repo_uri;
   char* image_format;
   int uri_format;
-  // flag indicating if the map source is located on the google
-  gboolean the_google;
+
+  gboolean the_navionics;
 
   // gps tracking state
   gboolean record_trip_history;
@@ -193,7 +193,7 @@ G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
  * Drawing function forward defintions
  */
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_google);
+static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics);
 static void osm_gps_map_print_images(OsmGpsMap* map);
 // static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 #if USE_LIBSOUP22
@@ -333,12 +333,12 @@ static void map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel
   *ptr++ = '\0';
 }
 
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_google)
+static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics)
 {
   int uri_format;
 
   uri_format = 0;
-  *the_google = FALSE;
+  *the_navonics = FALSE;
 
   if (g_strrstr(repo_uri, URI_MARKER_X))
     uri_format |= URI_HAS_X;
@@ -364,10 +364,10 @@ static int inspect_map_uri(const gchar* repo_uri, gboolean* the_google)
   if (g_strrstr(repo_uri, URI_MARKER_R))
     uri_format |= URI_HAS_R;
 
-  if (g_strrstr(repo_uri, "google.com"))
-    *the_google = TRUE;
+  if (g_strrstr(repo_uri, "navionics.com"))
+    *the_navonics = TRUE;
 
-  g_debug("URI Format: 0x%X (google: %X)", uri_format, *the_google);
+  g_debug("URI Format: 0x%X (navionics: %X)", uri_format, *the_navonics);
 
   return uri_format;
 }
@@ -1044,26 +1044,32 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
     msg = soup_message_new(SOUP_METHOD_GET, dl->uri);
     if (msg)
     {
-      if (priv->the_google)
+      if (priv->the_navionics)
       {
-        // Set maps.google.com as the referrer
-        g_debug("Setting Google Referrer");
-        soup_message_headers_append(msg->request_headers, "Referer", "http://maps.google.com/");
-        // For google satelite also set the appropriate cookie value
-        if (priv->uri_format & URI_HAS_Q)
-        {
-          const char* cookie = g_getenv("GOOGLE_COOKIE");
-          if (cookie)
-          {
-            g_debug("Adding Google Cookie");
-            soup_message_headers_append(msg->request_headers, "Cookie", cookie);
-          }
-        }
+        soup_message_headers_append(msg->request_headers, "Referer",
+                                    "https://webapp.navionics.com/");
+        soup_message_headers_append(msg->request_headers, "authority", "backend.navionics.com");
+
+        soup_message_headers_append(msg->request_headers, "accept",
+                                    "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+        soup_message_headers_append(msg->request_headers, "accept-language",
+                                    "en-GB,en;q=0.9,en-US;q=0.8,sv;q=0.7");
+        soup_message_headers_append(msg->request_headers, "origin", "https://webapp.navionics.com");
+        soup_message_headers_append(
+            msg->request_headers, "sec-ch-ua",
+            "\"Not/A)Brand\";v=\"99\", \"Microsoft Edge\";v=\"115\", \"Chromium\";v=\"115\"");
+        soup_message_headers_append(msg->request_headers, "ec-ch-ua-mobile", "?0");
+        soup_message_headers_append(msg->request_headers, "sec-ch-ua-platform", "\"Windows\"");
+        soup_message_headers_append(msg->request_headers, "sec-fetch-dest", "image");
+        soup_message_headers_append(msg->request_headers, "sec-fetch-mode", "cors");
+        soup_message_headers_append(msg->request_headers, "sec-fetch-site", "same-site");
+
       }
 
-#if USE_LIBSOUP22
-      soup_message_headers_append(msg->request_headers, "User-Agent", USER_AGENT);
-#endif
+      soup_message_headers_append(
+          msg->request_headers, "User-Agent",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+          "Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188");
 
       g_hash_table_insert(priv->tile_queue, dl->uri, msg);
       soup_session_queue_message(priv->soup_session, msg, osm_gps_map_tile_download_complete, dl);
@@ -1644,7 +1650,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->dirty = cairo_region_create();
 
   priv->uri_format = 0;
-  priv->the_google = FALSE;
+  priv->the_navionics = FALSE;
 
   priv->map_source = -1;
 
@@ -1784,7 +1790,7 @@ static GObject* osm_gps_map_constructor(GType gtype, guint n_properties,
 
   priv = OSM_GPS_MAP_PRIVATE(object);
   osm_gps_map_setup(priv);
-  priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_google);
+  priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_navionics);
 
   return object;
 }
@@ -1955,7 +1961,7 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
 
       osm_gps_map_setup(priv);
 
-      priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_google);
+      priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_navionics);
 
       if (!priv->idle_map_redraw)
         priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
@@ -2302,6 +2308,10 @@ const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source)
   {
   case OSM_GPS_MAP_SOURCE_NULL:
     return "None";
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+    return "NAVIONICS Sonar";
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
+    return "NAVIONICS Sea Chart";
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
     return "OpenStreetMap I";
   case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
@@ -2355,6 +2365,11 @@ const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source)
 // https://garage.maemo.org/plugins/scmsvn/viewcvs.php/trunk/src/maps.c?root=maemo-mapper&view=markup
 // http://www.ponies.me.uk/maps/GoogleTileUtils.java
 // http://www.mgmaps.com/cache/MapTileCacher.perl
+
+#define NAVTOKEN                                                                                   \
+  "eyJrZXkiOiJOQVZJT05JQ1NfV0VCQVBQX1AwMSIsImtleURvbWFpbiI6IndlYmFwcC5uYXZpb25pY3MuY29tIiwicmVmZX" \
+  "JlciI6IndlYmFwcC5uYXZpb25pY3MuY29tIiwicmFuZG9tIjoxNjkwODgwNzkwMDc0fQ"
+
 const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
 {
   switch (source)
@@ -2374,6 +2389,18 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
                http://openaerialmap.org/pipermail/talk_openaerialmap.org/2008-December/000055.html
      */
     return NULL;
+
+    // curl
+    // 'https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/webapp.navionics.com?_=1690792123234'
+    // -H 'Referer: https://webapp.navionics.com/'
+
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+    return "https://backend.navionics.com/tile/#Z/#X/"
+           "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=" NAVTOKEN;
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
+    return "https://backend.navionics.com/tile/#Z/#X/"
+           "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=" NAVTOKEN;
+
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
     return "https://map04.eniro.com/geowebcache/service/tms1.0.0/nautical/#Z/#X/#U.png?";
     // return "http://t1.openseamap.org/seamark/#Z/#X/#Y.png";
@@ -2446,6 +2473,11 @@ void osm_gps_map_source_get_repo_copyright(OsmGpsMapSource_t source, const gchar
     return;
   case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
     return;
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+    *notice = "© navionics contributors";
+    *url = "https://navionics.com/";
+    return;
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
     *notice = "© OpenStreetMap contributors";
     *url = "http://openseamap.org/";
@@ -2496,6 +2528,8 @@ const char* osm_gps_map_source_get_image_format(OsmGpsMapSource_t source)
   {
   case OSM_GPS_MAP_SOURCE_NULL:
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
   case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
   case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
   case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
@@ -2534,6 +2568,8 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
 {
   switch (source)
   {
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_NULL:
     return 18;
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
@@ -2576,6 +2612,8 @@ static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source)
   {
   case OSM_GPS_MAP_SOURCE_NULL:
     return 0;
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
   case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
   case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
@@ -2613,6 +2651,8 @@ static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source)
   {
   case OSM_GPS_MAP_SOURCE_NULL:
     return FALSE;
+  case OSM_GPS_MAP_SOURCE_NAVIONICS:
+  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
   case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
   case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
@@ -2763,8 +2803,6 @@ static gboolean _set_zoom(OsmGpsMap* map, int zoom)
 
   return TRUE;
 }
-
-
 
 void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude)
 {
