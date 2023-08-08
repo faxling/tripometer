@@ -12,7 +12,7 @@ Page {
   property alias nameFilters: folderModel.nameFilters
   ShareAction {
     id: idShare
-    mimeType: "image/jpg"
+    mimeType: "image/*"
     title: "Share Image"
   }
 
@@ -47,8 +47,9 @@ Page {
           oFileMgr.remove(folderModel.get(index, "filePath"))
         })
       }
-      function share() {
-        var oFP = oFileMgr.renameToAscii(folderModel.get(index, "filePath"))
+      function share(filePathIn, indexIn) {
+        var oFP = oFileMgr.renameToAscii(filePathIn)
+        folderModel.setData(indexIn, "filePath", oFP)
         idShare.resources = [oFP]
         idShare.trigger()
       }
@@ -57,11 +58,10 @@ Page {
 
           MenuItem {
             text: "Share"
-            onClicked: share()
+            onClicked: share(filePath, index)
           }
           MenuItem {
             text: "View"
-
 
             onClicked: {
 

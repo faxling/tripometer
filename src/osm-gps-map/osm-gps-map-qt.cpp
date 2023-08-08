@@ -224,6 +224,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
                                  "gps-track-point-radius", 10,
                                  // proxy?"proxy-uri":NULL,     proxy,
                                  "double-pixel", dpix, NULL));
+
   g_free(path);
 
   osm_gps_map_set_mapcenter(map, lat, lon, zoom);
@@ -836,9 +837,13 @@ static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGp
 
   widget->sourceChanged(widget->source());
 }
+
 void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 {
   Source orig;
+
+  if (value == SOURCE_NAVIONICS1 || value == SOURCE_NAVIONICS2)
+    soup_get_navionics_key(map->priv);
 
   orig = source();
   if (orig == value)
@@ -846,6 +851,7 @@ void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 
   g_object_set(map, "map-source", (OsmGpsMapSource_t)value, NULL);
 }
+
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {
   Q_UNUSED(pspec);
@@ -1238,7 +1244,7 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
   // Auto saved
   if (nId == 0)
   {
-    sTrackName = GpxNewName("Track",0);
+    sTrackName = GpxNewName("Track", 0);
   }
   else
   {

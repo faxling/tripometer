@@ -125,6 +125,8 @@ typedef struct
   gint x, y, w, h;
 } OsmGpsMapRect_t;
 
+char* soup_get_navionics_key(OsmGpsMapPrivate* priv);
+
 GType osm_gps_map_get_type(void) G_GNUC_CONST;
 
 OsmGpsMap* osm_gps_map_new(void);

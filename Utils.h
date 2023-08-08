@@ -7,11 +7,11 @@
 #include <QObject>
 #include <QOrientationReading>
 #include <QOrientationSensor>
+#include <QQuickImageProvider>
 #include <QQuickPaintedItem>
 #include <QUrl>
 #include <QVector>
 #include <functional>
-#include <QQuickImageProvider>
 void ScreenOn(bool b);
 QString FormatKmH(double f);
 QString FormatDuration(unsigned int nTime);
@@ -34,6 +34,7 @@ QString Ext(const QString& sFileName);
 
 QString operator^(const QString& s, const QString& s2);
 
+QString CacheDir();
 QString StorageDir();
 QString GpxNewName(const QString& sTrackName, int nCount = -1);
 QString GpxDatFullName(const QString& sTrackName);
@@ -129,7 +130,6 @@ signals:
   void hasSelectedCaptureChanged();
 };
 
-
 class FileMgr : public QObject
 {
   Q_OBJECT
@@ -137,6 +137,8 @@ public:
   FileMgr();
   Q_INVOKABLE void remove(QString s);
   Q_INVOKABLE QString renameToAscii(QString s);
+  Q_INVOKABLE void clearCache();
+  Q_INVOKABLE QString getUsedCache();
 };
 
 class QQuickView;
@@ -145,8 +147,7 @@ class ScreenCapturedImg : public QQuickImageProvider
 {
 public:
   ScreenCapturedImg();
-  QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
-
+  QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 };
 
 class ScreenCapture : public QQuickPaintedItem

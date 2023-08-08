@@ -125,5 +125,22 @@ Page {
       }
       valueText: "Min Size:" + Math.round(value * 200) + " cm"
     }
+    Button {
+      x: Theme.horizontalPageMargin
+      id: idBtnCache
+      text: "Get Cache Usage"
+      onClicked: {
+        text = oFileMgr.getUsedCache()
+      }
+    }
+
+    Button {
+      x: Theme.horizontalPageMargin
+      text: "Clear tile cache"
+      onClicked: {
+        oFileMgr.clearCache()
+        idBtnCache.text = "Get Cache Usage"
+      }
+    }
   }
 }

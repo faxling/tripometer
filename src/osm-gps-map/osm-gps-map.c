@@ -934,9 +934,11 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
         {
           fwrite(MSG_RESPONSE_BODY(msg), 1, MSG_RESPONSE_LEN(msg), file);
           file_saved = TRUE;
-          g_debug("Wrote %" MSG_RESPONSE_LEN_FORMAT " bytes to %s", MSG_RESPONSE_LEN(msg),
-                  dl->filename);
+
           fclose(file);
+
+        //   g_message(dl->filename);
+
         }
       }
       else
@@ -978,8 +980,8 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
   }
   else
   {
-    // g_message("Error downloading tile: %d - %s (%s)",
-    //           msg->status_code, msg->reason_phrase, dl->uri);
+    g_message("Error downloading tile: %d - %s (%s)", msg->status_code, msg->reason_phrase,
+              dl->uri);
 
     if (msg->status_code == SOUP_STATUS_NOT_FOUND)
     {
@@ -996,14 +998,58 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
     }
     else
     {
-#if USE_LIBSOUP22
-      soup_session_requeue_message(dl->session, msg);
-#else
-      soup_session_requeue_message(session, msg);
-#endif
+
+      /*
+      #if USE_LIBSOUP22
+            soup_session_requeue_message(dl->session, msg);
+      #else
+            soup_session_requeue_message(session, msg);
+      #endif
+      */
+
       return;
     }
   }
+}
+
+char g_szNAVTOKEN[256] = {0};
+char g_szNAVURL1[500] =  {0};
+char g_szNAVURL2[500] = {0};
+
+#define NAVURL1                                                                                    \
+  "https://backend.navionics.com/tile/#Z/#X/"                                                      \
+  "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+
+#define NAVURL2                                                                                    \
+  "https://backend.navionics.com/tile/#Z/#X/"                                                      \
+  "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+
+char* soup_get_navionics_key(OsmGpsMapPrivate* priv)
+{
+  if (g_szNAVURL1[0] != 0)
+    return g_szNAVTOKEN;
+
+  SoupMessage* msg =
+      soup_message_new("GET", "https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/"
+                              "webapp.navionics.com?_=1690792122212");
+  ;
+
+  soup_message_headers_append(msg->request_headers, "referer", "https://webapp.navionics.com/");
+
+  guint status;
+  status = soup_session_send_message(priv->soup_session, msg);
+  if (status != 200)
+    return 0;
+
+  memcpy(g_szNAVTOKEN, msg->response_body->data, msg->response_body->length);
+  g_szNAVTOKEN[msg->response_body->length] = 0;
+
+  sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN);
+  sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN);
+
+  g_object_unref(msg);
+
+  return g_szNAVTOKEN;
 }
 
 static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
@@ -1015,10 +1061,6 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
   // calculate the uri to download
   dl->uri = get_tile_uri(priv->repo_uri, priv->uri_format, priv->max_zoom, zoom, x, y);
   /* g_message("Downloading '%s'", dl->uri); */
-
-#if USE_LIBSOUP22
-  dl->session = priv->soup_session;
-#endif
 
   // check the tile has not already been queued for download,
   // or has been attempted, and its missing
@@ -1038,15 +1080,14 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
     dl->map = map;
     dl->redraw = redraw;
 
-    /* g_message("Download tile: %d,%d z:%d\n\t%s --> %s", x, y, zoom, dl->uri,
-     * dl->filename); */
+    //  g_message("Download tile: %s", dl->filename);
 
     msg = soup_message_new(SOUP_METHOD_GET, dl->uri);
     if (msg)
     {
       if (priv->the_navionics)
       {
-        soup_message_headers_append(msg->request_headers, "Referer",
+        soup_message_headers_append(msg->request_headers, "referer",
                                     "https://webapp.navionics.com/");
         soup_message_headers_append(msg->request_headers, "authority", "backend.navionics.com");
 
@@ -1063,11 +1104,10 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
         soup_message_headers_append(msg->request_headers, "sec-fetch-dest", "image");
         soup_message_headers_append(msg->request_headers, "sec-fetch-mode", "cors");
         soup_message_headers_append(msg->request_headers, "sec-fetch-site", "same-site");
-
       }
 
       soup_message_headers_append(
-          msg->request_headers, "User-Agent",
+          msg->request_headers, "user-agent",
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
           "Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188");
 
@@ -1740,8 +1780,11 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   const char* uri;
   gchar* base;
   cairo_t* cr;
-
   // user can specify a map source ID, or a repo URI as the map source
+  if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 || priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
+    soup_get_navionics_key(priv);
+
+
   uri = osm_gps_map_source_get_repo_uri(OSM_GPS_MAP_SOURCE_NULL);
   if ((priv->map_source == 0) || (strcmp(priv->repo_uri, uri) == 0))
   {
@@ -1757,6 +1800,7 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   else
   {
     // check if the source given is valid
+
     uri = osm_gps_map_source_get_repo_uri(priv->map_source);
     if (uri)
     {
@@ -2366,10 +2410,6 @@ const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source)
 // http://www.ponies.me.uk/maps/GoogleTileUtils.java
 // http://www.mgmaps.com/cache/MapTileCacher.perl
 
-#define NAVTOKEN                                                                                   \
-  "eyJrZXkiOiJOQVZJT05JQ1NfV0VCQVBQX1AwMSIsImtleURvbWFpbiI6IndlYmFwcC5uYXZpb25pY3MuY29tIiwicmVmZX" \
-  "JlciI6IndlYmFwcC5uYXZpb25pY3MuY29tIiwicmFuZG9tIjoxNjkwODgwNzkwMDc0fQ"
-
 const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
 {
   switch (source)
@@ -2395,11 +2435,9 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
     // -H 'Referer: https://webapp.navionics.com/'
 
   case OSM_GPS_MAP_SOURCE_NAVIONICS:
-    return "https://backend.navionics.com/tile/#Z/#X/"
-           "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=" NAVTOKEN;
+    return g_szNAVURL1;
   case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
-    return "https://backend.navionics.com/tile/#Z/#X/"
-           "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=" NAVTOKEN;
+    return g_szNAVURL2;
 
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
     return "https://map04.eniro.com/geowebcache/service/tms1.0.0/nautical/#Z/#X/#U.png?";

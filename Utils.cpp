@@ -71,7 +71,7 @@ QString operator^(const QString& sIn, const QString& s2In)
 
 void mssutils::MkCache()
 {
-  QString sCasheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+  QString sCasheDir = CacheDir();
   QDir o(sCasheDir);
   if (o.exists() == false)
   {
@@ -97,8 +97,7 @@ QString mssutils::Hash(const QString& s)
   QString sRet;
 
   sRet.sprintf("%016llx", h);
-  QString sCasheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-  return (sCasheDir ^ sRet) + Ext(s);
+  return (CacheDir() ^ sRet) + Ext(s);
 }
 
 static QQuickView* g_currentView = nullptr;
@@ -304,6 +303,21 @@ void FileMgr::remove(QString s)
   QFile::remove(s);
 }
 
+void FileMgr::clearCache()
+{
+  QDir oCacheDir;
+  oCacheDir.rmpath(CacheDir());
+}
+
+QString FileMgr::getUsedCache()
+{
+  QProcess process;
+  process.start("du -s -h " + CacheDir() + "/..");
+  process.waitForFinished(-1); // will wait forever until finished
+  QString stdout = process.readAllStandardOutput();
+  return stdout.split('\t').first() ; // FormatNrBytes(total);
+}
+
 QString FileMgr::renameToAscii(QString s)
 {
   QString sRet;
@@ -315,8 +329,12 @@ QString FileMgr::renameToAscii(QString s)
       bRename = true;
 
   if (bRename)
-    QFile::rename(s, sRet);
+  {
+    while (QFile::exists(sRet) == true)
+      sRet = BaseName(sRet) + "I" + Ext(sRet);
 
+    QFile::rename(s, sRet);
+  }
   return sRet;
 }
 
@@ -466,6 +484,11 @@ void MssTimer::timerEvent(QTimerEvent*)
 
   if (m_bIsSingleShot == true)
     m_pTimer->stop();
+}
+
+QString CacheDir()
+{
+  return QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
 }
 
 QString StorageDir()
@@ -842,7 +865,6 @@ int MssListModel::AddRow(const QVector<QVariant>& ocRow)
   endInsertRows();
   return nIndex;
 }
-
 
 struct ExifIfdHeader
 {

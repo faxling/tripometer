@@ -8,6 +8,15 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Tue Aug 08 2023 Fredrik Axling <faxling11@gmail.com> 1.4.4
+- Ver 1.4.4
+- Fix sharing of screenshoots
+- Clear cache
+- Enable GPX
+- Sea & Sonarcharts
+- Exif handling for captured images
+- Preview for captured images
+
 * Fri Jul 07 2023 Fredrik Axling <faxling11@gmail.com> 1.4.3
 - Ver 1.4.3
 - Share Position
