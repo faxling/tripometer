@@ -26,6 +26,10 @@
 #include <QtMultimedia/QtMultimedia>
 #include <thread>
 
+#include <dirent.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+
 QRegExp& SLASH = *new QRegExp("[\\\\/]");
 
 QString operator^(const QString& sIn, const QString& s2In)
@@ -71,7 +75,7 @@ QString operator^(const QString& sIn, const QString& s2In)
 
 void mssutils::MkCache()
 {
-  QString sCasheDir = CacheDir();
+  QString sCasheDir = CacheDir() ^ "images";
   QDir o(sCasheDir);
   if (o.exists() == false)
   {
@@ -97,7 +101,7 @@ QString mssutils::Hash(const QString& s)
   QString sRet;
 
   sRet.sprintf("%016llx", h);
-  return (CacheDir() ^ sRet) + Ext(s);
+  return (CacheDir() ^ "images" ^ sRet) + Ext(s);
 }
 
 static QQuickView* g_currentView = nullptr;
@@ -305,17 +309,66 @@ void FileMgr::remove(QString s)
 
 void FileMgr::clearCache()
 {
-  QDir oCacheDir;
-  oCacheDir.rmpath(CacheDir());
+  QDir dir(CacheDir());
+  dir.removeRecursively();
+  mssutils::MkCache();
+}
+
+
+
+size_t countDiskUsage(const char* pathname)
+{
+  struct stat stats;
+
+  if (lstat(pathname, &stats) == 0)
+  {
+    if (S_ISREG(stats.st_mode))
+    {
+      return stats.st_size;
+    }
+  }
+
+  DIR* dir = opendir(pathname);
+
+  if (dir == NULL)
+  {
+    return 0;
+  }
+
+  struct dirent* dirEntry;
+  size_t totalSize = 4096;
+
+  for (dirEntry = readdir(dir); dirEntry != NULL; dirEntry = readdir(dir))
+  {
+    long pathLength = sizeof(char) * (strlen(pathname) + strlen(dirEntry->d_name) + 2);
+    char* name = (char*)malloc(pathLength);
+    strcpy(name, pathname);
+    strcpy(name + strlen(pathname), "/");
+    strcpy(name + strlen(pathname) + 1, dirEntry->d_name);
+
+    if (dirEntry->d_type == DT_DIR)
+    {
+      if (strcmp(dirEntry->d_name, ".") != 0 && strcmp(dirEntry->d_name, "..") != 0)
+        totalSize += countDiskUsage(name);
+    }
+    else
+    {
+      int status = lstat(name, &stats);
+      if (status == 0)
+        totalSize += stats.st_size;
+    }
+    free(name);
+  }
+
+  closedir(dir);
+
+  return totalSize;
 }
 
 QString FileMgr::getUsedCache()
 {
-  QProcess process;
-  process.start("du -s -h " + CacheDir() + "/..");
-  process.waitForFinished(-1); // will wait forever until finished
-  QString stdout = process.readAllStandardOutput();
-  return stdout.split('\t').first() ; // FormatNrBytes(total);
+  return FormatNrBytes(
+      countDiskUsage(CacheDir().toLatin1())); // .split('\t').first() ; // FormatNrBytes(total);
 }
 
 QString FileMgr::renameToAscii(QString s)
@@ -350,7 +403,7 @@ void CaptureThumbMaker::save(QString s, int nOrientation)
 
   QImageReader oImageReader(s);
   if (nOrientation == 0)
-    oImageReader.setAutoTransform(false);
+    oImageReader.setAutoTransform(true);
 
   QImage oO = oImageReader.read();
 
@@ -378,6 +431,23 @@ void CaptureThumbMaker::save(QString s, int nOrientation)
   if (nOrientation == 3)
     oOriginalPixmap = oOriginalPixmap.transformed(QMatrix().rotate(90.0));
   oOriginalPixmap.save(mssutils::Hash(s));
+}
+
+QString CaptureThumbMaker::newImgName(QString s)
+{
+  QDateTime oNow(QDateTime::currentDateTime());
+  QString sImgName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sPath = StorageDir() ^ ("img" + sImgName + ".jpg");
+  QImageReader oImageReader(s);
+
+  QImage oO = oImageReader.read();
+
+  if (oO.height() < oO.width())
+    oO = oO.transformed(QMatrix().rotate(90.0));
+
+  oO.save(sPath, "jpg");
+
+  return sPath;
 }
 
 QUrl CaptureThumbMaker::name(QString s)
@@ -488,7 +558,8 @@ void MssTimer::timerEvent(QTimerEvent*)
 
 QString CacheDir()
 {
-  return QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+  return QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation) +
+         "/harbour-pikefight";
 }
 
 QString StorageDir()

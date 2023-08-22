@@ -1060,7 +1060,7 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
 
   // calculate the uri to download
   dl->uri = get_tile_uri(priv->repo_uri, priv->uri_format, priv->max_zoom, zoom, x, y);
-  /* g_message("Downloading '%s'", dl->uri); */
+  // g_message("Download '%s'", dl->uri);
 
   // check the tile has not already been queued for download,
   // or has been attempted, and its missing

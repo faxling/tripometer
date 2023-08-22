@@ -126,6 +126,7 @@ public:
   Q_PROPERTY(bool HasSelectedCapture READ HasSelectedCapture NOTIFY hasSelectedCaptureChanged)
   Q_INVOKABLE void save(QString s, int nOrientation);
   Q_INVOKABLE QUrl name(QString s);
+  Q_INVOKABLE QString newImgName(QString s);
 signals:
   void hasSelectedCaptureChanged();
 };

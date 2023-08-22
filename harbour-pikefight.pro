@@ -28,8 +28,6 @@ SOURCES += src/harbour-tripometer.cpp \
     Utils.cpp
 
 
-
-
 OTHER_FILES += \
     harbour-pikefight.desktop \
     qml/harbour-pikefight.png \

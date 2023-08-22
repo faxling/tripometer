@@ -144,6 +144,19 @@ function showPike(nOwner) {
   }
 }
 
+function addPikeImageCopy(i, oPModel, sImage) {
+  var nId = oPModel.get(i).nId
+  sImage = oCaptureThumbMaker.newImgName(sImage)
+  oPModel.get(i).sImage = sImage
+
+  // nOrientaion  0 take from exif
+  oCaptureThumbMaker.save(sImage, 0)
+  oPModel.get(i).sImageThumb = String(oCaptureThumbMaker.name(sImage))
+  db.transaction(function (tx) {
+    tx.executeSql('UPDATE Catch_V2 SET sImage=? WHERE pike_id=?', [sImage, nId])
+  })
+}
+
 function addPikeImage(i, oPModel, sImage, nOrientaion) {
   var nId = oPModel.get(i).nId
   oPModel.get(i).sImage = String(sImage)

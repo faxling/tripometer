@@ -139,7 +139,7 @@ Page {
       text: "Clear tile cache"
       onClicked: {
         oFileMgr.clearCache()
-        idBtnCache.text = "Get Cache Usage"
+        idBtnCache.text = oFileMgr.getUsedCache()
       }
     }
   }

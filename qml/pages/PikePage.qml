@@ -20,8 +20,8 @@ SilicaListView {
     id: idImagePickerPage
     ImagePickerPage {
       onSelectedContentPropertiesChanged: {
-        Lib.addPikeImage(idListView.currentIndex, idListView.model,
-                         selectedContentProperties.filePath)
+        Lib.addPikeImageCopy(idListView.currentIndex, idListView.model,
+                             selectedContentProperties.filePath)
       }
     }
   }
@@ -41,6 +41,8 @@ SilicaListView {
   signal pikePressed(int nId)
 
   function hasImg(sImageFile) {
+
+    console.log("hasImg " + sImageFile)
     if (sImageFile[0] !== '/')
       return -1
 
