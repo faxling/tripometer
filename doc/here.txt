@@ -7,3 +7,31 @@ http://autocomplete.geocoder.cit.api.here.com/6.2/suggest.json?app_id={zOUCOCKEX
 
 
 setSearchRequest
+
+
+GPS Map app for fishing and creating catch documentation. Includes 
+
+Different maps 
+- Open street map
+- Satellite map 
+- Sea charts 
+
+Built in camera
+
+1-3 Anglers configurable in settings page together with minimal length and number of catch counted. 
+
+Compass displayed in map
+
+GPS metrics speed etc displayed
+
+Share reports and images and locations
+
+Gallery 
+
+Saves GPS tracks as .gpx files
+
+Import of external .gpx tracks
+
+Distance tool.
+
+Save points of interest

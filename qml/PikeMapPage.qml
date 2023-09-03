@@ -65,6 +65,7 @@ Item {
     src: "symPikeL.png"
     nOwner: 1
     anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenterOffset: -50
     anchors.left: parent.left
     anchors.leftMargin: 20
   }
@@ -74,6 +75,7 @@ Item {
     src: "symPike2L.png"
     nOwner: 2
     anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenterOffset: -50
     anchors.right: parent.right
     anchors.rightMargin: 20
   }
@@ -82,8 +84,8 @@ Item {
     id: idPikeBtn3
     src: "symPikeL.png"
     nOwner: 3
-    anchors.top: idPikeBtn1.bottom
-    anchors.topMargin: 20
+    anchors.bottom: idPikeBtn1.top
+    anchors.bottomMargin: 20
     anchors.left: parent.left
     anchors.leftMargin: 20
   }
@@ -191,7 +193,7 @@ Item {
     anchors.bottomMargin: 20
     anchors.left: parent.left
     anchors.leftMargin: 20
-    z: idMap.z + 1
+    //z: idMap.z + 1
     TrippBtn {
       id: idBtnMap
       src: "btnWorld.png"
@@ -381,27 +383,6 @@ Item {
     }
   }
 
-  PikePanel {
-    id: idPikePanel_1
-    dock: Dock.Left
-    oModel: idPikeModel1
-    nOwner: 1
-  }
-
-  PikePanel {
-    id: idPikePanel_2
-    dock: Dock.Right
-    oModel: idPikeModel2
-    nOwner: 2
-  }
-
-  PikePanel {
-    id: idPikePanel_3
-    dock: Dock.Left
-    oModel: idPikeModel3
-    nOwner: 3
-  }
-
   DockedPanel {
     id: idSearchPageDockedPanel
     height: idMapPage.width + Theme.itemSizeLarge
@@ -497,7 +478,26 @@ Item {
       }
     }
   }
+  PikePanel {
+    id: idPikePanel_1
+    dock: Dock.Left
+    oModel: idPikeModel1
+    nOwner: 1
+  }
 
+  PikePanel {
+    id: idPikePanel_2
+    dock: Dock.Right
+    oModel: idPikeModel2
+    nOwner: 2
+  }
+
+  PikePanel {
+    id: idPikePanel_3
+    dock: Dock.Left
+    oModel: idPikeModel3
+    nOwner: 3
+  }
   DockedPanel {
     id: idTrackPanel
     width: parent.width
@@ -517,6 +517,7 @@ Item {
     }
 
     Row {
+
 
       /*
       onWidthChanged: {

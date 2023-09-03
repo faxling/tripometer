@@ -1,9 +1,8 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import Qt.labs.folderlistmodel 2.1
-import Sailfish.Gallery 1.0
 import Nemo.Thumbnailer 1.0
 import Sailfish.Share 1.0
+import harbour.tripometer 1.0
 
 Page {
   id: idPage

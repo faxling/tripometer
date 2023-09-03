@@ -12,7 +12,7 @@ INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\lib
 
 QT += multimedia svg qml quick positioning sensors dbus gui
 
-CONFIG +=  sailfishapp
+CONFIG += sailfishapp
 
 PKGCONFIG += gobject-2.0 cairo libsoup-2.4 dconf libxml-2.0 libcurl qt5embedwidget
 

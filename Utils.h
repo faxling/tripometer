@@ -3,14 +3,21 @@
 
 #include "src/track.h"
 #include <QAbstractItemModel>
+#include <QDateTime>
+#include <QDir>
+#include <QFileSystemWatcher>
 #include <QImage>
+#include <QMutex>
 #include <QObject>
 #include <QOrientationReading>
 #include <QOrientationSensor>
 #include <QQuickImageProvider>
 #include <QQuickPaintedItem>
+#include <QThread>
 #include <QUrl>
 #include <QVector>
+#include <QWaitCondition>
+
 #include <functional>
 void ScreenOn(bool b);
 QString FormatKmH(double f);
@@ -221,5 +228,264 @@ protected:
   //   Rows values indexed by roles - Qt::UserRole::
   ModelDataType m_ocRows;
   QHash<int, QByteArray> m_ocRole;
+};
+
+class QQmlContext;
+class QModelIndex;
+
+class QQuickFolderListModelPrivate;
+
+class QQuickFolderListModel : public QAbstractListModel, public QQmlParserStatus
+{
+  Q_OBJECT
+  Q_INTERFACES(QQmlParserStatus)
+
+  Q_PROPERTY(QUrl folder READ folder WRITE setFolder NOTIFY folderChanged)
+  Q_PROPERTY(QUrl rootFolder READ rootFolder WRITE setRootFolder)
+  Q_PROPERTY(QUrl parentFolder READ parentFolder NOTIFY folderChanged)
+  Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
+  Q_PROPERTY(SortField sortField READ sortField WRITE setSortField)
+  Q_PROPERTY(bool sortReversed READ sortReversed WRITE setSortReversed)
+  Q_PROPERTY(bool showFiles READ showFiles WRITE setShowFiles REVISION 1)
+  Q_PROPERTY(bool showDirs READ showDirs WRITE setShowDirs)
+  Q_PROPERTY(bool showDirsFirst READ showDirsFirst WRITE setShowDirsFirst)
+  Q_PROPERTY(bool showDotAndDotDot READ showDotAndDotDot WRITE setShowDotAndDotDot)
+  Q_PROPERTY(bool showHidden READ showHidden WRITE setShowHidden REVISION 1)
+  Q_PROPERTY(bool showOnlyReadable READ showOnlyReadable WRITE setShowOnlyReadable)
+  Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+public:
+  QQuickFolderListModel(QObject* parent = 0);
+  ~QQuickFolderListModel();
+
+  enum Roles
+  {
+    FileNameRole = Qt::UserRole + 1,
+    FilePathRole = Qt::UserRole + 2,
+    FileBaseNameRole = Qt::UserRole + 3,
+    FileSuffixRole = Qt::UserRole + 4,
+    FileSizeRole = Qt::UserRole + 5,
+    FileLastModifiedRole = Qt::UserRole + 6,
+    FileLastReadRole = Qt::UserRole + 7,
+    FileIsDirRole = Qt::UserRole + 8,
+    FileUrlRole = Qt::UserRole + 9
+  };
+
+  virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
+  virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
+  virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+  virtual QHash<int, QByteArray> roleNames() const;
+
+  int count() const { return rowCount(QModelIndex()); }
+
+  QUrl folder() const;
+  void setFolder(const QUrl& folder);
+  QUrl rootFolder() const;
+  void setRootFolder(const QUrl& path);
+
+  QUrl parentFolder() const;
+
+  QStringList nameFilters() const;
+  void setNameFilters(const QStringList& filters);
+
+  enum SortField
+  {
+    Unsorted,
+    Name,
+    Time,
+    Size,
+    Type
+  };
+  SortField sortField() const;
+  void setSortField(SortField field);
+  Q_ENUMS(SortField)
+
+  bool sortReversed() const;
+  void setSortReversed(bool rev);
+
+  bool showFiles() const;
+  void setShowFiles(bool showFiles);
+  bool showDirs() const;
+  void setShowDirs(bool showDirs);
+  bool showDirsFirst() const;
+  void setShowDirsFirst(bool showDirsFirst);
+  bool showDotAndDotDot() const;
+  void setShowDotAndDotDot(bool on);
+  bool showHidden() const;
+  void setShowHidden(bool on);
+  bool showOnlyReadable() const;
+  void setShowOnlyReadable(bool on);
+
+  Q_INVOKABLE bool isFolder(int index) const;
+  Q_INVOKABLE QVariant get(int idx, const QString& property) const;
+  Q_INVOKABLE int indexOf(const QUrl& file) const;
+
+  virtual void classBegin();
+  virtual void componentComplete();
+
+  int roleFromString(const QString& roleName) const;
+
+Q_SIGNALS:
+  void folderChanged();
+  void rowCountChanged() const;
+  Q_REVISION(1) void countChanged() const;
+
+private:
+  Q_DISABLE_COPY(QQuickFolderListModel)
+  Q_DECLARE_PRIVATE(QQuickFolderListModel)
+  QScopedPointer<QQuickFolderListModelPrivate> d_ptr;
+
+  Q_PRIVATE_SLOT(d_func(), void _q_directoryChanged(const QString& directory,
+                                                    const QList<FileProperty>& list))
+  Q_PRIVATE_SLOT(d_func(),
+                 void _q_directoryUpdated(const QString& directory, const QList<FileProperty>& list,
+                                          int fromIndex, int toIndex))
+  Q_PRIVATE_SLOT(d_func(), void _q_sortFinished(const QList<FileProperty>& list))
+};
+
+class FileProperty
+{
+public:
+  FileProperty(const QFileInfo& info)
+  {
+    mFileName = info.fileName();
+    mFilePath = info.filePath();
+    mBaseName = info.baseName();
+    mSize = info.size();
+    mSuffix = info.completeSuffix();
+    mIsDir = info.isDir();
+    mIsFile = info.isFile();
+    mLastModified = info.lastModified();
+    mLastRead = info.lastRead();
+  }
+  ~FileProperty() {}
+
+  inline QString fileName() const { return mFileName; }
+  inline QString filePath() const { return mFilePath; }
+  inline QString baseName() const { return mBaseName; }
+  inline qint64 size() const { return mSize; }
+  inline QString suffix() const { return mSuffix; }
+  inline bool isDir() const { return mIsDir; }
+  inline bool isFile() const { return mIsFile; }
+  inline QDateTime lastModified() const { return mLastModified; }
+  inline QDateTime lastRead() const { return mLastRead; }
+
+  inline bool operator!=(const FileProperty& fileInfo) const { return !operator==(fileInfo); }
+  bool operator==(const FileProperty& property) const
+  {
+    return ((mFileName == property.mFileName) && (isDir() == property.isDir()));
+  }
+
+private:
+  QString mFileName;
+  QString mFilePath;
+  QString mBaseName;
+  QString mSuffix;
+  qint64 mSize;
+  bool mIsDir;
+  bool mIsFile;
+  QDateTime mLastModified;
+  QDateTime mLastRead;
+};
+
+class FileInfoThread : public QThread
+{
+  Q_OBJECT
+
+Q_SIGNALS:
+  void directoryChanged(const QString& directory, const QList<FileProperty>& list) const;
+  void directoryUpdated(const QString& directory, const QList<FileProperty>& list, int fromIndex,
+                        int toIndex) const;
+  void sortFinished(const QList<FileProperty>& list) const;
+
+public:
+  FileInfoThread(QObject* parent = 0);
+  ~FileInfoThread();
+
+  void clear();
+  void removePath(const QString& path);
+  void setPath(const QString& path);
+  void setRootPath(const QString& path);
+  void setSortFlags(QDir::SortFlags flags);
+  void setNameFilters(const QStringList& nameFilters);
+  void setShowFiles(bool show);
+  void setShowDirs(bool showFolders);
+  void setShowDirsFirst(bool show);
+  void setShowDotAndDotDot(bool on);
+  void setShowHidden(bool on);
+  void setShowOnlyReadable(bool on);
+
+public Q_SLOTS:
+  void dirChanged(const QString& directoryPath);
+  void updateFile(const QString& path);
+
+protected:
+  void run();
+  void getFileInfos(const QString& path);
+  void findChangeRange(const QList<FileProperty>& list, int& fromIndex, int& toIndex);
+
+private:
+  QMutex mutex;
+  QWaitCondition condition;
+  volatile bool abort;
+
+  QFileSystemWatcher* watcher;
+
+  QList<FileProperty> currentFileList;
+  QDir::SortFlags sortFlags;
+  QString currentPath;
+  QString rootPath;
+  QStringList nameFilters;
+  bool needUpdate;
+  bool folderUpdate;
+  bool sortUpdate;
+  bool showFiles;
+  bool showDirs;
+  bool showDirsFirst;
+  bool showDotAndDotDot;
+  bool showHidden;
+  bool showOnlyReadable;
+};
+
+class QQuickFolderListModelPrivate
+{
+  Q_DECLARE_PUBLIC(QQuickFolderListModel)
+
+public:
+  QQuickFolderListModelPrivate(QQuickFolderListModel* q)
+      : q_ptr(q), sortField(QQuickFolderListModel::Name), sortReversed(false), showFiles(true),
+        showDirs(true), showDirsFirst(false), showDotAndDotDot(false), showOnlyReadable(false),
+        showHidden(false)
+  {
+    nameFilters << QLatin1String("*");
+  }
+
+  QQuickFolderListModel* q_ptr;
+  QUrl currentDir;
+  QUrl rootDir;
+  FileInfoThread fileInfoThread;
+  QList<FileProperty> data;
+  QHash<int, QByteArray> roleNames;
+  QQuickFolderListModel::SortField sortField;
+  QStringList nameFilters;
+  bool sortReversed;
+  bool showFiles;
+  bool showDirs;
+  bool showDirsFirst;
+  bool showDotAndDotDot;
+  bool showOnlyReadable;
+  bool showHidden;
+
+  ~QQuickFolderListModelPrivate() {}
+  void init();
+  void updateSorting();
+
+  // private slots
+  void _q_directoryChanged(const QString& directory, const QList<FileProperty>& list);
+  void _q_directoryUpdated(const QString& directory, const QList<FileProperty>& list, int fromIndex,
+                           int toIndex);
+  void _q_sortFinished(const QList<FileProperty>& list);
+
+  static QString resolvePath(const QUrl& path);
 };
 #endif // UTILS_H

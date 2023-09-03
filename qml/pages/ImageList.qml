@@ -1,6 +1,5 @@
 import QtQuick 2.5
 import Sailfish.Silica 1.0
-import Qt.labs.folderlistmodel 2.1
 import ".."
 import Sailfish.Share 1.0
 import "../tripometer-functions.js" as Lib

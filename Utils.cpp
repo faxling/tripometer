@@ -21,6 +21,10 @@
 #include <QQuickView>
 #include <QStandardPaths>
 #include <QTextCodec>
+#include <QQmlContext>
+
+//#include <qqmlcontext.h>
+#include <qqmlfile.h>
 
 #include <QtMultimedia/QMediaObject>
 #include <QtMultimedia/QtMultimedia>
@@ -313,8 +317,6 @@ void FileMgr::clearCache()
   dir.removeRecursively();
   mssutils::MkCache();
 }
-
-
 
 size_t countDiskUsage(const char* pathname)
 {
@@ -647,7 +649,7 @@ QString FormatLatitude(double fLatitude)
 QString FormatDuration(unsigned int nTime)
 {
   wchar_t szStr[20];
-  time_t now = nTime ;
+  time_t now = nTime;
 
   tm* tmNow = gmtime(&now);
 
@@ -2533,4 +2535,762 @@ qint64 QExifImageHeader::write(QIODevice* device) const
   d->size = offset;
 
   return offset;
+}
+
+
+
+void QQuickFolderListModelPrivate::init()
+{
+  Q_Q(QQuickFolderListModel);
+  qRegisterMetaType<QList<FileProperty>>("QList<FileProperty>");
+  q->connect(&fileInfoThread, SIGNAL(directoryChanged(QString, QList<FileProperty>)), q,
+             SLOT(_q_directoryChanged(QString, QList<FileProperty>)));
+  q->connect(&fileInfoThread, SIGNAL(directoryUpdated(QString, QList<FileProperty>, int, int)), q,
+             SLOT(_q_directoryUpdated(QString, QList<FileProperty>, int, int)));
+  q->connect(&fileInfoThread, SIGNAL(sortFinished(QList<FileProperty>)), q,
+             SLOT(_q_sortFinished(QList<FileProperty>)));
+  q->connect(q, SIGNAL(rowCountChanged()), q, SIGNAL(countChanged()));
+}
+
+void QQuickFolderListModelPrivate::updateSorting()
+{
+  Q_Q(QQuickFolderListModel);
+
+  QDir::SortFlags flags = 0;
+
+  switch (sortField)
+  {
+  case QQuickFolderListModel::Unsorted:
+    flags |= QDir::Unsorted;
+    break;
+  case QQuickFolderListModel::Name:
+    flags |= QDir::Name;
+    break;
+  case QQuickFolderListModel::Time:
+    flags |= QDir::Time;
+    break;
+  case QQuickFolderListModel::Size:
+    flags |= QDir::Size;
+    break;
+  case QQuickFolderListModel::Type:
+    flags |= QDir::Type;
+    break;
+  default:
+    break;
+  }
+
+  emit q->layoutAboutToBeChanged();
+
+  if (sortReversed)
+    flags |= QDir::Reversed;
+
+  fileInfoThread.setSortFlags(flags);
+}
+
+void QQuickFolderListModelPrivate::_q_directoryChanged(const QString& directory,
+                                                       const QList<FileProperty>& list)
+{
+  Q_Q(QQuickFolderListModel);
+  Q_UNUSED(directory);
+
+  data = list;
+  q->endResetModel();
+  emit q->rowCountChanged();
+  emit q->folderChanged();
+}
+
+void QQuickFolderListModelPrivate::_q_directoryUpdated(const QString& directory,
+                                                       const QList<FileProperty>& list,
+                                                       int fromIndex, int toIndex)
+{
+  Q_Q(QQuickFolderListModel);
+  Q_UNUSED(directory);
+
+  QModelIndex parent;
+  if (data.size() == list.size())
+  {
+    QModelIndex modelIndexFrom = q->createIndex(fromIndex, 0);
+    QModelIndex modelIndexTo = q->createIndex(toIndex, 0);
+    data = list;
+    emit q->dataChanged(modelIndexFrom, modelIndexTo);
+  }
+  else
+  {
+    // File(s) inserted or removed. Since I do not know how many
+    // or where, I need to update the whole list from the first item.
+    // This is a little pessimistic, but optimizing it would require
+    // more information in the signal from FileInfoThread.
+    if (data.size() > 0)
+    {
+      q->beginRemoveRows(parent, 0, data.size() - 1);
+      q->endRemoveRows();
+    }
+    data = list;
+    if (list.size() > 0)
+    {
+      if (toIndex > list.size() - 1)
+        toIndex = list.size() - 1;
+      q->beginInsertRows(parent, 0, data.size() - 1);
+      q->endInsertRows();
+    }
+    emit q->rowCountChanged();
+  }
+}
+
+void QQuickFolderListModelPrivate::_q_sortFinished(const QList<FileProperty>& list)
+{
+  Q_Q(QQuickFolderListModel);
+
+  QModelIndex parent;
+  if (data.size() > 0)
+  {
+    q->beginRemoveRows(parent, 0, data.size() - 1);
+    data.clear();
+    q->endRemoveRows();
+  }
+
+  q->beginInsertRows(parent, 0, list.size() - 1);
+  data = list;
+  q->endInsertRows();
+}
+
+QString QQuickFolderListModelPrivate::resolvePath(const QUrl& path)
+{
+  QString localPath = QQmlFile::urlToLocalFileOrQrc(path);
+  QUrl localUrl = QUrl(localPath);
+  QString fullPath = localUrl.path();
+  if (localUrl.scheme().length())
+    fullPath = localUrl.scheme() + ":" + fullPath;
+  return QDir::cleanPath(fullPath);
+}
+
+QQuickFolderListModel::QQuickFolderListModel(QObject* parent)
+    : QAbstractListModel(parent), d_ptr(new QQuickFolderListModelPrivate(this))
+{
+  Q_D(QQuickFolderListModel);
+  d->roleNames[FileNameRole] = "fileName";
+  d->roleNames[FilePathRole] = "filePath";
+  d->roleNames[FileBaseNameRole] = "fileBaseName";
+  d->roleNames[FileSuffixRole] = "fileSuffix";
+  d->roleNames[FileSizeRole] = "fileSize";
+  d->roleNames[FileLastModifiedRole] = "fileModified";
+  d->roleNames[FileLastReadRole] = "fileAccessed";
+  d->roleNames[FileIsDirRole] = "fileIsDir";
+  d->roleNames[FileUrlRole] = "fileURL";
+  d->init();
+}
+
+QQuickFolderListModel::~QQuickFolderListModel()
+{
+}
+
+QVariant QQuickFolderListModel::data(const QModelIndex& index, int role) const
+{
+  Q_D(const QQuickFolderListModel);
+  QVariant rv;
+
+  if (index.row() >= d->data.size())
+    return rv;
+
+  switch (role)
+  {
+  case FileNameRole:
+    rv = d->data.at(index.row()).fileName();
+    break;
+  case FilePathRole:
+    rv = d->data.at(index.row()).filePath();
+    break;
+  case FileBaseNameRole:
+    rv = d->data.at(index.row()).baseName();
+    break;
+  case FileSuffixRole:
+    rv = d->data.at(index.row()).suffix();
+    break;
+  case FileSizeRole:
+    rv = d->data.at(index.row()).size();
+    break;
+  case FileLastModifiedRole:
+    rv = d->data.at(index.row()).lastModified();
+    break;
+  case FileLastReadRole:
+    rv = d->data.at(index.row()).lastRead();
+    break;
+  case FileIsDirRole:
+    rv = d->data.at(index.row()).isDir();
+    break;
+  case FileUrlRole:
+    rv = QUrl::fromLocalFile(d->data.at(index.row()).filePath());
+    break;
+  default:
+    break;
+  }
+  return rv;
+}
+
+QHash<int, QByteArray> QQuickFolderListModel::roleNames() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->roleNames;
+}
+
+int QQuickFolderListModel::rowCount(const QModelIndex& parent) const
+{
+  Q_D(const QQuickFolderListModel);
+  Q_UNUSED(parent);
+  return d->data.size();
+}
+
+QModelIndex QQuickFolderListModel::index(int row, int, const QModelIndex&) const
+{
+  return createIndex(row, 0);
+}
+
+QUrl QQuickFolderListModel::folder() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->currentDir;
+}
+
+void QQuickFolderListModel::setFolder(const QUrl& folder)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (folder == d->currentDir)
+    return;
+
+  QString resolvedPath = QQuickFolderListModelPrivate::resolvePath(folder);
+
+  beginResetModel();
+
+  // Remove the old path for the file system watcher
+  if (!d->currentDir.isEmpty())
+    d->fileInfoThread.removePath(d->currentDir.path());
+
+  d->currentDir = folder;
+
+  QFileInfo info(resolvedPath);
+  if (!info.exists() || !info.isDir())
+  {
+    d->data.clear();
+    endResetModel();
+    emit rowCountChanged();
+    return;
+  }
+
+  d->fileInfoThread.setPath(resolvedPath);
+}
+
+QUrl QQuickFolderListModel::rootFolder() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->rootDir;
+}
+
+void QQuickFolderListModel::setRootFolder(const QUrl& path)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (path.isEmpty())
+    return;
+
+  QString resolvedPath = QQuickFolderListModelPrivate::resolvePath(path);
+
+  QFileInfo info(resolvedPath);
+  if (!info.exists() || !info.isDir())
+    return;
+
+  d->fileInfoThread.setRootPath(resolvedPath);
+  d->rootDir = path;
+}
+
+QUrl QQuickFolderListModel::parentFolder() const
+{
+  Q_D(const QQuickFolderListModel);
+
+  QString localFile = d->currentDir.toLocalFile();
+  if (!localFile.isEmpty())
+  {
+    QDir dir(localFile);
+    if (dir.isRoot() || !dir.cdUp())
+      return QUrl();
+    localFile = dir.path();
+  }
+  else
+  {
+    const int pos = d->currentDir.path().lastIndexOf(QLatin1Char('/'));
+    if (pos <= 0)
+      return QUrl();
+    localFile = d->currentDir.path().left(pos);
+  }
+  return QUrl::fromLocalFile(localFile);
+}
+
+QStringList QQuickFolderListModel::nameFilters() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->nameFilters;
+}
+
+void QQuickFolderListModel::setNameFilters(const QStringList& filters)
+{
+  Q_D(QQuickFolderListModel);
+  d->fileInfoThread.setNameFilters(filters);
+  d->nameFilters = filters;
+}
+
+void QQuickFolderListModel::classBegin()
+{
+}
+
+void QQuickFolderListModel::componentComplete()
+{
+  Q_D(QQuickFolderListModel);
+  QString localPath = QQmlFile::urlToLocalFileOrQrc(d->currentDir);
+  if (localPath.isEmpty() || !QDir(localPath).exists())
+    setFolder(QUrl::fromLocalFile(QDir::currentPath()));
+}
+
+QQuickFolderListModel::SortField QQuickFolderListModel::sortField() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->sortField;
+}
+
+void QQuickFolderListModel::setSortField(SortField field)
+{
+  Q_D(QQuickFolderListModel);
+  if (field != d->sortField)
+  {
+    d->sortField = field;
+    d->updateSorting();
+  }
+}
+
+int QQuickFolderListModel::roleFromString(const QString& roleName) const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->roleNames.key(roleName.toLatin1(), -1);
+}
+
+bool QQuickFolderListModel::sortReversed() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->sortReversed;
+}
+
+void QQuickFolderListModel::setSortReversed(bool rev)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (rev != d->sortReversed)
+  {
+    d->sortReversed = rev;
+    d->updateSorting();
+  }
+}
+
+bool QQuickFolderListModel::isFolder(int index) const
+{
+  if (index != -1)
+  {
+    QModelIndex idx = createIndex(index, 0);
+    if (idx.isValid())
+    {
+      QVariant var = data(idx, FileIsDirRole);
+      if (var.isValid())
+        return var.toBool();
+    }
+  }
+  return false;
+}
+
+bool QQuickFolderListModel::showFiles() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showFiles;
+}
+
+void QQuickFolderListModel::setShowFiles(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  d->fileInfoThread.setShowFiles(on);
+  d->showFiles = on;
+}
+
+bool QQuickFolderListModel::showDirs() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showDirs;
+}
+
+void QQuickFolderListModel::setShowDirs(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  d->fileInfoThread.setShowDirs(on);
+  d->showDirs = on;
+}
+
+bool QQuickFolderListModel::showDirsFirst() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showDirsFirst;
+}
+
+void QQuickFolderListModel::setShowDirsFirst(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  d->fileInfoThread.setShowDirsFirst(on);
+  d->showDirsFirst = on;
+}
+
+bool QQuickFolderListModel::showDotAndDotDot() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showDotAndDotDot;
+}
+
+void QQuickFolderListModel::setShowDotAndDotDot(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (on != d->showDotAndDotDot)
+  {
+    d->fileInfoThread.setShowDotAndDotDot(on);
+  }
+}
+
+bool QQuickFolderListModel::showHidden() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showHidden;
+}
+
+void QQuickFolderListModel::setShowHidden(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (on != d->showHidden)
+  {
+    d->fileInfoThread.setShowHidden(on);
+  }
+}
+
+bool QQuickFolderListModel::showOnlyReadable() const
+{
+  Q_D(const QQuickFolderListModel);
+  return d->showOnlyReadable;
+}
+
+void QQuickFolderListModel::setShowOnlyReadable(bool on)
+{
+  Q_D(QQuickFolderListModel);
+
+  if (on != d->showOnlyReadable)
+  {
+    d->fileInfoThread.setShowOnlyReadable(on);
+  }
+}
+
+QVariant QQuickFolderListModel::get(int idx, const QString& property) const
+{
+  int role = roleFromString(property);
+  if (role >= 0 && idx >= 0)
+    return data(index(idx, 0), role);
+  else
+    return QVariant();
+}
+
+int QQuickFolderListModel::indexOf(const QUrl& file) const
+{
+  Q_D(const QQuickFolderListModel);
+  FileProperty toFind(QFileInfo(file.toLocalFile()));
+  return d->data.indexOf(toFind);
+}
+
+FileInfoThread::FileInfoThread(QObject* parent)
+    : QThread(parent), abort(false),
+#ifndef QT_NO_FILESYSTEMWATCHER
+      watcher(0),
+#endif
+      sortFlags(QDir::Name), needUpdate(true), folderUpdate(false), sortUpdate(false),
+      showFiles(true), showDirs(true), showDirsFirst(false), showDotAndDotDot(false),
+      showHidden(false), showOnlyReadable(false)
+{
+#ifndef QT_NO_FILESYSTEMWATCHER
+  watcher = new QFileSystemWatcher(this);
+  connect(watcher, SIGNAL(directoryChanged(QString)), this, SLOT(dirChanged(QString)));
+  connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(updateFile(QString)));
+#endif // !QT_NO_FILESYSTEMWATCHER
+  start(LowPriority);
+}
+
+FileInfoThread::~FileInfoThread()
+{
+  QMutexLocker locker(&mutex);
+  abort = true;
+  condition.wakeOne();
+  locker.unlock();
+  wait();
+}
+
+void FileInfoThread::clear()
+{
+  QMutexLocker locker(&mutex);
+#ifndef QT_NO_FILESYSTEMWATCHER
+  watcher->removePaths(watcher->files());
+  watcher->removePaths(watcher->directories());
+#endif
+}
+
+void FileInfoThread::removePath(const QString& path)
+{
+  QMutexLocker locker(&mutex);
+  if (!path.startsWith(QLatin1Char(':')))
+    watcher->removePath(path);
+  currentPath.clear();
+}
+
+void FileInfoThread::setPath(const QString& path)
+{
+  Q_ASSERT(!path.isEmpty());
+
+  QMutexLocker locker(&mutex);
+#ifndef QT_NO_FILESYSTEMWATCHER
+  if (!path.startsWith(QLatin1Char(':')))
+    watcher->addPath(path);
+#endif
+  currentPath = path;
+  needUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setRootPath(const QString& path)
+{
+  Q_ASSERT(!path.isEmpty());
+
+  QMutexLocker locker(&mutex);
+  rootPath = path;
+}
+
+#ifndef QT_NO_FILESYSTEMWATCHER
+void FileInfoThread::dirChanged(const QString& directoryPath)
+{
+  Q_UNUSED(directoryPath);
+  QMutexLocker locker(&mutex);
+  folderUpdate = true;
+  condition.wakeAll();
+}
+#endif
+
+void FileInfoThread::setSortFlags(QDir::SortFlags flags)
+{
+  QMutexLocker locker(&mutex);
+  sortFlags = flags;
+  sortUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setNameFilters(const QStringList& filters)
+{
+  QMutexLocker locker(&mutex);
+  nameFilters = filters;
+  folderUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowFiles(bool show)
+{
+  QMutexLocker locker(&mutex);
+  showFiles = show;
+  folderUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowDirs(bool showFolders)
+{
+  QMutexLocker locker(&mutex);
+  showDirs = showFolders;
+  folderUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowDirsFirst(bool show)
+{
+  QMutexLocker locker(&mutex);
+  showDirsFirst = show;
+  folderUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowDotAndDotDot(bool on)
+{
+  QMutexLocker locker(&mutex);
+  showDotAndDotDot = on;
+  folderUpdate = true;
+  needUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowHidden(bool on)
+{
+  QMutexLocker locker(&mutex);
+  showHidden = on;
+  folderUpdate = true;
+  needUpdate = true;
+  condition.wakeAll();
+}
+
+void FileInfoThread::setShowOnlyReadable(bool on)
+{
+  QMutexLocker locker(&mutex);
+  showOnlyReadable = on;
+  folderUpdate = true;
+  condition.wakeAll();
+}
+
+#ifndef QT_NO_FILESYSTEMWATCHER
+void FileInfoThread::updateFile(const QString& path)
+{
+  Q_UNUSED(path);
+  QMutexLocker locker(&mutex);
+  folderUpdate = true;
+  condition.wakeAll();
+}
+#endif
+
+void FileInfoThread::run()
+{
+  forever
+  {
+    bool updateFiles = false;
+    QMutexLocker locker(&mutex);
+    if (abort)
+    {
+      return;
+    }
+    if (currentPath.isEmpty() || !needUpdate)
+      condition.wait(&mutex);
+
+    if (abort)
+    {
+      return;
+    }
+
+    if (!currentPath.isEmpty())
+    {
+      updateFiles = true;
+    }
+    if (updateFiles)
+      getFileInfos(currentPath);
+    locker.unlock();
+  }
+}
+
+void FileInfoThread::getFileInfos(const QString& path)
+{
+  QDir::Filters filter;
+  filter = QDir::CaseSensitive;
+  if (showFiles)
+    filter = filter | QDir::Files;
+  if (showDirs)
+    filter = filter | QDir::AllDirs | QDir::Drives;
+  if (!showDotAndDotDot)
+    filter = filter | QDir::NoDot | QDir::NoDotDot;
+  else if (path == rootPath)
+    filter = filter | QDir::NoDotDot;
+  if (showHidden)
+    filter = filter | QDir::Hidden;
+  if (showOnlyReadable)
+    filter = filter | QDir::Readable;
+  if (showDirsFirst)
+    sortFlags = sortFlags | QDir::DirsFirst;
+
+  QDir currentDir(path, QString(), sortFlags);
+  QFileInfoList fileInfoList;
+  QList<FileProperty> filePropertyList;
+
+  fileInfoList = currentDir.entryInfoList(nameFilters, filter, sortFlags);
+
+  if (!fileInfoList.isEmpty())
+  {
+    filePropertyList.reserve(fileInfoList.count());
+    foreach (const QFileInfo& info, fileInfoList)
+    {
+      // qDebug() << "Adding file : " << info.fileName() << "to list ";
+      filePropertyList << FileProperty(info);
+    }
+    if (folderUpdate)
+    {
+      int fromIndex = 0;
+      int toIndex = currentFileList.size() - 1;
+      findChangeRange(filePropertyList, fromIndex, toIndex);
+      folderUpdate = false;
+      currentFileList = filePropertyList;
+      // qDebug() << "emit directoryUpdated : " << fromIndex << " " << toIndex;
+      emit directoryUpdated(path, filePropertyList, fromIndex, toIndex);
+    }
+    else
+    {
+      currentFileList = filePropertyList;
+      if (sortUpdate)
+      {
+        emit sortFinished(filePropertyList);
+        sortUpdate = false;
+      }
+      else
+        emit directoryChanged(path, filePropertyList);
+    }
+  }
+  else
+  {
+    // The directory is empty
+    if (folderUpdate)
+    {
+      int fromIndex = 0;
+      int toIndex = currentFileList.size() - 1;
+      folderUpdate = false;
+      currentFileList.clear();
+      emit directoryUpdated(path, filePropertyList, fromIndex, toIndex);
+    }
+    else
+    {
+      currentFileList.clear();
+      emit directoryChanged(path, filePropertyList);
+    }
+  }
+  needUpdate = false;
+}
+
+void FileInfoThread::findChangeRange(const QList<FileProperty>& list, int& fromIndex, int& toIndex)
+{
+  if (currentFileList.size() == 0)
+  {
+    fromIndex = 0;
+    toIndex = list.size();
+    return;
+  }
+
+  int i;
+  int listSize = list.size() < currentFileList.size() ? list.size() : currentFileList.size();
+  bool changeFound = false;
+
+  for (i = 0; i < listSize; i++)
+  {
+    if (list.at(i) != currentFileList.at(i))
+    {
+      changeFound = true;
+      break;
+    }
+  }
+
+  if (changeFound)
+    fromIndex = i;
+  else
+    fromIndex = i - 1;
+
+  // For now I let the rest of the list be updated..
+  toIndex = list.size() > currentFileList.size() ? list.size() - 1 : currentFileList.size() - 1;
 }
