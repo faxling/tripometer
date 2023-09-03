@@ -39,7 +39,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     tNode.bIsLoaded = bIsLoaded;
     tNode.sDateTime = FormatDateTime(t.nTime);
     tNode.sMaxSpeed = FormatKmH(t.speed * 3.6) + " km/h";
-    tNode.sDuration = FormatDuration(t.nDuration * 10);
+    tNode.sDuration = FormatDuration(t.nDuration );
     if (tNode.nType == 1)
       tNode.sLength = QString::asprintf("%.4f %.4f",t.lo, t.la);
     else
@@ -78,7 +78,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
       tNode.bIsLoaded = false;
       tNode.sDateTime = FormatDateTime(t.nTime);
       t.nDuration = maep_geodata_track_get_duration(track);
-      tNode.sDuration = FormatDuration(t.nDuration * 10);
+      tNode.sDuration = FormatDuration(t.nDuration);
       t.len = maep_geodata_track_get_metric_length(track);
       tNode.sLength = FormatKm(t.len / 1000.0) + " km";
       tNode.bSelected = true;

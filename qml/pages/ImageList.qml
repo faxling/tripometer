@@ -11,9 +11,10 @@ Page {
 
   property alias model: idView.model
 
-  //  property int nII
+  property int nIndexDeleted: -1
   function setIndex(nI) {
     idView.positionViewAtIndex(nI, ListView.Center)
+    console.log("positionViewAtIndex ")
   }
 
   SilicaListView {
@@ -22,12 +23,14 @@ Page {
 
     anchors.fill: parent
 
-
-    /*
     onCountChanged: {
-      idView.positionViewAtIndex(nII, ListView.Center)
+      if (nIndexDeleted < 0)
+        return
+      console.log("pos at " + nIndexDeleted + " count " + count)
+
+      idView.positionViewAtIndex(nIndexDeleted, ListView.Center)
     }
-    */
+
     RemorsePopup {
       id: idRemorsePop
     }
@@ -121,8 +124,9 @@ Page {
     src: "image://theme/icon-m-delete"
     onClicked: {
       var oCur = getCurrent()
+      nIndexDeleted = oCur.index - 1
+      console.log("delete " + nIndexDeleted)
       idRemorsePop.execute("Deleting Image", function () {
-        idView.positionViewAtIndex(oCur.index - 1, ListView.Center)
         oFileMgr.remove(idView.model.get(oCur.index, "filePath"))
       })
     }

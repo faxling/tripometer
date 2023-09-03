@@ -139,6 +139,8 @@ SilicaListView {
     Row {
       id: idRow
 
+      spacing: 20
+
       // x:20
       TextField {
         id: idEditText
@@ -182,6 +184,12 @@ SilicaListView {
         color: "black"
         font.pixelSize: Theme.fontSizeMedium
         text: sLength
+      }
+      Text {
+        id: idDur
+        color: "black"
+        font.pixelSize: Theme.fontSizeMedium
+        text: sDuration === "x" ? "" : sDuration
       }
     }
     Component {

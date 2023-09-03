@@ -647,7 +647,7 @@ QString FormatLatitude(double fLatitude)
 QString FormatDuration(unsigned int nTime)
 {
   wchar_t szStr[20];
-  time_t now = nTime / 10;
+  time_t now = nTime ;
 
   tm* tmNow = gmtime(&now);
 
@@ -659,11 +659,11 @@ QString FormatDuration(unsigned int nTime)
   else
     wcsftime(szStr, 20, L"%M:%S", tmNow);
 
-  wchar_t szStr2[20];
+  // wchar_t szStr2[20];
 
-  swprintf(szStr2, 20, L"%ls.%d", szStr, nTime % 10);
+  // swprintf(szStr2, 20, L"%ls.%d", szStr, nTime % 10);
 
-  return QString::fromWCharArray(szStr2);
+  return QString::fromWCharArray(szStr);
 }
 
 QString FormatDateTime(unsigned int nTime)
