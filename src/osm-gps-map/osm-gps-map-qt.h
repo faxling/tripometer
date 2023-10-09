@@ -262,8 +262,7 @@ namespace Maep
 
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
 
-    Q_PROPERTY(bool wiki_status READ wikiStatus WRITE setWikiStatus NOTIFY wikiStatusChanged)
-    Q_PROPERTY(Maep::GeonamesEntry* wiki_entry READ getWikiEntry NOTIFY wikiEntryChanged)
+    // Q_PROPERTY(Maep::GeonamesEntry* wiki_entry READ getWikiEntry NOTIFY wikiEntryChanged)
 
     // Q_PROPERTY(QQmlListProperty<Maep::GeonamesPlace> search_results READ getSearchResults)
 
@@ -467,8 +466,6 @@ namespace Maep
     void setAutoCenter(bool status);
     void setScreenRotation(bool status);
     void setCoordinate(float lat, float lon);
-    void setWikiStatus(bool status);
-    void setWikiEntry(const MaepGeonamesEntry* entry);
     void setSearchRequest(const QString& request);
     void setSearchResults(MaepSearchContextSource source, GSList* places);
     void setLookAt(float lat, float lon);
@@ -530,7 +527,7 @@ namespace Maep
     GeonamesEntry *wiki_entry;
   */
     /* Screen display. */
-    cairo_surface_t* surf;
+    cairo_surface_t* screensurf;
     cairo_t* cr;
     /* cairo_pattern_t *pat; */
     QImage* img;

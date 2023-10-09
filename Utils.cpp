@@ -163,7 +163,10 @@ void ScreenCapture::SetView(QQuickView* parent)
 ScreenCapture::ScreenCapture()
 {
 }
-
+constexpr unsigned short operator ""_us(unsigned long long m)
+{
+  return m;
+}
 ScreenCapture::~ScreenCapture()
 {
   g_selectedScreenCapture = nullptr;
@@ -210,13 +213,13 @@ ScreenCapture::~ScreenCapture()
               */
 
           if (nO == 4)
-            oExif.setValue(QExifImageHeader::Orientation, 8);
+            oExif.setValue(QExifImageHeader::Orientation, 8_us);
           else if (nO == 3)
-            oExif.setValue(QExifImageHeader::Orientation, 6);
+            oExif.setValue(QExifImageHeader::Orientation, 6_us);
           else if (nO == 2)
-            oExif.setValue(QExifImageHeader::Orientation, 3);
+            oExif.setValue(QExifImageHeader::Orientation, 3_us);
           else if (nO == 1)
-            oExif.setValue(QExifImageHeader::Orientation, 1);
+            oExif.setValue(QExifImageHeader::Orientation, 1_us);
 
           oExif.saveToJpeg(&oAnnotatedImageBuffer);
           oAnnotatedImageBuffer.close();
