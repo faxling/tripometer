@@ -17,7 +17,7 @@
 
 #ifndef OSM_GPS_MAP_QT_H
 #define OSM_GPS_MAP_QT_H
-
+#include <memory>
 #include "../misc.h"
 #include "../search.h"
 #include "../track.h"
@@ -256,28 +256,17 @@ namespace Maep
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
     Q_PROPERTY(bool double_pixel READ doublePixel WRITE setDoublePixel NOTIFY doublePixelChanged)
-
     Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
-
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
-
-    // Q_PROPERTY(Maep::GeonamesEntry* wiki_entry READ getWikiEntry NOTIFY wikiEntryChanged)
-
-    // Q_PROPERTY(QQmlListProperty<Maep::GeonamesPlace> search_results READ getSearchResults)
-
     Q_PROPERTY(bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
     Q_PROPERTY(Maep::Track* track READ getTrack WRITE setTrack NOTIFY trackChanged)
-
     Q_PROPERTY(bool screen_rotation READ screen_rotation WRITE setScreenRotation NOTIFY screenRotationChanged)
     Q_PROPERTY(bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
 
     Q_PROPERTY(unsigned int gps_refresh_rate READ gpsRefreshRate WRITE setGpsRefreshRate NOTIFY gpsRefreshRateChanged)
 
-    Q_PROPERTY(QString version READ version CONSTANT)
     Q_PROPERTY(QString compilation_date READ compilation_date CONSTANT)
-    Q_PROPERTY(QString authors READ authors CONSTANT)
-    Q_PROPERTY(QString license READ license CONSTANT)
 
   public:
     enum Source
@@ -311,6 +300,7 @@ namespace Maep
 
     GpsMap(QQuickItem* parent = 0);
     ~GpsMap();
+
     inline QGeoCoordinate getCoord() const { return coordinate; }
     inline QGeoCoordinate getGpsCoord() const
     {
@@ -319,48 +309,15 @@ namespace Maep
       else
         return QGeoCoordinate();
     }
-    inline bool wikiStatus()
-    {
-      return true; // wiki_enabled;
-    }
-    inline Maep::GeonamesEntry* getWikiEntry() const
-    {
-      return nullptr; // wiki_entry;
-    }
-    /*
-    inline QQmlListProperty<Maep::GeonamesPlace> getSearchResults() {
-      return QQmlListProperty<Maep::GeonamesPlace>(this, NULL,
-                                                   GpsMap::countSearchResults,
-                                                   GpsMap::atSearchResults);
-    }
-    */
+
     void mapUpdate();
     void paintTo(QPainter* painter, int width, int height);
     inline bool trackCapture() { return track_capture; }
     inline Maep::Track* getTrack() { return track_current; }
     inline bool screen_rotation() const { return screenRotation; }
-    inline QString version() const { return QString(VERSION); }
+
     inline QString compilation_date() const { return QString(__DATE__ " " __TIME__); }
-    inline QString authors() const
-    {
-      QFile file(DEPLOYMENT_PATH "/AUTHORS");
 
-      if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return QString("File AUTHORS not found");
-
-      QTextStream in(&file);
-      return in.readAll();
-    }
-    inline QString license() const
-    {
-      QFile file(DEPLOYMENT_PATH "/COPYING");
-
-      if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return QString("File COPYING not found");
-
-      QTextStream in(&file);
-      return in.readAll();
-    }
     inline bool autoCenter()
     {
       gboolean set;
@@ -373,6 +330,7 @@ namespace Maep
       g_object_get(map, "map-source", &source, NULL);
       return (Source)source;
     }
+
     inline Source overlaySource()
     {
       OsmGpsMapSource_t source;
@@ -400,6 +358,8 @@ namespace Maep
                                     QVariant pListTeam2, QString sTeamNameAndSum2,
                                     QVariant pListTeam3, QString sTeamNameAndSum3,
                                     int nMinSize, QString sName, int nTeamCount);
+
+    Q_INVOKABLE QString saveMap(int w, int h);
     Q_INVOKABLE void clearTrack();
     Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
     Q_INVOKABLE void unloadTrack(int nId);
@@ -530,7 +490,7 @@ namespace Maep
     cairo_surface_t* screensurf;
     cairo_t* cr;
     /* cairo_pattern_t *pat; */
-    QImage* img;
+    std::unique_ptr<QImage> img;
     QColor* white;
 
     /* GPS */

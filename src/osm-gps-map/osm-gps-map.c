@@ -114,7 +114,7 @@ struct _OsmGpsMapPrivate
   GSList* images;
 
   // Used for storing the joined tiles
-  cairo_surface_t* cr_surf;
+  cairo_surface_t* map_surf;
   cairo_t* cr;
 
   // The tile painted when one cannot be found
@@ -204,7 +204,7 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
 #endif
 static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
-                                  int offset_y);
+                                  int offset_y, cairo_t*);
 static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map);
 static gboolean osm_gps_map_idle_redraw(OsmGpsMap* map);
 
@@ -734,112 +734,31 @@ static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
     int x, y;
     map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER + 20;
     map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER + 20;
-
-    /*
-     test
-     priv->gps_valid = true;
-    priv->gps->rlat = deg2rad(59.991 );
-    priv->gps->rlon = deg2rad(16.036);
-    priv->gps_heading = deg2rad(39);
-
-    */
-
-    /*
-        int r = priv->ui_gps_point_inner_radius / priv->map_factor;
-        int r2 = priv->ui_gps_point_outer_radius;
-        int mr = MAX(3 * r, r2);
-        cairo_rectangle_int_t rect;
-
-        map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
-        map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
-        x = lon2pixel(priv->map_zoom, priv->gps->rlon) - map_x0;
-        y = lat2pixel(priv->map_zoom, priv->gps->rlat) - map_y0;
-        cairo_pattern_t* pat;
-
-        // draw transparent area
-        if (r2 > 0)
-        {
-          // Transform meters to pixel at current zoom and factor.
-          r2 /= osm_gps_map_get_scale_at_lat(priv->map_zoom, priv->map_factor, priv->gps->rlat);
-          cairo_set_line_width(priv->cr, 1.5);
-          cairo_set_source_rgba(priv->cr, 0.75, 0.75, 0.75, 0.4);
-          cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
-          cairo_fill(priv->cr);
-          // draw transparent area border
-          cairo_set_source_rgba(priv->cr, 0.55, 0.55, 0.55, 0.4);
-          cairo_arc(priv->cr, x, y, r2, 0, 2 * M_PI);
-          cairo_stroke(priv->cr);
-        }
-
-        // draw ball gradient
-        if (r > 0)
-        {
-          // draw direction arrow
-          if (!isnan(priv->gps_heading))
-          {
-            cairo_move_to(priv->cr, x - r * cos(priv->gps_heading), y - r * sin(priv->gps_heading));
-            cairo_line_to(priv->cr, x + 3 * r * sin(priv->gps_heading),
-                          y - 3 * r * cos(priv->gps_heading));
-            cairo_line_to(priv->cr, x + r * cos(priv->gps_heading), y + r * sin(priv->gps_heading));
-            cairo_close_path(priv->cr);
-
-            cairo_set_source_rgba(priv->cr, 0.3, 0.3, 1.0, 0.5);
-            cairo_fill_preserve(priv->cr);
-
-            cairo_set_line_width(priv->cr, 1.0);
-            cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 0.5);
-            cairo_stroke(priv->cr);
-          }
-
-          pat = cairo_pattern_create_radial(x - (r / 5), y - (r / 5), (r / 5), x, y, r);
-          cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1.0);
-          cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 1, 1.0);
-          cairo_set_source(priv->cr, pat);
-          cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
-          cairo_fill(priv->cr);
-          cairo_pattern_destroy(pat);
-          // draw ball border
-          cairo_set_line_width(priv->cr, 1.0);
-          cairo_set_source_rgba(priv->cr, 0.0, 0.0, 0.0, 1.0);
-          cairo_arc(priv->cr, x, y, r, 0, 2 * M_PI);
-          cairo_stroke(priv->cr);
-        }
-        rect.x = x - mr;
-        rect.y = y - mr;
-        rect.width = mr * 2;
-        rect.height = mr * 2;
-        cairo_region_union_rectangle(priv->dirty, &rect);
-        */
   }
 }
 
-static void osm_gps_map_blit_surface(OsmGpsMap* map, cairo_surface_t* cr_surf, int offset_x,
+static void osm_gps_map_blit_surface(cairo_t* cr, cairo_surface_t* cr_surf, int offset_x,
                                      int offset_y, int modulo, int area_x, int area_y)
 {
-  OsmGpsMapPrivate* priv = map->priv;
+  // OsmGpsMapPrivate* priv = map->priv;
 
   // g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
+  /*
   if (priv->double_pixel)
   {
     modulo *= 2;
     cairo_rectangle(priv->cr, offset_x, offset_y, TILESIZE * 2, TILESIZE * 2);
   }
   else
-    cairo_rectangle(priv->cr, offset_x, offset_y, TILESIZE, TILESIZE);
-  cairo_save(priv->cr);
-  cairo_translate(priv->cr, offset_x - area_x * modulo, offset_y - area_y * modulo);
-  cairo_scale(priv->cr, modulo, modulo);
-  cairo_set_source_surface(priv->cr, cr_surf, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(priv->cr), CAIRO_FILTER_NEAREST);
-  /* cairo_fill_preserve(priv->cr); */
-  cairo_fill(priv->cr);
-  /* cairo_set_source_rgb(priv->cr, 1., 1., 0.); */
-  /* cairo_stroke(priv->cr); */
-  /* g_message("Blit surface %p(%p) at %dx%d x%d %dx%d.", */
-  /*         (gpointer)cr_surf, (gpointer)priv->null_tile, offset_x, offset_y,
-   */
-  /*         modulo, area_x, area_y); */
-  cairo_restore(priv->cr);
+    */
+  cairo_rectangle(cr, offset_x, offset_y, TILESIZE, TILESIZE);
+  cairo_save(cr);
+  cairo_translate(cr, offset_x - area_x * modulo, offset_y - area_y * modulo);
+  cairo_scale(cr, modulo, modulo);
+  cairo_set_source_surface(cr, cr_surf, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+  cairo_fill(cr);
+  cairo_restore(cr);
 }
 
 static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* ext)
@@ -937,8 +856,7 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
 
           fclose(file);
 
-        //   g_message(dl->filename);
-
+          //   g_message(dl->filename);
         }
       }
       else
@@ -1013,7 +931,7 @@ static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage
 }
 
 char g_szNAVTOKEN[256] = {0};
-char g_szNAVURL1[500] =  {0};
+char g_szNAVURL1[500] = {0};
 char g_szNAVURL2[500] = {0};
 
 #define NAVURL1                                                                                    \
@@ -1250,68 +1168,93 @@ static gboolean osm_gps_map_tile_age_exceeded(char* filename, guint period)
 }
 
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
-                                  int offset_y)
+                                  int offset_y, cairo_t* cairohandle)
 {
   OsmGpsMapPrivate* priv = map->priv;
   gchar* filename;
   OsmCachedTile* tile = NULL;
   int modulo, area_x, area_y;
-
-  g_debug("Load tile %d,%d (%d,%d) z:%d", x, y, offset_x, offset_y, zoom);
-
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NULL)
   {
-    osm_gps_map_blit_surface(map, priv->null_tile, offset_x, offset_y, 1, 0, 0);
+    osm_gps_map_blit_surface(cairohandle, priv->null_tile, offset_x, offset_y, 1, 0, 0);
     return;
   }
 
   filename = get_cached_file(priv->cache_dir, priv->image_format, zoom, x, y);
-  gboolean needs_refresh = FALSE;
   if (filename)
   {
-    g_debug("Found file %s", filename);
-
-    needs_refresh = osm_gps_map_tile_age_exceeded(
-        filename, osm_gps_map_source_get_cache_period(priv->map_source));
-
-    /* try to get file from internal cache first */
-    if (!needs_refresh || osm_gps_map_source_get_cache_policy(priv->map_source))
-    {
-      tile = osm_gps_map_load_cached_tile(map, filename);
-      if (!tile)
-        g_warning("cannot load and cache %s!!!", filename);
-    }
-
+    tile = osm_gps_map_load_cached_tile(map, filename);
     g_free(filename);
   }
 
   if (tile)
-    osm_gps_map_blit_surface(map, tile->cr_surf, offset_x, offset_y, 1, 0, 0);
+    osm_gps_map_blit_surface(cairohandle, tile->cr_surf, offset_x, offset_y, 1, 0, 0);
 
-  if (!tile || needs_refresh)
+  if (!tile)
   {
-    if (priv->map_auto_download)
-      osm_gps_map_download_tile(map, zoom, x, y, TRUE);
-
-    if (!needs_refresh && osm_gps_map_source_get_cache_policy(priv->map_source))
+    osm_gps_map_download_tile(map, zoom, x, y, TRUE);
+    /* try to render the tile by scaling cached tiles from other zoom
+     * levels */
+    tile = osm_gps_map_render_missing_tile(map, zoom, x, y, &modulo, &area_x, &area_y);
+    if (tile)
     {
-      /* try to render the tile by scaling cached tiles from other zoom
-       * levels */
-      tile = osm_gps_map_render_missing_tile(map, zoom, x, y, &modulo, &area_x, &area_y);
-      if (tile)
-      {
-        /* g_message("Tile not found, upscaling."); */
-        osm_gps_map_blit_surface(map, tile->cr_surf, offset_x, offset_y, modulo, area_x, area_y);
-      }
-      /* else */
-      /* { */
-      /* g_message("blank."); */
-      // prevent some artifacts when drawing not yet loaded areas.
-      /*cairo_rectangle(priv->cr, offset_x, offset_y, TILESIZE, TILESIZE);
-                cairo_set_source_rgb(priv->cr, 1., 1., 1.);
-                cairo_fill(priv->cr);*/
-      /* } */
+      /* g_message("Tile not found, upscaling."); */
+      osm_gps_map_blit_surface(cairohandle, tile->cr_surf, offset_x, offset_y, modulo, area_x, area_y);
     }
+  }
+}
+
+void osm_map_fill_tiles_surface(OsmGpsMap* map, cairo_surface_t* surf, cairo_t* cairoHandle)
+{
+  OsmGpsMapPrivate* priv = map->priv;
+  int i, j, tile_x0, tile_y0, tiles_nx, tiles_ny, fmap_x, fmap_y;
+  int offset_xn = 0;
+  int offset_yn = 0;
+  int offset_x;
+  int offset_y;
+  int tilesize, zoom;
+  tilesize = TILESIZE;
+  int h = cairo_image_surface_get_height(surf);
+  int w = cairo_image_surface_get_width(surf);
+  int wv = priv->viewport_width;
+  int hv = priv->viewport_height;
+  int dx =w/2 - wv/2;
+  int dy = h/2 - hv/2;
+
+  fmap_x = priv->map_x - dx;
+  fmap_y = priv->map_y - dy;
+
+  zoom = priv->map_zoom;
+
+  offset_x = -fmap_x % tilesize;
+  offset_y = -fmap_y % tilesize;
+  if (offset_x > 0)
+    offset_x -= tilesize;
+  if (offset_y > 0)
+    offset_y -= tilesize;
+
+  offset_xn = offset_x;
+  offset_yn = offset_y;
+
+  tiles_nx = (w / priv->map_factor - offset_x) / tilesize + 1;
+  tiles_ny = (h / priv->map_factor - offset_y) / tilesize + 1;
+
+  tile_x0 = floor((float)fmap_x / (float)tilesize);
+  tile_y0 = floor((float)fmap_y / (float)tilesize);
+
+  int nRows = (tile_y0 + tiles_ny);
+
+  int offset_yn_top = offset_yn;
+  offset_yn = offset_yn_top;
+  for (i = tile_x0; i < (tile_x0 + tiles_nx); i++)
+  {
+    for (j = tile_y0; j < nRows; j++)
+    {
+      osm_gps_map_load_tile(map, zoom, i, j, offset_xn, offset_yn, cairoHandle);
+      offset_yn += tilesize;
+    }
+    offset_xn += tilesize;
+    offset_yn = offset_yn_top;
   }
 }
 
@@ -1363,7 +1306,7 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
         cairo_fill(priv->cr);
       }
       else
-        osm_gps_map_load_tile(map, zoom, i, j, offset_xn, offset_yn);
+        osm_gps_map_load_tile(map, zoom, i, j, offset_xn, offset_yn, priv->cr);
       offset_yn += tilesize;
     }
     offset_xn += tilesize;
@@ -1561,14 +1504,14 @@ void osm_gps_map_blit(OsmGpsMap* map, cairo_t* cr, cairo_operator_t op)
   g_return_if_fail(OSM_IS_GPS_MAP(map));
   priv = map->priv;
 
-  cairo_surface_flush(priv->cr_surf);
+  cairo_surface_flush(priv->map_surf);
 
   cairo_save(cr);
   cairo_translate(cr, -(1.5 * priv->map_factor - 1.) * priv->viewport_width * 0.5f,
                   -(1.5 * priv->map_factor - 1.) * priv->viewport_height * 0.5f);
   cairo_scale(cr, priv->map_factor, priv->map_factor);
 
-  cairo_set_source_surface(cr, priv->cr_surf, 0., 0.);
+  cairo_set_source_surface(cr, priv->map_surf, 0., 0.);
   cairo_set_operator(cr, op);
   cairo_paint(cr);
 
@@ -1670,7 +1613,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv = G_TYPE_INSTANCE_GET_PRIVATE(object, OSM_TYPE_GPS_MAP, OsmGpsMapPrivate);
   object->priv = priv;
 
-  priv->cr_surf = NULL;
+  priv->map_surf = NULL;
   priv->cr = NULL;
 
   priv->map_factor = 1.;
@@ -1781,9 +1724,9 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   gchar* base;
   cairo_t* cr;
   // user can specify a map source ID, or a repo URI as the map source
-  if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 || priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
+  if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 ||
+      priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
     soup_get_navionics_key(priv);
-
 
   uri = osm_gps_map_source_get_repo_uri(OSM_GPS_MAP_SOURCE_NULL);
   if ((priv->map_source == 0) || (strcmp(priv->repo_uri, uri) == 0))
@@ -1865,8 +1808,8 @@ static void osm_gps_map_dispose(GObject* object)
 
   if (priv->cr)
     cairo_destroy(priv->cr);
-  if (priv->cr_surf)
-    cairo_surface_destroy(priv->cr_surf);
+  if (priv->map_surf)
+    cairo_surface_destroy(priv->map_surf);
 
   if (priv->null_tile)
     cairo_surface_destroy(priv->null_tile);
@@ -2144,14 +2087,14 @@ void osm_gps_map_set_viewport(OsmGpsMap* map, guint width, guint height)
   priv->viewport_width = width;
   priv->viewport_height = height;
 
-  if (priv->cr_surf)
-    cairo_surface_destroy(priv->cr_surf);
-  priv->cr_surf =
+  if (priv->map_surf)
+    cairo_surface_destroy(priv->map_surf);
+  priv->map_surf =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1.5 * priv->viewport_width + EXTRA_BORDER * 2,
                                  1.5 * priv->viewport_height + EXTRA_BORDER * 2);
   if (priv->cr)
     cairo_destroy(priv->cr);
-  priv->cr = cairo_create(priv->cr_surf);
+  priv->cr = cairo_create(priv->map_surf);
 
   // pixel_x,y, offsets
   gint pixel_x = lon2pixel(priv->map_zoom, priv->center_rlon);
@@ -3375,9 +3318,9 @@ cairo_surface_t* osm_gps_map_get_surface(OsmGpsMap* map)
   g_return_val_if_fail(OSM_IS_GPS_MAP(map), (cairo_surface_t*)0);
   priv = map->priv;
 
-  cairo_surface_reference(priv->cr_surf);
-  cairo_surface_flush(priv->cr_surf);
-  return priv->cr_surf;
+  cairo_surface_reference(priv->map_surf);
+  cairo_surface_flush(priv->map_surf);
+  return priv->map_surf;
 }
 
 char* osm_gps_map_get_default_cache_directory(void)

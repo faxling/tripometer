@@ -88,6 +88,8 @@ int main(int argc, char* argv[])
   pU->rootObject()->setProperty("nMinSize", oSettings.value("nMinSize", 60));
   pU->rootObject()->setProperty("nNrTeams", oSettings.value("nNrTeams", 2));
   pU->rootObject()->setProperty("nPikesCounted", oSettings.value("nPikesCounted", 6));
+  pU->rootObject()->setProperty("nExportMapW", oSettings.value("nExportMapW", 2480));
+  pU->rootObject()->setProperty("nExportMapH", oSettings.value("nExportMapH", 3508));
 
   pU->rootObject()->setProperty(
       "ocTeamName",
@@ -111,6 +113,8 @@ int main(int argc, char* argv[])
   oSettings.setValue("nUnit", pU->rootObject()->property("nUnit"));
   oSettings.setValue("nMinSize", pU->rootObject()->property("nMinSize"));
   oSettings.setValue("nNrTeams", pU->rootObject()->property("nNrTeams"));
+  oSettings.setValue("nExportMapW", pU->rootObject()->property("nExportMapW"));
+  oSettings.setValue("nExportMapH", pU->rootObject()->property("nExportMapH"));
 
   oSettings.sync();
 

@@ -26,7 +26,7 @@ Page {
       id: folderModel
       sortField: FolderListModel.Time
       folder: pikeFightDocFolder
-      nameFilters: ["img*.png", "img*.jpg"]
+      nameFilters: ["img*.png", "img*.jpg", "map*.jpg", "map*.jpg", "report*.png"]
     }
 
     delegate: GridItem {

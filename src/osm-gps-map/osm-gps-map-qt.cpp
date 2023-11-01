@@ -343,8 +343,7 @@ Maep::GpsMap::~GpsMap()
     cairo_surface_destroy(screensurf);
   if (cr)
     cairo_destroy(cr);
-  if (img)
-    delete (img);
+
   delete (white);
   if (gps)
     delete (gps);
@@ -440,12 +439,11 @@ bool Maep::GpsMap::mapSized()
     return false;
 
   if (screensurf && (cairo_image_surface_get_width(screensurf) != width() ||
-               cairo_image_surface_get_height(screensurf) < height()))
+                     cairo_image_surface_get_height(screensurf) < height()))
   {
     cairo_surface_destroy(screensurf);
     cairo_destroy(cr);
     // cairo_pattern_destroy(pat);
-    delete (img);
     screensurf = NULL;
   }
 
@@ -454,8 +452,10 @@ bool Maep::GpsMap::mapSized()
     screensurf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width(), height());
     cr = cairo_create(screensurf);
 
-    img = new QImage(cairo_image_surface_get_data(screensurf), cairo_image_surface_get_width(screensurf),
-                     cairo_image_surface_get_height(screensurf), QImage::Format_ARGB32);
+    img.reset(new QImage(cairo_image_surface_get_data(screensurf),
+                         cairo_image_surface_get_width(screensurf),
+                         cairo_image_surface_get_height(screensurf), QImage::Format_ARGB32));
+
     osm_gps_map_set_viewport(map, width(), height());
     return true;
   }
@@ -508,15 +508,12 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
 
 void Maep::GpsMap::paint(QPainter* painter)
 {
-  int w;
-
   QPainterPath path;
 
   if (mapSized())
     mapUpdate();
 
   paintTo(painter, width(), height());
-
 }
 
 void Maep::GpsMap::zoomIn()
@@ -571,7 +568,6 @@ void Maep::GpsMap::keyPressEvent(QKeyEvent* event)
     break;
   }
 }
-
 
 void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
 {
@@ -971,6 +967,29 @@ static void BoatSvg(QSvgRenderer& renderer, QImage* pImage, int nRotation)
   renderer.render(&painter);
 }
 
+QString Maep::GpsMap::saveMap(int w,int h )
+{
+  QDateTime oNow(QDateTime::currentDateTime());
+  QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
+  QString sPath = StorageDir() ^ ("map" + sTrackName + ".jpg");
+
+  cairo_surface_t* mapSurf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+  cairo_t* handle = cairo_create(mapSurf);
+
+  osm_map_fill_tiles_surface(map, mapSurf, handle);
+
+  std::unique_ptr<QImage> pImg(
+      new QImage(cairo_image_surface_get_data(mapSurf), cairo_image_surface_get_width(mapSurf),
+                 cairo_image_surface_get_height(mapSurf), QImage::Format_ARGB32));
+
+
+  pImg->save(sPath);
+  cairo_surface_destroy (mapSurf);
+  cairo_destroy (handle);
+  qDebug() << "save " << sPath;
+  return "map" + sTrackName;
+}
+
 void Maep::GpsMap::initBoatMarkers()
 {
   int DEG = 360;
@@ -998,7 +1017,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
 {
   QDateTime oNow(QDateTime::currentDateTime());
   QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-  QString sPath = StorageDir() ^ "report" + sTrackName + ".png";
+  QString sPath = StorageDir() ^ ("report" + sTrackName + ".png");
   cairo_surface_write_to_png(screensurf, sPath.toLatin1().data());
   int nHeight = cairo_image_surface_get_height(screensurf);
   QImage oPaintImage(sPath);
@@ -1171,7 +1190,6 @@ void Maep::GpsMap::setScreenRotation(bool status)
   screenRotation = status;
   emit screenRotationChanged(status);
 }
-
 
 /*
 static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,

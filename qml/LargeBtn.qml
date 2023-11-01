@@ -20,7 +20,7 @@ Rectangle {
 
     Image {
       id: idImg
-      source: "image://theme/icon-m-flip?"
+      source: "image://theme/icon-m-flip"
       anchors.centerIn: parent
     }
 

@@ -17,6 +17,8 @@ ApplicationWindow {
     mainMap.saveTrack(0)
   }
 
+  property int nExportMapW: 2480
+  property int nExportMapH: 3508
   property var ocSumSize: ["", "", ""]
   property int nPikesCounted: 6
   property int nNrTeams: 2
@@ -88,7 +90,7 @@ ApplicationWindow {
     sortReversed: true
     sortField: FolderListModel.Time
     folder: pikeFightDocFolder
-    nameFilters: ["img*.png", "img*.jpg"]
+    nameFilters: ["img*.png", "img*.jpg", "map*.jpg"]
   }
 
   initialPage: Component {
@@ -102,9 +104,24 @@ ApplicationWindow {
           width: idApp.width
 
           LargeBtn {
+            id: idSettingsBtn
+            src: "image://theme/icon-m-setting"
+            opacity: 0.5
+
+            anchors.right: parent.right
+            anchors.rightMargin: 20
+            anchors.bottom: idFlipBtn.top
+            anchors.bottomMargin: 20
+
+            onClicked: {
+              pageStack.push("pages/SettingsPage.qml")
+            }
+          }
+
+          LargeBtn {
             id: idFlipBtn
             opacity: 0.5
-            visible: idApp.bAppStarted
+            //  visible: idApp.bAppStarted
             anchors.right: parent.right
             anchors.rightMargin: 20
             anchors.bottom: parent.bottom

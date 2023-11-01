@@ -79,7 +79,7 @@ Page {
     }
 
     ComboBox {
-      width: parent.width
+      width: Screen.width
       label: "Pikes Counted"
       currentIndex: nPikesCounted
       onCurrentIndexChanged: {
@@ -125,6 +125,37 @@ Page {
       }
       valueText: "Min Size:" + Math.round(value * 200) + " cm"
     }
+
+    Button {
+      x: Theme.horizontalPageMargin
+      text: "Save Map View"
+      onClicked: {
+        idApp.nExportMapW = idTextW.text
+        idApp.nExportMapH = idTextH.text
+        var s = idApp.mainMap.saveMap(idApp.nExportMapW, idApp.nExportMapH)
+        text = s
+      }
+    }
+
+    Row {
+      spacing: 10
+      width: Screen.width
+      height: idTextW.height
+      TextField {
+        width: parent.width / 2 - 10
+        text: idApp.nExportMapW
+        label: "width in Px"
+        id: idTextW
+      }
+
+      TextField {
+        width: parent.width / 2
+        text: idApp.nExportMapH
+        label: "height in Px"
+        id: idTextH
+      }
+    }
+
     Button {
       x: Theme.horizontalPageMargin
       id: idBtnCache
@@ -140,6 +171,36 @@ Page {
       onClicked: {
         oFileMgr.clearCache()
         idBtnCache.text = oFileMgr.getUsedCache()
+      }
+    }
+
+    Row {
+      x: Theme.horizontalPageMargin
+      spacing: column.spacing
+      Label {
+        id: buttonText
+
+        /// anchors.verticalCenter: parent.verticalCenter
+        // width: implicitWidth)
+        //   color: _showPress ? button.highlightColor : button.color
+        font.pixelSize: Theme.fontSizeMedium
+        text: "Compas"
+      }
+
+      Button {
+        id: idCompass
+        property bool checked: mainMap.enable_compass
+        Image {
+          visible: parent.checked
+          anchors.centerIn: parent
+          source: "image://theme/icon-m-accept"
+        }
+        height: Theme.itemSizeExtraSmall
+        width: Theme.itemSizeExtraSmall
+        onClicked: {
+          checked = !checked
+          mainMap.enable_compass = checked
+        }
       }
     }
   }

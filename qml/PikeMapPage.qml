@@ -40,7 +40,6 @@ Item {
       Lib.initDB()
     }
 
-    enable_compass: true
     anchors.fill: parent
     states: [
       State {

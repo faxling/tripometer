@@ -39,13 +39,6 @@ Item {
       }
 
       MenuItem {
-        text: "Settings"
-        onClicked: {
-          pageStack.push("SettingsPage.qml")
-        }
-      }
-
-      MenuItem {
         text: "Pike Gallery"
         onClicked: {
           pageStack.push("GalleryPage.qml")

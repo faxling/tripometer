@@ -107,6 +107,8 @@ const OsmGpsMapSource* osm_gps_map_source_new(const gchar* name, const gchar rep
                                               const gchar* copyright_notice,
                                               const gchar* copyright_url, guint min_zoom,
                                               guint max_zoom);
+
+void osm_map_fill_tiles_surface(OsmGpsMap* map, cairo_surface_t* surf, cairo_t* cairoHandle);
 const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source);
 const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source);
 const char* osm_gps_map_source_get_image_format(OsmGpsMapSource_t source);
@@ -186,9 +188,9 @@ void osm_gps_map_blit(OsmGpsMap* map, cairo_t* cr, cairo_operator_t op);
 
 float osm_db_last_dist(OsmGpsMap* map, float la, float lo);
 
-#ifdef ENABLE_OSD
+
 coord_t* osm_gps_map_get_gps(OsmGpsMap* map);
-#endif
+
 
 G_END_DECLS
 
