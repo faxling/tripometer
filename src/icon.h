@@ -25,11 +25,6 @@
 #include <glib-object.h>
 #include <cairo.h>
 
-#ifdef WITH_GTK
-#include <gtk/gtk.h>
-GtkWidget *icon_get_widget(GObject *parent, const char *name);
-#endif
-
 cairo_surface_t *icon_get_surface(GObject *parent, const char *name);
 
 #endif // ICON_H

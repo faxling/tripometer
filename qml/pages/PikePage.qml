@@ -42,7 +42,6 @@ SilicaListView {
 
   function hasImg(sImageFile) {
 
-    console.log("hasImg " + sImageFile)
     if (sImageFile[0] !== '/')
       return -1
 

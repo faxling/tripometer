@@ -25,7 +25,6 @@ Page {
     onCountChanged: {
       if (nIndexDeleted < 0)
         return
-      console.log("pos at " + nIndexDeleted + " count " + count)
 
       idView.positionViewAtIndex(nIndexDeleted, ListView.Center)
     }
@@ -124,7 +123,6 @@ Page {
     onClicked: {
       var oCur = getCurrent()
       nIndexDeleted = oCur.index - 1
-      console.log("delete " + nIndexDeleted)
       idRemorsePop.execute("Deleting Image", function () {
         oFileMgr.remove(idView.model.get(oCur.index, "filePath"))
       })

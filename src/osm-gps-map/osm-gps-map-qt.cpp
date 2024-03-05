@@ -19,7 +19,6 @@
 #include "osm-gps-map-layer.h"
 #include "osm-gps-map.h"
 #include <glib/gstdio.h>
-#undef WITH_GTK
 #include "../net_io.h"
 #include "infolistmodel.h"
 #include <QDebug>
@@ -28,7 +27,8 @@
 #include <QtSvg/QSvgRenderer>
 #include <Utils.h>
 #include <float.h>
-#define G_MAXFLOAT FLT_MAX
+#include "src/misc.h"
+// #include <../lib/glib-2.0/include/glibconfig.h>
 //#include <cmath>
 #define GCONF_KEY_ZOOM "zoom"
 #define GCONF_KEY_SOURCE "source"
@@ -190,11 +190,27 @@ static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, MaepSearchContex
 extern QObject* g_pTheTrackModel;
 extern QObject* g_pTheMap;
 
+extern int g_nOutstaningCurls;
+
 Maep::GpsMap::GpsMap(QQuickItem* parent)
     : QQuickPaintedItem(parent), compass(parent), compassEnabled_(FALSE)
 {
   char *path, *oldPath;
   g_pTheMap = this;
+
+
+
+  m_pReqCountTimer = new MssTimer([=]{
+
+    if (g_nOutstaningCurls != numberPendingReq_)
+    {
+      numberPendingReq_ = g_nOutstaningCurls;
+      emit numberPendingReqChanged();
+    }
+  });
+
+  m_pReqCountTimer->Start(200);
+
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
@@ -315,6 +331,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
 Maep::GpsMap::~GpsMap()
 {
   qDebug() << "Destruct Qmap";
+  m_pReqCountTimer->Stop();
+  delete m_pReqCountTimer;
   gint zoom, source, overlaySource;
   gfloat lat, lon;
   gboolean dpix;
@@ -669,7 +687,7 @@ void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
   Source orig;
 
   if (value == SOURCE_NAVIONICS1 || value == SOURCE_NAVIONICS2)
-    soup_get_navionics_key(map->priv);
+    get_navionics_key2();
 
   orig = source();
   if (orig == value)

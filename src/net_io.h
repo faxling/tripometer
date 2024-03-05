@@ -29,28 +29,33 @@ typedef struct {
   int len;
 } net_mem_t;
 
+
 typedef struct {
   int code;          /* 0 == success */
   net_mem_t data;
+  int respCode;
 } net_result_t;
 
 typedef void (*net_io_cb)(net_result_t *result, gpointer data);
+
 #define	NET_IO_CB(f) ((net_io_cb) (f))
 
 #define MAEP_NET_IO_ERROR net_io_get_quark()
+
 GQuark net_io_get_quark();
 
 typedef void* net_io_t;
 
-#ifdef WITH_GTK
-#include <gtk/gtk.h>
-gboolean net_io_download(GtkWidget *parent, char *url, char **mem);
-#endif
-
 void net_io_init();
 void net_io_finalize();
-net_io_t net_io_download_async(char *url, net_io_cb, gpointer data);
-void net_io_cancel_async(net_io_t io);
+
+struct curl_slist;
+
+
+void net_io_append_header(struct curl_slist **chunk, const char* );
+
+net_io_t net_io_download_async(char *url, net_io_cb, gpointer data, struct curl_slist *chunk);
+net_result_t net_io_download_sync(char *url,  struct curl_slist *chunk);
 
 G_END_DECLS
 

@@ -192,6 +192,7 @@ Item {
     anchors.bottomMargin: 20
     anchors.left: parent.left
     anchors.leftMargin: 20
+
     //z: idMap.z + 1
     TrippBtn {
       id: idBtnMap
@@ -202,6 +203,13 @@ Item {
           map_controls3.state = "menuMapVisible"
         else
           map_controls3.state = ""
+      }
+
+      Rectangle {
+        y: 20
+        height: 20
+        color: "white"
+        width: (idMap.numberPendingReq / 300.0) * parent.width
       }
     }
 

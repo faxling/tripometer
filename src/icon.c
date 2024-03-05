@@ -143,17 +143,3 @@ cairo_surface_t *icon_get_surface(GObject *parent, const char *name) {
 
   return icon->cr_surf;
 }
-
-#ifdef WITH_GTK
-GtkWidget *icon_get_widget(GObject *parent, const char *name) {
-  icon_reg_t *icon;
-
-  g_return_val_if_fail(parent && name, NULL);
-
-  icon = icon_register_check(parent, name);
-  if(!icon)
-    icon = icon_register(parent, name);
-
-  return gtk_image_new_from_file(icon->fullname);
-}
-#endif

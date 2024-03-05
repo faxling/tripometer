@@ -19,6 +19,9 @@
 
 #ifndef CONFIG_H
 #define CONFIG_H
+#ifndef SAILFISH
+#define SAILFISH
+#endif
 
 /*#include <gtk/gtk.h>*/
 
@@ -40,7 +43,7 @@
 #define N_(String) (String)
 
 /* map configuration: */
-#define ENABLE_OSD
+
 #define OSD_SCALE
 #define OSD_CROSSHAIR
 #define OSD_COORDINATES
@@ -102,13 +105,7 @@
 #define OSD_COORDINATES_FONT_SIZE (30.0)
 #endif
 
-#ifdef SAILFISH
-#undef  WITH_GTK
 #define WITH_QT
-#else
-#define WITH_GTK
-#undef  WITH_QT
-#endif
 
 /* #define OSD_DOUBLE_BUFFER */    // render osd/map together
                                    // offscreen

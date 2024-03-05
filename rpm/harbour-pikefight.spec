@@ -10,7 +10,7 @@ Name: harbour-pikefight
 
 # Harbour requirements.
 %define __provides_exclude_from ^%{_datadir}/.*$
-%define __requires_exclude ^libjpeg.*|libcairo.*|libpng15.*|libpsl.*|libsoup-2.4.*|libdconf.*|libicui18n.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicuuc.*|libicudata.*|libc.*$
+%define __requires_exclude ^libjpeg.*|libcairo.*|libpng15.*|libpsl.*|libdconf.*|libicui18n.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicuuc.*|libicudata.*|libc.*$
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
@@ -41,7 +41,6 @@ BuildRequires: desktop-file-utils
 BuildRequires: pkgconfig(Qt5Positioning)
 BuildRequires: pkgconfig(gobject-2.0)
 BuildRequires: pkgconfig(cairo)
-BuildRequires: pkgconfig(libsoup-2.4)
 #BuildRequires: pkgconfig(libpng15)
 BuildRequires: pkgconfig(dconf)
 BuildRequires: pkgconfig(libxml-2.0)
@@ -69,7 +68,6 @@ rm -rf %{buildroot}
 install -d %{buildroot}/usr/share/%{name}/lib
 install -m 644 -p %{_libdir}/libjpeg.so.62 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libcairo.so.2 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p %{_libdir}/libsoup-2.4.so.1 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libdconf.so.1 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libsqlite3.so.0 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libpixman-1.so.0 %{buildroot}/usr/share/%{name}/lib/

@@ -25,6 +25,7 @@
 #include "../config.h"
 #include "../converter.h"
 #include "../img_loader.h"
+#include "../net_io.h"
 
 #include <fcntl.h>
 #include <math.h>
@@ -34,19 +35,17 @@
 #include <unistd.h>
 
 #include <cairo.h>
-#include <glib.h>
-#include <glib/gprintf.h>
-#include <glib/gstdio.h>
-#include <libsoup/soup.h>
+
+
+// Include generated file to avoid ide warnings
+#include "src/misc.h"
+// #include <../lib/glib-2.0/include/glibconfig.h>
 
 #include "osm-gps-map-types.h"
 #include "osm-gps-map.h"
 #define G_MAXFLOAT FLT_MAX
 
 #define ENABLE_DEBUG (0)
-/* #define USER_AGENT                  "Mozilla/5.0 (Windows; U; Windows NT 5.1;
- * en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11" */
-#define USER_AGENT PACKAGE "-libsoup/" VERSION
 
 struct _OsmGpsMapPrivate
 {
@@ -81,9 +80,6 @@ struct _OsmGpsMapPrivate
   guint redraw_cycle;
   /* ID of the idle redraw operation */
   gulong idle_map_redraw;
-
-  // how we download tiles
-  SoupSession* soup_session;
   char* proxy_uri;
 
   // where downloaded tiles are cached
@@ -196,13 +192,10 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
 static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics);
 static void osm_gps_map_print_images(OsmGpsMap* map);
 // static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
-#if USE_LIBSOUP22
-static void osm_gps_map_tile_download_complete(SoupMessage* msg, gpointer user_data);
-#else
-static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage* msg,
-                                               gpointer user_data);
-#endif
-static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
+
+
+static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
+
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t*);
 static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map);
@@ -786,149 +779,6 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 
 #define UNUSED(x) (void)(x)
 
-static cairo_surface_t* osm_gps_map_from_mem(const unsigned char* buffer, size_t len,
-                                             const char* ext)
-{
-  cairo_surface_t* surf = NULL;
-  UNUSED(buffer);
-  UNUSED(len);
-  if (!strcmp(ext, "png"))
-  {
-    g_warning("PNG load from memory not implemented!");
-  }
-  else
-  {
-#if JPEG_LIB_VERSION >= 80
-    GError* error;
-    error = NULL;
-    surf = maep_loader_jpeg_from_mem(buffer, len, &error);
-    if (error)
-    {
-      g_warning("%s", error->message);
-      g_error_free(error);
-    }
-#else
-    g_warning("JPEG load from memory not available!");
-#endif
-  }
-
-  return surf;
-}
-
-/* libsoup-2.2 and libsoup-2.4 use different ways to store the body data */
-#if USE_LIBSOUP22
-#define soup_message_headers_append(a, b, c) soup_message_add_header(a, b, c)
-#define MSG_RESPONSE_BODY(a) ((a)->response.body)
-#define MSG_RESPONSE_LEN(a) ((a)->response.length)
-#define MSG_RESPONSE_LEN_FORMAT "%u"
-#else
-#define MSG_RESPONSE_BODY(a) ((a)->response_body->data)
-#define MSG_RESPONSE_LEN(a) ((a)->response_body->length)
-#define MSG_RESPONSE_LEN_FORMAT G_GOFFSET_FORMAT
-#endif
-
-#if USE_LIBSOUP22
-static void osm_gps_map_tile_download_complete(SoupMessage* msg, gpointer user_data)
-#else
-static void osm_gps_map_tile_download_complete(SoupSession* session, SoupMessage* msg,
-                                               gpointer user_data)
-#endif
-{
-  FILE* file;
-  tile_download_t* dl = (tile_download_t*)user_data;
-  OsmGpsMap* map = OSM_GPS_MAP(dl->map);
-  OsmGpsMapPrivate* priv = map->priv;
-  gboolean file_saved = FALSE;
-  cairo_surface_t* cr_surf;
-
-  if (SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
-  {
-    /* save tile into cachedir if one has been specified */
-    if (priv->cache_dir)
-    {
-      if (g_mkdir_with_parents(dl->folder, 0700) == 0)
-      {
-        file = g_fopen(dl->filename, "wb");
-        if (file != NULL)
-        {
-          fwrite(MSG_RESPONSE_BODY(msg), 1, MSG_RESPONSE_LEN(msg), file);
-          file_saved = TRUE;
-
-          fclose(file);
-
-          //   g_message(dl->filename);
-        }
-      }
-      else
-      {
-        g_warning("Error creating tile download directory: %s", dl->folder);
-        perror("perror:");
-      }
-    }
-
-    if (dl->redraw)
-    {
-      if (priv->cache_dir && file_saved)
-        cr_surf = osm_gps_map_from_file(dl->filename, priv->image_format);
-      else
-        cr_surf = osm_gps_map_from_mem((const unsigned char*)MSG_RESPONSE_BODY(msg),
-                                       (size_t)MSG_RESPONSE_LEN(msg), priv->image_format);
-      if (cr_surf && cairo_surface_status(cr_surf) == CAIRO_STATUS_SUCCESS)
-      {
-        OsmCachedTile* tile = g_slice_new(OsmCachedTile);
-        tile->cr_surf = cr_surf;
-        tile->redraw_cycle = priv->redraw_cycle;
-        /* if the tile is already in the cache (it could be one
-         * rendered from another zoom level), it will be
-         * overwritten */
-        g_hash_table_insert(priv->tile_cache, dl->filename, tile);
-        /* NULL-ify dl->filename so that it won't be freed, as
-         * we are using it as a key in the hash table */
-        dl->filename = NULL;
-      }
-      if (!priv->idle_map_redraw)
-        priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
-    }
-    g_hash_table_remove(priv->tile_queue, dl->uri);
-
-    g_free(dl->uri);
-    g_free(dl->folder);
-    g_free(dl->filename);
-    g_free(dl);
-  }
-  else
-  {
-    g_message("Error downloading tile: %d - %s (%s)", msg->status_code, msg->reason_phrase,
-              dl->uri);
-
-    if (msg->status_code == SOUP_STATUS_NOT_FOUND)
-    {
-      g_hash_table_insert(priv->missing_tiles, dl->uri, NULL);
-      g_hash_table_remove(priv->tile_queue, dl->uri);
-    }
-    else if (msg->status_code == SOUP_STATUS_CANCELLED)
-    {
-      ; // application exiting
-    }
-    else if (msg->status_code == SOUP_STATUS_CANT_RESOLVE)
-    {
-      ; /* No network... */
-    }
-    else
-    {
-
-      /*
-      #if USE_LIBSOUP22
-            soup_session_requeue_message(dl->session, msg);
-      #else
-            soup_session_requeue_message(session, msg);
-      #endif
-      */
-
-      return;
-    }
-  }
-}
 
 char g_szNAVTOKEN[256] = {0};
 char g_szNAVURL1[500] = {0};
@@ -942,52 +792,110 @@ char g_szNAVURL2[500] = {0};
   "https://backend.navionics.com/tile/#Z/#X/"                                                      \
   "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
-char* soup_get_navionics_key(OsmGpsMapPrivate* priv)
+
+char* get_navionics_key2()
 {
   if (g_szNAVURL1[0] != 0)
     return g_szNAVTOKEN;
 
-  SoupMessage* msg =
-      soup_message_new("GET", "https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/"
-                              "webapp.navionics.com?_=1690792122212");
-  ;
+  struct curl_slist* chunk = 0;
 
-  soup_message_headers_append(msg->request_headers, "referer", "https://webapp.navionics.com/");
+  net_io_append_header(&chunk, "referer: https://webapp.navionics.com/");
 
-  guint status;
-  status = soup_session_send_message(priv->soup_session, msg);
-  if (status != 200)
+  net_result_t pRes =
+      net_io_download_sync("https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/"
+                           "webapp.navionics.com?_=1690792122212",
+                           chunk);
+
+  if (pRes.respCode != 200)
     return 0;
 
-  memcpy(g_szNAVTOKEN, msg->response_body->data, msg->response_body->length);
-  g_szNAVTOKEN[msg->response_body->length] = 0;
+  memcpy(g_szNAVTOKEN, pRes.data.ptr, pRes.data.len);
+  g_szNAVTOKEN[pRes.data.len] = 0;
+
+  g_free(pRes.data.ptr);
 
   sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN);
   sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN);
 
-  g_object_unref(msg);
-
   return g_szNAVTOKEN;
 }
 
-static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
+struct curl_slist* chunk = 0;
+void curl_cb(net_result_t* result, gpointer data)
 {
-  SoupMessage* msg;
+  tile_download_t* dl = (tile_download_t*)data;
+
+  FILE* file;
+  OsmGpsMap* map = OSM_GPS_MAP(dl->map);
   OsmGpsMapPrivate* priv = map->priv;
+  gboolean file_saved = FALSE;
+  cairo_surface_t* cr_surf;
+
+  if (result->code == 0)
+  {
+    /* save tile into cachedir if one has been specified */
+    if (priv->cache_dir)
+    {
+      if (g_mkdir_with_parents(dl->folder, 0700) == 0)
+      {
+        file = fopen(dl->filename, "wb");
+        if (file != NULL)
+        {
+          fwrite(result->data.ptr, 1, result->data.len, file);
+
+          file_saved = TRUE;
+          fclose(file);
+        }
+      }
+    }
+
+    if (dl->redraw)
+    {
+      cr_surf = osm_gps_map_from_file(dl->filename, priv->image_format);
+      if (cr_surf && cairo_surface_status(cr_surf) == CAIRO_STATUS_SUCCESS)
+      {
+        OsmCachedTile* tile = g_slice_new(OsmCachedTile);
+        tile->cr_surf = cr_surf;
+        tile->redraw_cycle = priv->redraw_cycle;
+        g_hash_table_insert(priv->tile_cache, dl->filename, tile);
+        dl->filename = NULL;
+      }
+      if (!priv->idle_map_redraw)
+        priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
+    }
+
+    g_hash_table_remove(priv->tile_queue, dl->uri);
+
+    g_free(dl->uri);
+    g_free(dl->folder);
+    g_free(dl->filename);
+    g_free(dl);
+  }
+  else
+  {
+    if (result->respCode == 404)
+    {
+      g_hash_table_insert(priv->missing_tiles, dl->uri, NULL);
+      g_hash_table_remove(priv->tile_queue, dl->uri);
+    }
+  }
+}
+
+static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
+{
+  OsmGpsMapPrivate* priv = map->priv;
+
   tile_download_t* dl = g_new0(tile_download_t, 1);
-
-  // calculate the uri to download
   dl->uri = get_tile_uri(priv->repo_uri, priv->uri_format, priv->max_zoom, zoom, x, y);
-  // g_message("Download '%s'", dl->uri);
 
-  // check the tile has not already been queued for download,
-  // or has been attempted, and its missing
   if (g_hash_table_lookup_extended(priv->tile_queue, dl->uri, NULL, NULL) ||
       g_hash_table_lookup_extended(priv->missing_tiles, dl->uri, NULL, NULL))
   {
     g_debug("Tile already downloading (or missing)");
     g_free(dl->uri);
     g_free(dl);
+    return;
   }
   else
   {
@@ -997,50 +905,28 @@ static void osm_gps_map_download_tile(OsmGpsMap* map, int zoom, int x, int y, gb
                                    G_DIR_SEPARATOR, x, G_DIR_SEPARATOR, y, priv->image_format);
     dl->map = map;
     dl->redraw = redraw;
-
-    //  g_message("Download tile: %s", dl->filename);
-
-    msg = soup_message_new(SOUP_METHOD_GET, dl->uri);
-    if (msg)
-    {
-      if (priv->the_navionics)
-      {
-        soup_message_headers_append(msg->request_headers, "referer",
-                                    "https://webapp.navionics.com/");
-        soup_message_headers_append(msg->request_headers, "authority", "backend.navionics.com");
-
-        soup_message_headers_append(msg->request_headers, "accept",
-                                    "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
-        soup_message_headers_append(msg->request_headers, "accept-language",
-                                    "en-GB,en;q=0.9,en-US;q=0.8,sv;q=0.7");
-        soup_message_headers_append(msg->request_headers, "origin", "https://webapp.navionics.com");
-        soup_message_headers_append(
-            msg->request_headers, "sec-ch-ua",
-            "\"Not/A)Brand\";v=\"99\", \"Microsoft Edge\";v=\"115\", \"Chromium\";v=\"115\"");
-        soup_message_headers_append(msg->request_headers, "ec-ch-ua-mobile", "?0");
-        soup_message_headers_append(msg->request_headers, "sec-ch-ua-platform", "\"Windows\"");
-        soup_message_headers_append(msg->request_headers, "sec-fetch-dest", "image");
-        soup_message_headers_append(msg->request_headers, "sec-fetch-mode", "cors");
-        soup_message_headers_append(msg->request_headers, "sec-fetch-site", "same-site");
-      }
-
-      soup_message_headers_append(
-          msg->request_headers, "user-agent",
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-          "Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188");
-
-      g_hash_table_insert(priv->tile_queue, dl->uri, msg);
-      soup_session_queue_message(priv->soup_session, msg, osm_gps_map_tile_download_complete, dl);
-    }
-    else
-    {
-      g_warning("Could not create soup message");
-      g_free(dl->uri);
-      g_free(dl->folder);
-      g_free(dl->filename);
-      g_free(dl);
-    }
   }
+
+  struct curl_slist* chunk = 0;
+  if (priv->the_navionics)
+  {
+    net_io_append_header(&chunk, "referer: https://webapp.navionics.com/");
+    net_io_append_header(&chunk, "authority: backend.navionics.com");
+    net_io_append_header(
+        &chunk, "authority: accept: image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
+    net_io_append_header(&chunk, "accept-language: en-GB,en;q=0.9,en-US;q=0.8,sv;q=0.7");
+    net_io_append_header(&chunk, "origin: https://webapp.navionics.com");
+    net_io_append_header(&chunk, "sec-ch-ua: \"Not/A)Brand\";v=\"99\", \"Microsoft "
+                                 "Edge\";v=\"115\", \"Chromium\";v=\"115\"");
+
+    net_io_append_header(&chunk, "ec-ch-ua-mobile: ?0");
+
+    net_io_append_header(&chunk, "sec-ch-ua-platform: \"Windows\"");
+    net_io_append_header(&chunk, "sec-fetch-dest: image");
+    net_io_append_header(&chunk, "sec-fetch-mode: cors");
+    net_io_append_header(&chunk, "sec-fetch-site: same-site");
+  }
+  net_io_download_async(dl->uri, curl_cb, dl, chunk);
 }
 
 gchar* get_cached_file(const gchar* cache_dir, const gchar* format, int zoom, int x, int y)
@@ -1192,14 +1078,16 @@ static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int of
 
   if (!tile)
   {
-    osm_gps_map_download_tile(map, zoom, x, y, TRUE);
+    osm_gps_map_download_tile2(map, zoom, x, y, TRUE);
     /* try to render the tile by scaling cached tiles from other zoom
      * levels */
+
     tile = osm_gps_map_render_missing_tile(map, zoom, x, y, &modulo, &area_x, &area_y);
     if (tile)
     {
-      /* g_message("Tile not found, upscaling."); */
-      osm_gps_map_blit_surface(cairohandle, tile->cr_surf, offset_x, offset_y, modulo, area_x, area_y);
+
+      osm_gps_map_blit_surface(cairohandle, tile->cr_surf, offset_x, offset_y, modulo, area_x,
+                               area_y);
     }
   }
 }
@@ -1218,8 +1106,8 @@ void osm_map_fill_tiles_surface(OsmGpsMap* map, cairo_surface_t* surf, cairo_t* 
   int w = cairo_image_surface_get_width(surf);
   int wv = priv->viewport_width;
   int hv = priv->viewport_height;
-  int dx =w/2 - wv/2;
-  int dy = h/2 - hv/2;
+  int dx = w / 2 - wv / 2;
+  int dy = h / 2 - hv / 2;
 
   fmap_x = priv->map_x - dx;
   fmap_y = priv->map_y - dy;
@@ -1549,10 +1437,7 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
         return FALSE;
     }
   }
-  /* #ifdef ENABLE_OSD */
-  /*     if (priv->osd && priv->osd->busy(priv->osd)) */
-  /*         return FALSE; */
-  /* #endif */
+
 
   priv->redraw_cycle++;
 
@@ -1615,41 +1500,22 @@ static void osm_gps_map_init(OsmGpsMap* object)
 
   priv->map_surf = NULL;
   priv->cr = NULL;
-
   priv->map_factor = 1.;
-
   priv->trip_history = NULL;
   priv->osm_gps = g_new0(coord_t, 1);
   priv->osm_gps_valid = FALSE;
   priv->cr_markedImage = NULL;
   priv->osm_gps_heading = OSM_GPS_MAP_INVALID;
-
   priv->tracks = NULL;
   priv->images = NULL;
   priv->layers = NULL;
-
   priv->viewport_width = 0;
   priv->viewport_height = 0;
   priv->dirty = cairo_region_create();
-
   priv->uri_format = 0;
   priv->the_navionics = FALSE;
-
   priv->map_source = -1;
-
   priv->idle_map_redraw = 0;
-
-#if USE_LIBSOUP22
-  /* libsoup-2.2 has no special way to set the user agent, so we */
-  /* set it seperately as an extra header field for each reuest */
-  priv->soup_session = soup_session_async_new();
-#else
-  /* set the user agent */
-  priv->soup_session =
-      soup_session_async_new_with_options(SOUP_SESSION_USER_AGENT, USER_AGENT, NULL);
-
-#endif
-  // Hash table which maps tile d/l URIs to SoupMessage requests
   priv->tile_queue = g_hash_table_new(g_str_hash, g_str_equal);
 
   // Some mapping providers (Google) have varying degrees of tiles at multiple
@@ -1671,19 +1537,6 @@ static char* osm_gps_map_get_cache_dir(OsmGpsMapPrivate* priv)
   return osm_gps_map_get_default_cache_directory();
 }
 
-/* strcmp0 was introduced with glib 2.16 */
-#if !GLIB_CHECK_VERSION(2, 16, 0)
-int g_strcmp0(const char* str1, const char* str2)
-{
-  if (str1 == NULL && str2 == NULL)
-    return 0;
-  if (str1 == NULL)
-    return -1;
-  if (str2 == NULL)
-    return 1;
-  return strcmp(str1, str2);
-}
-#endif
 
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
                                         const gchar* base)
@@ -1696,12 +1549,9 @@ gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* t
   }
   else if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_AUTO) == 0)
   {
-#if GLIB_CHECK_VERSION(2, 16, 0)
     char* md5 =
         g_compute_checksum_for_string(G_CHECKSUM_MD5, osm_gps_map_source_get_repo_uri(source), -1);
-#else
-    char* md5 = g_strdup(osm_gps_map_source_get_friendly_name(source));
-#endif
+
     cache_dir = g_strdup_printf("%s%c%s", base, G_DIR_SEPARATOR, md5);
     g_free(md5);
   }
@@ -1726,7 +1576,7 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   // user can specify a map source ID, or a repo URI as the map source
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 ||
       priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
-    soup_get_navionics_key(priv);
+    get_navionics_key2();
 
   uri = osm_gps_map_source_get_repo_uri(OSM_GPS_MAP_SOURCE_NULL);
   if ((priv->map_source == 0) || (strcmp(priv->repo_uri, uri) == 0))
@@ -1793,8 +1643,6 @@ static void osm_gps_map_dispose(GObject* object)
   g_message("disposing map.");
   priv->is_disposed = TRUE;
 
-  soup_session_abort(priv->soup_session);
-  g_object_unref(priv->soup_session);
 
   g_hash_table_destroy(priv->tile_queue);
   g_hash_table_destroy(priv->missing_tiles);
@@ -1877,17 +1725,6 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
     {
       priv->proxy_uri = g_value_dup_string(value);
       g_debug("Setting proxy server: %s", priv->proxy_uri);
-
-#if USE_LIBSOUP22
-      SoupUri* uri = soup_uri_new(priv->proxy_uri);
-      g_object_set(G_OBJECT(priv->soup_session), SOUP_SESSION_PROXY_URI, uri, NULL);
-#else
-      GValue val = {0, {{0}, {0}}};
-      SoupURI* uri = soup_uri_new(priv->proxy_uri);
-      g_value_init(&val, SOUP_TYPE_URI);
-      g_value_take_boxed(&val, uri);
-      g_object_set_property(G_OBJECT(priv->soup_session), SOUP_SESSION_PROXY_URI, &val);
-#endif
     }
     else
       priv->proxy_uri = NULL;
@@ -2706,7 +2543,7 @@ void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int z
               osm_gps_map_tile_age_exceeded(filename,
                                             osm_gps_map_source_get_cache_period(priv->map_source)))
           {
-            osm_gps_map_download_tile(map, zoom, i, j, FALSE);
+            osm_gps_map_download_tile2(map, zoom, i, j, FALSE);
             num_tiles++;
           }
 
@@ -3328,7 +3165,6 @@ char* osm_gps_map_get_default_cache_directory(void)
   return g_build_filename(g_get_user_cache_dir(), "osmgpsmap", NULL);
 }
 
-#ifdef ENABLE_OSD
 coord_t* osm_gps_map_get_gps(OsmGpsMap* map)
 {
   g_return_val_if_fail(OSM_IS_GPS_MAP(map), NULL);
@@ -3338,22 +3174,18 @@ coord_t* osm_gps_map_get_gps(OsmGpsMap* map)
 
   return map->priv->osm_gps;
 }
-
-#endif
-
 struct _OsmGpsMapSource
 {
   guint id;
-
   gchar* name;
   gchar* repo_uri;
   gchar* image_format;
-
   gchar* copyright_notice;
   gchar* copyright_url;
-
-  guint min_zoom, max_zoom;
+  guint min_zoom;
+  guint max_zoom;
 };
+
 #define UNUSED(x) (void)(x)
 const OsmGpsMapSource* osm_gps_map_source_new(const gchar* name, const gchar repo_uri,
                                               const gchar* image_format,

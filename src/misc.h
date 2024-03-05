@@ -24,6 +24,10 @@
 
 #include <glib.h>
 
+#if __has_include("../lib/glib-2.0/include/glibconfig.h")
+#include <../lib/glib-2.0/include/glibconfig.h>
+#endif
+
 G_BEGIN_DECLS
 
 char *find_file(const char *name);
@@ -52,36 +56,7 @@ struct proxy_config {
 struct proxy_config *proxy_config_get();
 void proxy_config_free(struct proxy_config *config);
 
-#ifdef WITH_GTK
-#include <gtk/gtk.h>
-GtkWidget *notebook_new(void);
-void notebook_append_page(GtkWidget *notebook, GtkWidget *page, char *label);
-GtkWidget *notebook_get_gtk_notebook(GtkWidget *notebook);
 
-gboolean yes_no_f(GtkWidget *parent, char *title, const char *fmt, ...);
-void errorf(GtkWidget *parent, const char *fmt, ...);
-
-GtkWidget *button_new(void);
-GtkWidget *button_new_with_label(char *label);
-GtkWidget *entry_new(void);
-GtkWidget *label_big_new(char *str);
-GtkWidget *label_left_new(char *str);
-GtkWidget *label_right_new(char *str);
-GtkWidget *label_wrap_new(char *str);
-GtkWidget *scrolled_window_new(GtkPolicyType hp,  GtkPolicyType vp);
-void scrolled_window_add_with_viewport(GtkWidget *win, GtkWidget *child);
-void scrolled_window_add(GtkWidget *win, GtkWidget *child);
-
-void browser_url(GtkWidget *root, char *url);
-
-#ifdef MAEMO5
-#define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
-
-gboolean is_portrait(void);
-void rotation_enable(GtkWidget *window);
-void rotation_disable(GtkWidget *window);
-#endif
-#endif
 
 G_END_DECLS
 

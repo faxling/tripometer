@@ -67,6 +67,9 @@ isEmpty(PREFIX)
 }
 
 
+contains(QT_TARGET_ARCH , x86_64) {
+DEFINES += ARC486
+}
 # eg /usr/share/applications/harbour-pikefight.desktop
 DEPLOYMENT_PATH = $${PREFIX}/share/$${TARGET}
 DEFINES += DEPLOYMENT_PATH=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
@@ -75,6 +78,7 @@ DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += SAILFISH
 DEFINES += VERSION=\"\\\"\"1.0.0\"\\\"\"
 DEFINES += QT_SVG_LIB
+DEFINES += GLIB_DISABLE_DEPRECATION_WARNINGS
 # Input
 HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/osm-gps-map-osd-classic.h src/osm-gps-map/layer-gps.h
 SOURCES += src/misc.c src/net_io.c src/geonames.c src/search.c src/track.c src/img_loader.c src/icon.c src/converter.c src/osm-gps-map/osm-gps-map.c src/osm-gps-map/osm-gps-map-layer.c src/osm-gps-map/osm-gps-map-qt.cpp src/osm-gps-map/osm-gps-map-osd-classic.c src/osm-gps-map/layer-gps.c

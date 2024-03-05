@@ -351,7 +351,7 @@ void maep_geonames_entry_request(coord_t *pt1, coord_t *pt2,
   context = g_malloc0(sizeof(request_cb_t));
   context->cb = cb;
   context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context);
+  net_io_download_async(url, geonames_request_cb, context,0);
   
   g_free(url);
 }
@@ -380,7 +380,7 @@ void maep_geonames_place_request(const gchar *request,
   context = g_malloc0(sizeof(request_cb_t));
   context->cb = cb;
   context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context);
+  net_io_download_async(url, geonames_request_cb, context,0);
   
   g_free(url);
 }
@@ -407,7 +407,7 @@ void maep_nominatim_address_request(const gchar *request,
   context = g_malloc0(sizeof(request_cb_t));
   context->cb = cb;
   context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context);
+  net_io_download_async(url, geonames_request_cb, context,0);
   
   g_free(url);
 }

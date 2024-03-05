@@ -100,50 +100,7 @@ static gboolean img_loader_jpeg(struct jpeg_decompress_struct *cinfo,
   return TRUE;
 }
 
-#if JPEG_LIB_VERSION >= 80
-cairo_surface_t* maep_loader_jpeg_from_mem(const unsigned char *buffer,
-                                               size_t len, GError **error)
-{
-  struct jpeg_decompress_struct cinfo;
-  struct my_error_mgr jerr;
-  cairo_surface_t *surf = NULL;
 
-  /* Step 1: allocate and initialize JPEG decompression object */
-
-  /* We set up the normal JPEG error routines, then override error_exit. */
-  jerr.error = error;
-  cinfo.err = jpeg_std_error(&jerr.pub);
-  jerr.pub.error_exit = _error_exit;
-  /* Establish the setjmp return context for my_error_exit to use. */
-  if (setjmp(jerr.setjmp_buffer)) {
-    /* If we get here, the JPEG code has signaled an error.
-     * We need to clean up the JPEG object, close the input file, and return.
-     */
-    jpeg_destroy_decompress(&cinfo);
-    if (surf)
-      cairo_surface_destroy(surf);
-    error = jerr.error;
-    return NULL;
-  }
-  /* Now we can initialize the JPEG decompression object. */
-  jpeg_create_decompress(&cinfo);
-
-  /* Step 2: specify data source (eg, a file) */
-  jpeg_mem_src(&cinfo, (unsigned char *)buffer, len);
-
-  if (!img_loader_jpeg(&cinfo, &surf, error)) {
-    jpeg_destroy_decompress(&cinfo);
-    if (surf)
-      cairo_surface_destroy(surf);
-    return NULL;
-  }
-
-  /* This is an important step since it will release a good deal of memory. */
-  jpeg_destroy_decompress(&cinfo);
-
-  return surf;
-}
-#endif
 
 cairo_surface_t* maep_loader_jpeg_from_file(const char *filename, GError **error)
 {

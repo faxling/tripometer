@@ -17,7 +17,6 @@
 
 #ifndef OSM_GPS_MAP_QT_H
 #define OSM_GPS_MAP_QT_H
-#include <memory>
 #include "../misc.h"
 #include "../search.h"
 #include "../track.h"
@@ -37,6 +36,7 @@
 #include <QString>
 #include <Utils.h>
 #include <cairo.h>
+#include <memory>
 namespace Maep
 {
 
@@ -68,7 +68,10 @@ namespace Maep
     {
       gconf_set_string(key.toLocal8Bit().data(), value.toLocal8Bit().data());
     }
-    inline void setInt(const QString& key, const int value) { gconf_set_int(key.toLocal8Bit().data(), value); }
+    inline void setInt(const QString& key, const int value)
+    {
+      gconf_set_int(key.toLocal8Bit().data(), value);
+    }
   };
 
   class GeonamesPlace : public QObject
@@ -79,7 +82,8 @@ namespace Maep
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
   public:
-    inline GeonamesPlace(const MaepGeonamesPlace* place = NULL, QObject* parent = NULL) : QObject(parent)
+    inline GeonamesPlace(const MaepGeonamesPlace* place = NULL, QObject* parent = NULL)
+        : QObject(parent)
     {
       if (place)
       {
@@ -103,8 +107,8 @@ namespace Maep
     void coordinateChanged();
 
   public slots:
-    QString coordinateToString(
-        QGeoCoordinate::CoordinateFormat format = QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
+    QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
+                                   QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
 
   private:
     QString name, country;
@@ -121,7 +125,8 @@ namespace Maep
     Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
   public:
-    inline GeonamesEntry(const MaepGeonamesEntry* entry = NULL, QObject* parent = NULL) : QObject(parent)
+    inline GeonamesEntry(const MaepGeonamesEntry* entry = NULL, QObject* parent = NULL)
+        : QObject(parent)
     {
       if (entry)
       {
@@ -147,8 +152,8 @@ namespace Maep
     void coordinateChanged();
 
   public slots:
-    QString coordinateToString(
-        QGeoCoordinate::CoordinateFormat format = QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
+    QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
+                                   QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
 
   private:
     QString title, summary, thumbnail, url;
@@ -161,8 +166,10 @@ namespace Maep
 
     Q_ENUMS(WayPointField)
 
-    Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY autosavePeriodChanged)
-    Q_PROPERTY(qreal metricAccuracy READ getMetricAccuracy WRITE setMetricAccuracy NOTIFY metricAccuracyChanged)
+    Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
+                   autosavePeriodChanged)
+    Q_PROPERTY(qreal metricAccuracy READ getMetricAccuracy WRITE setMetricAccuracy NOTIFY
+                   metricAccuracyChanged)
     Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
     Q_PROPERTY(unsigned int startDate READ getStartDate NOTIFY startDateSet)
     Q_PROPERTY(qreal length READ getLength NOTIFY characteristicsChanged)
@@ -202,15 +209,25 @@ namespace Maep
       return (value == G_MAXFLOAT) ? 0. : (qreal)value;
     }
     inline qreal getLength() { return (qreal)maep_geodata_track_get_metric_length(track); }
-    inline unsigned int getDuration() { return (unsigned int)maep_geodata_track_get_duration(track); }
-    inline unsigned int getStartDate() { return (unsigned int)maep_geodata_track_get_start_timestamp(track); }
-    Q_INVOKABLE inline unsigned int getWayPointLength() { return maep_geodata_waypoint_get_length(track); }
+    inline unsigned int getDuration()
+    {
+      return (unsigned int)maep_geodata_track_get_duration(track);
+    }
+    inline unsigned int getStartDate()
+    {
+      return (unsigned int)maep_geodata_track_get_start_timestamp(track);
+    }
+    Q_INVOKABLE inline unsigned int getWayPointLength()
+    {
+      return maep_geodata_waypoint_get_length(track);
+    }
     Q_INVOKABLE inline QGeoCoordinate getWayPointCoord(int index)
     {
       const way_point_t* wpt;
 
       wpt = maep_geodata_waypoint_get(track, (guint)index);
-      return (wpt) ? QGeoCoordinate(rad2deg(wpt->pt.coord.rlat), rad2deg(wpt->pt.coord.rlon)) : QGeoCoordinate();
+      return (wpt) ? QGeoCoordinate(rad2deg(wpt->pt.coord.rlat), rad2deg(wpt->pt.coord.rlon))
+                   : QGeoCoordinate();
     }
     Q_INVOKABLE inline QString getWayPoint(int index, WayPointField field)
     {
@@ -218,7 +235,8 @@ namespace Maep
     }
     Q_INVOKABLE inline void setWayPoint(int index, WayPointField field, const QString& value)
     {
-      maep_geodata_waypoint_set_field(track, (guint)index, (way_point_field)field, value.toLocal8Bit().data());
+      maep_geodata_waypoint_set_field(track, (guint)index, (way_point_field)field,
+                                      value.toLocal8Bit().data());
     }
 
   signals:
@@ -253,18 +271,24 @@ namespace Maep
 
     Q_ENUMS(Source)
 
+    Q_PROPERTY(int numberPendingReq READ numberPendingReq NOTIFY numberPendingReqChanged)
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
+    Q_PROPERTY(
+        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
     Q_PROPERTY(bool double_pixel READ doublePixel WRITE setDoublePixel NOTIFY doublePixelChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
-    Q_PROPERTY(bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
+    Q_PROPERTY(
+        bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
     Q_PROPERTY(Maep::Track* track READ getTrack WRITE setTrack NOTIFY trackChanged)
-    Q_PROPERTY(bool screen_rotation READ screen_rotation WRITE setScreenRotation NOTIFY screenRotationChanged)
-    Q_PROPERTY(bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
+    Q_PROPERTY(bool screen_rotation READ screen_rotation WRITE setScreenRotation NOTIFY
+                   screenRotationChanged)
+    Q_PROPERTY(
+        bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
 
-    Q_PROPERTY(unsigned int gps_refresh_rate READ gpsRefreshRate WRITE setGpsRefreshRate NOTIFY gpsRefreshRateChanged)
+    Q_PROPERTY(unsigned int gps_refresh_rate READ gpsRefreshRate WRITE setGpsRefreshRate NOTIFY
+                   gpsRefreshRateChanged)
 
     Q_PROPERTY(QString compilation_date READ compilation_date CONSTANT)
 
@@ -355,9 +379,9 @@ namespace Maep
     Q_INVOKABLE void saveMark(int nId);
     Q_INVOKABLE void saveTrack(int nId);
     Q_INVOKABLE QString savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
-                                    QVariant pListTeam2, QString sTeamNameAndSum2,
-                                    QVariant pListTeam3, QString sTeamNameAndSum3,
-                                    int nMinSize, QString sName, int nTeamCount);
+                                       QVariant pListTeam2, QString sTeamNameAndSum2,
+                                       QVariant pListTeam3, QString sTeamNameAndSum3, int nMinSize,
+                                       QString sName, int nTeamCount);
 
     Q_INVOKABLE QString saveMap(int w, int h);
     Q_INVOKABLE void clearTrack();
@@ -401,7 +425,7 @@ namespace Maep
   signals:
 
     void mapChanged();
-
+    void numberPendingReqChanged();
     void sourceChanged(Source source);
     void overlaySourceChanged(Source source);
     void doublePixelChanged(bool status);
@@ -429,7 +453,10 @@ namespace Maep
     void setSearchRequest(const QString& request);
     void setSearchResults(MaepSearchContextSource source, GSList* places);
     void setLookAt(float lat, float lon);
-    inline void setLookAt(const QGeoCoordinate& coord) { setLookAt(coord.latitude(), coord.longitude()); }
+    inline void setLookAt(const QGeoCoordinate& coord)
+    {
+      setLookAt(coord.latitude(), coord.longitude());
+    }
     void zoomIn();
     void zoomOut();
     void positionUpdate(const QGeoPositionInfo& info);
@@ -443,7 +470,8 @@ namespace Maep
   private:
     void initBoatMarkers();
     int START_LINE = 0;
-    void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize,QImage& sImg,  QPainter* p,double fQuote);
+    void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize, QImage& sImg,
+                           QPainter* p, double fQuote);
 
     static int countSearchResults(QQmlListProperty<GeonamesPlace>* prop)
     {
@@ -455,7 +483,8 @@ namespace Maep
     {
       GpsMap* self = qobject_cast<GpsMap*>(prop->object);
       g_message("#### Hey I've got name %s (%fx%f) for result %d!",
-                self->searchRes[index]->getName().toLocal8Bit().data(), self->searchRes[index]->coordinate().latitude(),
+                self->searchRes[index]->getName().toLocal8Bit().data(),
+                self->searchRes[index]->coordinate().latitude(),
                 self->searchRes[index]->coordinate().longitude(), index);
       return self->searchRes[index];
     }
@@ -478,6 +507,9 @@ namespace Maep
 
     gboolean dragging;
     gboolean zooming;
+    int numberPendingReq() { return numberPendingReq_; };
+    int numberPendingReq_ = 0;
+    MssTimer* m_pReqCountTimer = 0;
     // float factor0;
 
     /* Wiki entry. */

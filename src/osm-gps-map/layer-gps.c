@@ -23,7 +23,8 @@
 #include "layer-gps.h"
 #include "osm-gps-map-layer.h"
 #include <math.h>
-
+#include <src/misc.h>
+// #include <../lib/glib-2.0/include/glibconfig.h>
 
 struct _MaepLayerGpsPrivate
 {
