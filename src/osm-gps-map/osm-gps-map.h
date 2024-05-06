@@ -169,6 +169,7 @@ gboolean osm_gps_map_remove_image(OsmGpsMap* map, cairo_surface_t* image);
 void osm_gps_map_clear_images(OsmGpsMap* map);
 void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float heading);
 void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status);
+gboolean osm_gps_map_idle_redraw(OsmGpsMap* map);
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y);
 void osm_gps_map_from_co_ordinates(OsmGpsMap* map, coord_t* coord, int* pixel_x, int* pixel_y);
 void osm_gps_map_from_deg(OsmGpsMap* map, double log, double lat, int* pixel_x, int* pixel_y);

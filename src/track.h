@@ -221,11 +221,9 @@ guint maep_geodata_waypoint_get_length(const MaepGeodata *track_state);
 
 typedef struct {
   MaepGeodata *parent;
-  
   track_t *track;
   track_seg_t *seg;
   guint pt;
-
   track_point_t *cur;
 } MaepGeodataTrackIter;
 

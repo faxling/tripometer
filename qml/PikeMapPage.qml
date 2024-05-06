@@ -188,7 +188,7 @@ Item {
   Column {
     id: map_controls2
     spacing: 20
-    anchors.bottom: map_controls.top
+    anchors.bottom: map_controls1.top
     anchors.bottomMargin: 20
     anchors.left: parent.left
     anchors.leftMargin: 20
@@ -250,7 +250,7 @@ Item {
         enabled: false
       }
       PropertyChanges {
-        target: map_controls
+        target: map_controls1
         opacity: 0.0
         enabled: false
       }
@@ -333,7 +333,7 @@ Item {
   }
 
   Row {
-    id: map_controls
+    id: map_controls1
     spacing: 20
     x: 20
     anchors.bottom: parent.bottom
@@ -413,6 +413,7 @@ Item {
       height: Theme.itemSizeLarge
       color: Theme.highlightBackgroundColor
     }
+
     Row {
 
       id: idSearchRow
@@ -583,5 +584,58 @@ Item {
       }
       */
     }
+
+    Row {
+
+      id: idSearchMarkerRow
+      x: Theme.itemSizeLarge
+
+      TextField {
+        id: idSearchMarkerText
+        color: "black"
+        placeholderText: "Marker filter"
+        label: "Filter"
+        width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 2
+        height: Theme.itemSizeLarge
+
+        EnterKey.text: "search"
+        EnterKey.onClicked: {
+          idSearchPage.currentIndex = -1
+          idMap.setSearchRequest(idSearchText.text)
+        }
+      }
+      IconButton {
+
+        anchors.verticalCenter: parent.verticalCenter
+        width: Theme.itemSizeSmall
+        height: Theme.itemSizeSmall
+        icon.source: "image://theme/icon-m-search-on-page?"
+                     + (down ? Theme.highlightColor : Theme.primaryColor)
+        onClicked: {
+          idSearchPage.currentIndex = -1
+          idMap.setSearchRequest(idSearchText.text)
+          nSearchBusy = true
+        }
+
+        BusyIndicator {
+          running: nSearchBusy
+          size: BusyIndicatorSize.Medium
+          anchors.centerIn: parent
+        }
+      }
+      IconButton {
+
+        anchors.verticalCenter: parent.verticalCenter
+        width: Theme.itemSizeSmall
+        height: Theme.itemSizeSmall
+        icon.source: "image://theme/icon-m-cancel?"
+                     + (down ? Theme.highlightColor : Theme.primaryColor)
+        onClicked: {
+          idSearchText.text = ""
+        }
+      }
+    }
+
+    // Search
   }
 }

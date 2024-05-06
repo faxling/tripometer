@@ -206,6 +206,11 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
     {
       numberPendingReq_ = g_nOutstaningCurls;
       emit numberPendingReqChanged();
+      if (g_nOutstaningCurls == 0)
+      {
+        osm_gps_map_idle_redraw(map);
+      }
+
     }
   });
 

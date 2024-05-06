@@ -36,7 +36,6 @@
 
 #include <cairo.h>
 
-
 // Include generated file to avoid ide warnings
 #include "src/misc.h"
 // #include <../lib/glib-2.0/include/glibconfig.h>
@@ -193,16 +192,15 @@ static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics);
 static void osm_gps_map_print_images(OsmGpsMap* map);
 // static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 
-
 static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
 
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t*);
 static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map);
-static gboolean osm_gps_map_idle_redraw(OsmGpsMap* map);
 
-static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source);
-static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source);
+
+// static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source);
+//static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source);
 
 static void cached_tile_free(OsmCachedTile* tile)
 {
@@ -281,7 +279,7 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
          * move the source pointer ahead by the amount we copied. And
          * move the destination pointer ahead by the same amount.
          */
-        g_memmove(dst, src, count);
+        memmove(dst, src, count);
         src += count;
         dst += count;
 
@@ -289,7 +287,7 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
          * the match. Adjust the source pointer by the text we replaced.
          * Adjust the destination pointer by the amount of replacement
          * text. */
-        g_memmove(dst, to, tolen);
+        memmove(dst, to, tolen);
         src += fromlen;
         dst += tolen;
       }
@@ -711,7 +709,7 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
   // g_debug("dirty is %p", priv->dirty);
   cairo_region_union_rectangle(priv->dirty, &rect);
 }
-
+/*
 static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
 {
   OsmGpsMapPrivate* priv = map->priv;
@@ -722,13 +720,12 @@ static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
 
   if (priv->osm_gps_valid)
   {
-
     int map_x0, map_y0;
-    int x, y;
     map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER + 20;
     map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER + 20;
   }
 }
+*/
 
 static void osm_gps_map_blit_surface(cairo_t* cr, cairo_surface_t* cr_surf, int offset_x,
                                      int offset_y, int modulo, int area_x, int area_y)
@@ -779,7 +776,6 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 
 #define UNUSED(x) (void)(x)
 
-
 char g_szNAVTOKEN[256] = {0};
 char g_szNAVURL1[500] = {0};
 char g_szNAVURL2[500] = {0};
@@ -791,7 +787,6 @@ char g_szNAVURL2[500] = {0};
 #define NAVURL2                                                                                    \
   "https://backend.navionics.com/tile/#Z/#X/"                                                      \
   "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
-
 
 char* get_navionics_key2()
 {
@@ -822,6 +817,8 @@ char* get_navionics_key2()
 }
 
 struct curl_slist* chunk = 0;
+
+// Run in main thread
 void curl_cb(net_result_t* result, gpointer data)
 {
   tile_download_t* dl = (tile_download_t*)data;
@@ -829,11 +826,11 @@ void curl_cb(net_result_t* result, gpointer data)
   FILE* file;
   OsmGpsMap* map = OSM_GPS_MAP(dl->map);
   OsmGpsMapPrivate* priv = map->priv;
-  gboolean file_saved = FALSE;
   cairo_surface_t* cr_surf;
 
   if (result->code == 0)
   {
+
     /* save tile into cachedir if one has been specified */
     if (priv->cache_dir)
     {
@@ -843,8 +840,6 @@ void curl_cb(net_result_t* result, gpointer data)
         if (file != NULL)
         {
           fwrite(result->data.ptr, 1, result->data.len, file);
-
-          file_saved = TRUE;
           fclose(file);
         }
       }
@@ -865,21 +860,19 @@ void curl_cb(net_result_t* result, gpointer data)
         priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
     }
 
-    g_hash_table_remove(priv->tile_queue, dl->uri);
-
-    g_free(dl->uri);
-    g_free(dl->folder);
-    g_free(dl->filename);
-    g_free(dl);
   }
   else
   {
     if (result->respCode == 404)
     {
       g_hash_table_insert(priv->missing_tiles, dl->uri, NULL);
-      g_hash_table_remove(priv->tile_queue, dl->uri);
     }
   }
+  g_hash_table_remove(priv->tile_queue, dl->uri);
+  g_free(dl->uri);
+  g_free(dl->folder);
+  g_free(dl->filename);
+  g_free(dl);
 }
 
 static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
@@ -892,7 +885,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
   if (g_hash_table_lookup_extended(priv->tile_queue, dl->uri, NULL, NULL) ||
       g_hash_table_lookup_extended(priv->missing_tiles, dl->uri, NULL, NULL))
   {
-    g_debug("Tile already downloading (or missing)");
+    // g_message("Tile already downloading (or missing)");
     g_free(dl->uri);
     g_free(dl);
     return;
@@ -905,6 +898,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
                                    G_DIR_SEPARATOR, x, G_DIR_SEPARATOR, y, priv->image_format);
     dl->map = map;
     dl->redraw = redraw;
+    g_hash_table_insert(priv->tile_queue, dl->uri, NULL);
   }
 
   struct curl_slist* chunk = 0;
@@ -1039,6 +1033,7 @@ static OsmCachedTile* osm_gps_map_render_missing_tile(OsmGpsMap* map, int zoom, 
 }
 
 /* default tile lifetime is one week */
+/*
 #ifndef OSM_GPS_MAP_TILE_TTL
 #define OSM_GPS_MAP_TILE_TTL (60 * 60 * 24 * 7)
 #endif
@@ -1052,6 +1047,7 @@ static gboolean osm_gps_map_tile_age_exceeded(char* filename, guint period)
 
   return FALSE;
 }
+*/
 
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t* cairohandle)
@@ -1238,7 +1234,7 @@ static void osm_gps_map_print_track(OsmGpsMapPrivate* priv, MaepGeodata* track, 
                                     int* min_x, int* max_y, int* min_y, int nType)
 {
   MaepGeodataTrackIter iter;
-  MaepGeodataTrackIter iterFirst;
+  MaepGeodataTrackIter iterFirst = {};
   const way_point_t* wpt;
   int x, y, map_x0, map_y0, st;
   guint i;
@@ -1438,7 +1434,6 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
     }
   }
 
-
   priv->redraw_cycle++;
 
   /* draw transparent background to initialise pixmap */
@@ -1467,7 +1462,7 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   return TRUE;
 }
 
-static gboolean osm_gps_map_idle_redraw(OsmGpsMap* map)
+gboolean osm_gps_map_idle_redraw(OsmGpsMap* map)
 {
   OsmGpsMapPrivate* priv = map->priv;
   // g_message("osm_gps_map_idle_redraw");
@@ -1536,7 +1531,6 @@ static char* osm_gps_map_get_cache_dir(OsmGpsMapPrivate* priv)
     return g_strdup(priv->tile_base_dir);
   return osm_gps_map_get_default_cache_directory();
 }
-
 
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
                                         const gchar* base)
@@ -1642,7 +1636,6 @@ static void osm_gps_map_dispose(GObject* object)
 
   g_message("disposing map.");
   priv->is_disposed = TRUE;
-
 
   g_hash_table_destroy(priv->tile_queue);
   g_hash_table_destroy(priv->missing_tiles);
@@ -2423,7 +2416,7 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   }
   return 17;
 }
-
+/*
 static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source)
 {
   switch (source)
@@ -2462,9 +2455,10 @@ static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source)
   return 0;
 }
 
+*/
+/*
 static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source)
 {
-  /* Return TRUE to display out of date cache. */
   switch (source)
   {
   case OSM_GPS_MAP_SOURCE_NULL:
@@ -2500,6 +2494,8 @@ static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source)
   }
   return 0;
 }
+*/
+
 
 gboolean osm_gps_map_source_is_valid(OsmGpsMapSource_t source)
 {
@@ -2517,7 +2513,6 @@ void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int z
     gchar* filename;
     num_tiles = 0;
     zoom_end = CLAMP(zoom_end, priv->min_zoom, priv->max_zoom);
-    g_debug("Download maps: z:%d->%d", zoom_start, zoom_end);
 
     for (zoom = zoom_start; zoom <= zoom_end; zoom++)
     {
@@ -2539,9 +2534,7 @@ void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int z
           filename = g_strdup_printf("%s%c%d%c%d%c%d.%s", priv->cache_dir, G_DIR_SEPARATOR, zoom,
                                      G_DIR_SEPARATOR, i, G_DIR_SEPARATOR, j, priv->image_format);
 
-          if ((!g_file_test(filename, G_FILE_TEST_EXISTS)) ||
-              osm_gps_map_tile_age_exceeded(filename,
-                                            osm_gps_map_source_get_cache_period(priv->map_source)))
+          if ((!g_file_test(filename, G_FILE_TEST_EXISTS)))
           {
             osm_gps_map_download_tile2(map, zoom, i, j, FALSE);
             num_tiles++;
@@ -2550,7 +2543,6 @@ void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int z
           g_free(filename);
         }
       }
-      g_debug("DL @Z:%d = %d tiles", zoom, num_tiles);
     }
   }
 }
@@ -3029,10 +3021,7 @@ void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status)
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
 {
   coord_t coord;
-  OsmGpsMapPrivate* priv;
-
-  g_return_val_if_fail(OSM_IS_GPS_MAP(map), coord);
-  priv = map->priv;
+  OsmGpsMapPrivate* priv = map->priv;
 
   coord.rlat =
       pixel2lat(priv->map_zoom,
