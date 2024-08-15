@@ -188,7 +188,7 @@ G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
  * Drawing function forward defintions
  */
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics);
+static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navionics);
 static void osm_gps_map_print_images(OsmGpsMap* map);
 // static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 
@@ -324,12 +324,12 @@ static void map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel
   *ptr++ = '\0';
 }
 
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics)
+static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navionics)
 {
   int uri_format;
 
   uri_format = 0;
-  *the_navonics = FALSE;
+  *the_navionics = FALSE;
 
   if (g_strrstr(repo_uri, URI_MARKER_X))
     uri_format |= URI_HAS_X;
@@ -356,9 +356,9 @@ static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navonics)
     uri_format |= URI_HAS_R;
 
   if (g_strrstr(repo_uri, "navionics.com"))
-    *the_navonics = TRUE;
+    *the_navionics = TRUE;
 
-  g_debug("URI Format: 0x%X (navionics: %X)", uri_format, *the_navonics);
+  g_debug("URI Format: 0x%X (navionics: %X)", uri_format, *the_navionics);
 
   return uri_format;
 }
@@ -781,11 +781,11 @@ char g_szNAVURL1[500] = {0};
 char g_szNAVURL2[500] = {0};
 
 #define NAVURL1                                                                                    \
-  "https://backend.navionics.com/tile/#Z/#X/"                                                      \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                      \
   "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
 #define NAVURL2                                                                                    \
-  "https://backend.navionics.com/tile/#Z/#X/"                                                      \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                      \
   "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
 char* get_navionics_key2()
@@ -793,13 +793,17 @@ char* get_navionics_key2()
   if (g_szNAVURL1[0] != 0)
     return g_szNAVTOKEN;
 
+//   strcpy(g_szNAVTOKEN, "eyJrZXkiOiJOYXZpb25pY3Nfd2ViYXBpXzA0MDQxIiwia2V5RG9tYWluIjoibWFwcy5nYXJtaW4uY29tIiwicmVmZXJlciI6Im1hcHMuZ2FybWluLmNvbSIsInJhbmRvbSI6MTcyMzAwOTE4Mzg4N30");
+
+
+
   struct curl_slist* chunk = 0;
 
-  net_io_append_header(&chunk, "referer: https://webapp.navionics.com/");
+  net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
 
   net_result_t pRes =
-      net_io_download_sync("https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/"
-                           "webapp.navionics.com?_=1690792122212",
+      net_io_download_sync("https://tile3.navionics.com/tile/get_key/Navionics_webapi_04041/"
+                           "maps.garmin.com?_=1690792122212",
                            chunk);
 
   if (pRes.respCode != 200)
@@ -904,12 +908,12 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
   struct curl_slist* chunk = 0;
   if (priv->the_navionics)
   {
-    net_io_append_header(&chunk, "referer: https://webapp.navionics.com/");
+    net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
     net_io_append_header(&chunk, "authority: backend.navionics.com");
     net_io_append_header(
         &chunk, "authority: accept: image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
     net_io_append_header(&chunk, "accept-language: en-GB,en;q=0.9,en-US;q=0.8,sv;q=0.7");
-    net_io_append_header(&chunk, "origin: https://webapp.navionics.com");
+    net_io_append_header(&chunk, "origin: https://maps.garmin.com");
     net_io_append_header(&chunk, "sec-ch-ua: \"Not/A)Brand\";v=\"99\", \"Microsoft "
                                  "Edge\";v=\"115\", \"Chromium\";v=\"115\"");
 
@@ -919,6 +923,9 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
     net_io_append_header(&chunk, "sec-fetch-dest: image");
     net_io_append_header(&chunk, "sec-fetch-mode: cors");
     net_io_append_header(&chunk, "sec-fetch-site: same-site");
+ //    printf("Try Download tile %s\n", dl->uri);
+
+
   }
   net_io_download_async(dl->uri, curl_cb, dl, chunk);
 }
@@ -2227,7 +2234,8 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE:
     return "http://maps-for-free.com/layer/relief/z#Z/row#Y/#Z_#X-#Y.jpg";
   case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-    return "http://mt#R.google.com/vt/v=w2.97&x=#X&y=#Y&z=#Z";
+    return "https://mt0.google.com/vt/lyrs=m&x=#X&y=#Y&z=#Z";
+    //return "http://mt#R.google.com/vt/v=w2.97&x=#X&y=#Y&z=#Z";
     /* http://mt0.google.com/mapstt?zoom=13&x=1406&y=3272 */
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
     /* No longer working

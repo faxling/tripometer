@@ -57,6 +57,10 @@ function reCalcSizeAndDisplay() {
   }
 }
 
+function compareNumbers(a, b) {
+  return b - a
+}
+
 function calcSizeAndDisplay(nOwner, value) {
 
   var oPModel
@@ -102,13 +106,13 @@ function calcSizeAndDisplay(nOwner, value) {
   var ocLength = []
   for (var i = 0; i < nC; ++i) {
     nLen = oPModel.get(i).nLen
-
-    if (nLen < idApp.nMinSize)
+    if (nLen < idApp.nMinSize) {
       continue
+    }
     ocLength.push(nLen)
   }
 
-  ocLength.sort()
+  ocLength.sort(compareNumbers)
   nC = ocLength.length
 
   if (nC > idApp.nPikesCounted) {

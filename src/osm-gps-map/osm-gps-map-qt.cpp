@@ -1540,6 +1540,7 @@ QString Maep::GpsMap::getCenteredTile(Maep::GpsMap::Source source) const
   }
 
   uri = osm_gps_map_source_get_tile_uri((OsmGpsMapSource_t)source, zoom, x, y);
+
   // g_message("Get uri for source %d: %s.", source, uri);
   out = QString(uri);
   g_free(uri);

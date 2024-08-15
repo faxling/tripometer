@@ -39,9 +39,9 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     tNode.bIsLoaded = bIsLoaded;
     tNode.sDateTime = FormatDateTime(t.nTime);
     tNode.sMaxSpeed = FormatKmH(t.speed * 3.6) + " km/h";
-    tNode.sDuration = FormatDuration(t.nDuration );
+    tNode.sDuration = FormatDuration(t.nDuration);
     if (tNode.nType == 1)
-      tNode.sLength = QString::asprintf("%.4f %.4f",t.lo, t.la);
+      tNode.sLength = QString::asprintf("%.4f %.4f", t.lo, t.la);
     else
       tNode.sLength = FormatKm(t.len / 1000.0) + " km";
 
@@ -49,8 +49,6 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
   }
 
   // nType = 1 point
-
-
 
   if (t.nType <= 0)
   {
@@ -108,6 +106,24 @@ TrackModel::TrackModel(QObject*)
 
 TrackModel::~TrackModel()
 {
+}
+
+void TrackModelFiltered::setFilter(QString sFilter)
+{
+  if (m_sFilterStr == sFilter)
+    return;
+  m_sFilterStr = sFilter;
+  qDebug() << " sFilter " << sFilter;
+  invalidate();
+}
+
+bool TrackModelFiltered::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+  if (m_sFilterStr.isEmpty())
+    return true;
+  QModelIndex index0 = sourceModel()->index(sourceRow, 0, sourceParent);
+  QString s = sourceModel()->data(index0, TRACK_ROLES_t::NAME_t).toString();
+  return s.contains(m_sFilterStr, Qt::CaseSensitivity::CaseInsensitive);
 }
 
 void TrackModel::trackCenter(int nId)
@@ -177,7 +193,8 @@ void TrackModel::loadSelected()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = true;
-      QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
+      QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName),
+                                Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
     }

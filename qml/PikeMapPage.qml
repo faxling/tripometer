@@ -123,6 +123,11 @@ Item {
       onClicked: {
         idMap.setSource(1)
       }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        text: "OSM"
+      }
     }
 
     TrippBtn {
@@ -168,7 +173,7 @@ Item {
     anchors.leftMargin: 20
 
     TrippBtn {
-      id: idNavonics1
+      id: idNavionics1
       bSelected: idMap.source === 22
       src: "btnSeaMap.png"
       onClicked: {
@@ -176,11 +181,24 @@ Item {
       }
     }
     TrippBtn {
-      id: idNavonics2
+      id: idNavionics2
       bSelected: idMap.source === 23
       src: "btnSeaMap.png"
       onClicked: {
         idMap.setSource(23)
+      }
+    }
+    TrippBtn {
+      id: idGoogle
+      bSelected: idMap.source === 7
+      src: "btnMap.png"
+      onClicked: {
+        idMap.setSource(7)
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        text: "Google"
       }
     }
   }
@@ -519,7 +537,7 @@ Item {
     SecondPage {
       id: idSecondPage
       anchors.fill: parent
-      anchors.topMargin: 100
+      anchors.topMargin: idBtnDelete.height + Theme.itemSizeLarge
       anchors.bottomMargin: Theme.itemSizeLarge
       clip: true
     }
@@ -538,6 +556,7 @@ Item {
       spacing: 10
 
       Button {
+        id: idBtnDelete
         width: Theme.itemSizeLarge
         text: "Delete"
         color: "black"
@@ -588,7 +607,8 @@ Item {
     Row {
 
       id: idSearchMarkerRow
-      x: Theme.itemSizeLarge
+      //x: Theme.itemSizeLarge
+      anchors.top: idButtonRow.bottom
 
       TextField {
         id: idSearchMarkerText
@@ -598,31 +618,11 @@ Item {
         width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 2
         height: Theme.itemSizeLarge
 
-        EnterKey.text: "search"
-        EnterKey.onClicked: {
-          idSearchPage.currentIndex = -1
-          idMap.setSearchRequest(idSearchText.text)
+        onTextChanged: {
+          idTrackModelFiltered.setFilter(text)
         }
       }
-      IconButton {
 
-        anchors.verticalCenter: parent.verticalCenter
-        width: Theme.itemSizeSmall
-        height: Theme.itemSizeSmall
-        icon.source: "image://theme/icon-m-search-on-page?"
-                     + (down ? Theme.highlightColor : Theme.primaryColor)
-        onClicked: {
-          idSearchPage.currentIndex = -1
-          idMap.setSearchRequest(idSearchText.text)
-          nSearchBusy = true
-        }
-
-        BusyIndicator {
-          running: nSearchBusy
-          size: BusyIndicatorSize.Medium
-          anchors.centerIn: parent
-        }
-      }
       IconButton {
 
         anchors.verticalCenter: parent.verticalCenter
@@ -631,7 +631,7 @@ Item {
         icon.source: "image://theme/icon-m-cancel?"
                      + (down ? Theme.highlightColor : Theme.primaryColor)
         onClicked: {
-          idSearchText.text = ""
+          idSearchMarkerText.text = ""
         }
       }
     }

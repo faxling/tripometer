@@ -10,13 +10,13 @@ Name: harbour-pikefight
 
 # Harbour requirements.
 %define __provides_exclude_from ^%{_datadir}/.*$
-%define __requires_exclude ^libjpeg.*|libcairo.*|libpng15.*|libpsl.*|libdconf.*|libicui18n.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicuuc.*|libicudata.*|libc.*$
+%define __requires_exclude ^libjpeg.*|^libsoup*.*|libcairo.*|libpng15.*|libpsl.*|libdconf.*|libicui18n.*|libsqlite3.*|libpixman-1.*|libfreetype.*|libicuuc.*|libicudata.*|libc.*$
 %{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
 %{!?qtc_make:%define qtc_make make}
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.4.4
+Version: 1.4.5
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
@@ -43,6 +43,7 @@ BuildRequires: pkgconfig(gobject-2.0)
 BuildRequires: pkgconfig(cairo)
 #BuildRequires: pkgconfig(libpng15)
 BuildRequires: pkgconfig(dconf)
+#BuildRequires: pkgconfig(libsoup-2.4)
 BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libcurl)
 BuildRequires: libjpeg-turbo-devel

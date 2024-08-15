@@ -49,8 +49,12 @@ int main(int argc, char* argv[])
   InfoListModel* pInfoListModel = new InfoListModel;
   pContext->setContextProperty("idListModel", pInfoListModel);
 
-  g_pTheTrackModel = new TrackModel;
+  auto pTM = new TrackModel;
+  g_pTheTrackModel = pTM;
+  auto pTMF = new TrackModelFiltered;
+  pTMF->setSourceModel(pTM);
   pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
+  pContext->setContextProperty("idTrackModelFiltered", pTMF);
   MssListModel* pSearchResultModel = new MssListModel("name", "lat", "lo", "type");
   oSW.Stop();
   pSearchResultModel->Init(1);

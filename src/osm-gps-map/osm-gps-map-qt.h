@@ -21,7 +21,7 @@
 #include "../search.h"
 #include "../track.h"
 #include "layer-gps.h"
-#include "layer-wiki.h"
+//#include "layer-wiki.h"
 #include "osm-gps-map-osd-classic.h"
 #include "osm-gps-map.h"
 #include <QColor>

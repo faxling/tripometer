@@ -119,7 +119,7 @@ SilicaListView {
   width: parent.width
   height: 800
 
-  model: idTrackModel
+  model: idTrackModelFiltered
 
   delegate: ListItem {
 

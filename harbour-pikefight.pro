@@ -8,7 +8,6 @@ INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\lib
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\glib-2.0
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\cairo
 INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\c++\4.8.3
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libsoup-2.4
 
 QT += multimedia svg qml quick positioning sensors dbus gui
 
