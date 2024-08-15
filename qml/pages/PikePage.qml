@@ -41,6 +41,8 @@ SilicaListView {
   signal pikePressed(int nId)
 
   function hasImg(sImageFile) {
+    if (sImageFile === undefined)
+      return -1
 
     if (sImageFile[0] !== '/')
       return -1

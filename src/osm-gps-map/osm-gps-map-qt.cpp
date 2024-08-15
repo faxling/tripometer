@@ -16,18 +16,18 @@
  */
 
 #include "osm-gps-map-qt.h"
-#include "osm-gps-map-layer.h"
-#include "osm-gps-map.h"
-#include <glib/gstdio.h>
 #include "../net_io.h"
 #include "infolistmodel.h"
+#include "osm-gps-map-layer.h"
+#include "osm-gps-map.h"
+#include "src/misc.h"
 #include <QDebug>
 #include <QPainter>
 #include <QPainterPath>
 #include <QtSvg/QSvgRenderer>
 #include <Utils.h>
 #include <float.h>
-#include "src/misc.h"
+#include <glib/gstdio.h>
 // #include <../lib/glib-2.0/include/glibconfig.h>
 //#include <cmath>
 #define GCONF_KEY_ZOOM "zoom"
@@ -198,10 +198,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   char *path, *oldPath;
   g_pTheMap = this;
 
-
-
-  m_pReqCountTimer = new MssTimer([=]{
-
+  m_pReqCountTimer = new MssTimer([=] {
     if (g_nOutstaningCurls != numberPendingReq_)
     {
       numberPendingReq_ = g_nOutstaningCurls;
@@ -210,7 +207,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
       {
         osm_gps_map_idle_redraw(map);
       }
-
     }
   });
 
@@ -917,6 +913,13 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
                                      QImage& oImg, QPainter* pPainter, double fQuote)
 {
   QAbstractListModel* pp = qvariant_cast<QAbstractListModel*>(pListTeam);
+
+  auto oc = pp->roleNames();
+
+  int nLen = std::find(oc.begin(), oc.end(), "sLength").key();
+  int nThumb = std::find(oc.begin(), oc.end(), "sImageThumb").key();
+  int nDate = std::find(oc.begin(), oc.end(), "sDate").key();
+
   int nC = pp->rowCount();
 
   // osm_gps_map_from_co_ordinates(map,
@@ -929,6 +932,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
   pPainter->setFont(BigFont);
   pPainter->drawText(INDENT1, START_LINE - LINE_SPACING * 2, sTeamNameAndSum);
   pPainter->drawImage(0, START_LINE - LINE_SPACING * 2 - (40), oImg);
+
   const static int IMG_COLUMNS = 4;
   const static int IMG_COLUMN_WIDTH = 150;
   int nStart = 0;
@@ -940,14 +944,14 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
   int nCount = 0;
   for (int i = nStart; i < nC; i++)
   {
-    QString sDate = pp->data(pp->index(i), 4).toString();
-    QString sLen = pp->data(pp->index(i), 7).toString();
+    QString sDate = pp->data(pp->index(i),nDate).toString();
+    QString sLen = pp->data(pp->index(i), nLen).toString();
     QString sNum = QString::number(i + 1);
-    QString sThumb = pp->data(pp->index(i), 6).toString();
+    QString sThumb = pp->data(pp->index(i), nThumb).toString();
+
     if (nMinSize > 0)
-    {
       NormalFont.setStrikeOut(pp->data(pp->index(i), 3).toInt() < nMinSize);
-    }
+
     pPainter->setFont(NormalFont);
     int nY = START_LINE + nCount * LINE_SPACING;
     int nYImg = START_LINE + (nCount / IMG_COLUMNS) * (LINE_SPACING * IMG_COLUMNS) - LINE_SPACING;
@@ -955,8 +959,14 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
     if (nMinSize > 0)
       pPainter->drawText(INDENT2, nY, sLen);
     pPainter->drawText(INDENT, nY, sNum);
-    pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (nCount % IMG_COLUMNS) + 100, nYImg,
-                        QImage(sThumb).scaledToHeight(LINE_SPACING * IMG_COLUMNS - 2));
+    if (QFile::exists(sThumb))
+    {
+      QImage oImg = QImage(sThumb).scaledToHeight(LINE_SPACING * IMG_COLUMNS - 2);
+      if (oImg.isNull() == false)
+        pPainter->drawImage(INDENT2 + IMG_COLUMN_WIDTH * (nCount % IMG_COLUMNS) + 100, nYImg, oImg);
+      else
+        qDebug() << "null image " << sThumb;
+    }
     double fLa = pp->data(pp->index(i), 0).toDouble();
     double fLo = pp->data(pp->index(i), 1).toDouble();
     int x, y;
@@ -990,7 +1000,7 @@ static void BoatSvg(QSvgRenderer& renderer, QImage* pImage, int nRotation)
   renderer.render(&painter);
 }
 
-QString Maep::GpsMap::saveMap(int w,int h )
+QString Maep::GpsMap::saveMap(int w, int h)
 {
   QDateTime oNow(QDateTime::currentDateTime());
   QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
@@ -1005,10 +1015,9 @@ QString Maep::GpsMap::saveMap(int w,int h )
       new QImage(cairo_image_surface_get_data(mapSurf), cairo_image_surface_get_width(mapSurf),
                  cairo_image_surface_get_height(mapSurf), QImage::Format_ARGB32));
 
-
   pImg->save(sPath);
-  cairo_surface_destroy (mapSurf);
-  cairo_destroy (handle);
+  cairo_surface_destroy(mapSurf);
+  cairo_destroy(handle);
   qDebug() << "save " << sPath;
   return "map" + sTrackName;
 }
