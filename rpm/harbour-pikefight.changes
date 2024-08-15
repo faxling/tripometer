@@ -8,6 +8,15 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Thu Aug 15 2024 Fredrik Axling <faxling11@gmail.com> 1.5.0
+- Ver 1.5.0
+- Use libcurl instead of libsoup for downloading tiles. Betters performance
+- Fix broken sea charts.
+- Add google maps options
+. Fix bug calculation total length
+- Filter function for markers
+- Fix image rotation for sharing to Telegram etc
+
 * Tue Aug 08 2023 Fredrik Axling <faxling11@gmail.com> 1.4.4
 - Ver 1.4.4
 - Fix sharing of screenshoots
