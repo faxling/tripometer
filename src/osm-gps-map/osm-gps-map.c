@@ -198,9 +198,8 @@ static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int of
                                   int offset_y, cairo_t*);
 static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map);
 
-
 // static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source);
-//static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source);
+// static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source);
 
 static void cached_tile_free(OsmCachedTile* tile)
 {
@@ -781,11 +780,11 @@ char g_szNAVURL1[500] = {0};
 char g_szNAVURL2[500] = {0};
 
 #define NAVURL1                                                                                    \
-  "https://tile3.navionics.com/tile/#Z/#X/"                                                      \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
   "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
 #define NAVURL2                                                                                    \
-  "https://tile3.navionics.com/tile/#Z/#X/"                                                      \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
   "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
 char* get_navionics_key2()
@@ -793,9 +792,8 @@ char* get_navionics_key2()
   if (g_szNAVURL1[0] != 0)
     return g_szNAVTOKEN;
 
-//   strcpy(g_szNAVTOKEN, "eyJrZXkiOiJOYXZpb25pY3Nfd2ViYXBpXzA0MDQxIiwia2V5RG9tYWluIjoibWFwcy5nYXJtaW4uY29tIiwicmVmZXJlciI6Im1hcHMuZ2FybWluLmNvbSIsInJhbmRvbSI6MTcyMzAwOTE4Mzg4N30");
-
-
+  //   strcpy(g_szNAVTOKEN,
+  //   "eyJrZXkiOiJOYXZpb25pY3Nfd2ViYXBpXzA0MDQxIiwia2V5RG9tYWluIjoibWFwcy5nYXJtaW4uY29tIiwicmVmZXJlciI6Im1hcHMuZ2FybWluLmNvbSIsInJhbmRvbSI6MTcyMzAwOTE4Mzg4N30");
 
   struct curl_slist* chunk = 0;
 
@@ -863,7 +861,6 @@ void curl_cb(net_result_t* result, gpointer data)
       if (!priv->idle_map_redraw)
         priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
     }
-
   }
   else
   {
@@ -923,9 +920,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
     net_io_append_header(&chunk, "sec-fetch-dest: image");
     net_io_append_header(&chunk, "sec-fetch-mode: cors");
     net_io_append_header(&chunk, "sec-fetch-site: same-site");
- //    printf("Try Download tile %s\n", dl->uri);
-
-
+    //    printf("Try Download tile %s\n", dl->uri);
   }
   net_io_download_async(dl->uri, curl_cb, dl, chunk);
 }
@@ -2235,7 +2230,7 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
     return "http://maps-for-free.com/layer/relief/z#Z/row#Y/#Z_#X-#Y.jpg";
   case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
     return "https://mt0.google.com/vt/lyrs=m&x=#X&y=#Y&z=#Z";
-    //return "http://mt#R.google.com/vt/v=w2.97&x=#X&y=#Y&z=#Z";
+    // return "http://mt#R.google.com/vt/v=w2.97&x=#X&y=#Y&z=#Z";
     /* http://mt0.google.com/mapstt?zoom=13&x=1406&y=3272 */
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
     /* No longer working
@@ -2390,6 +2385,7 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_NAVIONICS:
   case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_NULL:
+  case OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC:
     return 18;
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
   case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
@@ -2398,8 +2394,7 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
     return OSM_MAX_ZOOM;
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
   case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC:
+
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
@@ -2418,6 +2413,8 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
   case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
     return 20;
+  case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
+    return 21;
   case OSM_GPS_MAP_SOURCE_LAST:
   default:
     return 17;
@@ -2503,7 +2500,6 @@ static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source)
   return 0;
 }
 */
-
 
 gboolean osm_gps_map_source_is_valid(OsmGpsMapSource_t source)
 {
