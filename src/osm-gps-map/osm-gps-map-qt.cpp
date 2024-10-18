@@ -24,6 +24,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QPainterPath>
+#include <QStandardPaths>
 #include <QtSvg/QSvgRenderer>
 #include <Utils.h>
 #include <float.h>
@@ -36,7 +37,7 @@
 #define GCONF_KEY_LATITUDE "latitude"
 #define GCONF_KEY_LONGITUDE "longitude"
 #define GCONF_KEY_DOUBLEPIX "double-pixel"
-#define GCONF_KEY_WIKIPEDIA "wikipedia"
+// #define GCONF_KEY_WIKIPEDIA "wikipedia"
 //#define GCONF_KEY_TRACK_CAPTURE "track_capture_enabled"
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
@@ -513,6 +514,14 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
 {
   int w, h;
 
+//  static QSet<int> ocColors;
+//  static QFile oColorFile;
+  static QMap<int, int> ocColorDeepMap{{0x20b0, 5},  {0x38b8, 10},  {0x48c0, 15},  {0x50c0, 20},
+                                       {0x58c8, 25},  {0x60c8, 30},  {0x68c8, 35},  {0x70c8, 40},
+                                       {0x78d0, 45},  {0x80d0, 50}, {0x88d0, 60}, {0x88d8, 70},
+                                       {0x90d8, 80}, {0x98d8, 90}, {0xa0d8, 100}, {0xa8e0, 120},
+                                       {0xb0e0, 140}, {0xb8e0, 160}, {0xc0e8, 180}, {0xf8f8, 200}};
+
   if (!img || !screensurf)
     return;
 
@@ -522,7 +531,52 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
   QRectF target(0, 0, width, height);
   QRectF source((w - width) * 0.5, (h - height) * 0.5, width, height);
 
+  img->pixel(width / 2, height / 2);
+
   painter->drawImage(target, *img, source);
+  QRgb o = img->pixel(img->width() / 2, img->height() / 2);
+
+  if ((0xff & o) == 0xf8)
+  {
+    for (;;)
+    {
+      int nCurrentDeep = osm_gps_map_depth(map);
+      if (nCurrentDeep < 0)
+        break;
+
+      o = o << 8;
+      o = o >> 16;
+
+      auto iDeep = ocColorDeepMap.find(o);
+      if (iDeep != ocColorDeepMap.end())
+      {
+        osm_gps_map_set_depth(map, iDeep.value());
+      }
+      break;
+    }
+
+    /*
+    if (ocColors.contains(o) == false)
+    {
+      if (oColorFile.isOpen() == false)
+      {
+        oColorFile.setFileName(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+                               "/pikeFight/colors.txt");
+        oColorFile.open(QIODevice::WriteOnly);
+      }
+      ocColors.insert(o);
+      // sColors.append(QString::number(o, 16) + ", ");
+      oColorFile.write("{0x");
+      oColorFile.write(QString::number(o, 16).toLatin1());
+      oColorFile.write(", ");
+      oColorFile.write(QString::number(ocColors.size(), 10).toLatin1());
+      oColorFile.write("} ,");
+
+    }
+    */
+
+    // painter->drawText(100, 100, sColors);
+  }
 }
 
 void Maep::GpsMap::paint(QPainter* painter)
@@ -688,7 +742,12 @@ void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
   Source orig;
 
   if (value == SOURCE_NAVIONICS1 || value == SOURCE_NAVIONICS2)
+  {
     get_navionics_key2();
+    osm_gps_map_set_depth(map, 0);
+  }
+  else
+    osm_gps_map_set_depth(map, -1);
 
   orig = source();
   if (orig == value)
@@ -944,7 +1003,7 @@ void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum
   int nCount = 0;
   for (int i = nStart; i < nC; i++)
   {
-    QString sDate = pp->data(pp->index(i),nDate).toString();
+    QString sDate = pp->data(pp->index(i), nDate).toString();
     QString sLen = pp->data(pp->index(i), nLen).toString();
     QString sNum = QString::number(i + 1);
     QString sThumb = pp->data(pp->index(i), nThumb).toString();

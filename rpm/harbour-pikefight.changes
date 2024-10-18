@@ -8,6 +8,11 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Fri Oct 18 2024 Fredrik Axling <faxling11@gmail.com> 1.5.1
+- Ver 1.5.1
+- Fix broken sea charts. Key length to long overflow
+- Add depth indication in sea charts
+
 * Thu Aug 15 2024 Fredrik Axling <faxling11@gmail.com> 1.5.0
 - Ver 1.5.0
 - Use libcurl instead of libsoup for downloading tiles. Betters performance

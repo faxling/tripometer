@@ -16,7 +16,7 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.5.0
+Version: 1.5.1
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
@@ -73,9 +73,9 @@ install -m 644 -p %{_libdir}/libdconf.so.1 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libsqlite3.so.0 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libpixman-1.so.0 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libfreetype.so.6 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p %{_libdir}/libicui18n.so.68 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p %{_libdir}/libicuuc.so.68 %{buildroot}/usr/share/%{name}/lib/
-install -m 644 -p %{_libdir}/libicudata.so.68 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicui18n.so.70 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicuuc.so.70 %{buildroot}/usr/share/%{name}/lib/
+install -m 644 -p %{_libdir}/libicudata.so.70 %{buildroot}/usr/share/%{name}/lib/
 install -m 644 -p %{_libdir}/libpsl.so %{buildroot}/usr/share/%{name}/lib/
 %files
 %defattr(644,root,root,-)

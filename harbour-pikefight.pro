@@ -23,6 +23,7 @@ QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \
+    src/osm-gps-map/osm-gps-map-osd-classic.c \
     trackmodel.cpp \
     Utils.cpp
 
@@ -48,6 +49,7 @@ OTHER_FILES += \
 
 HEADERS += \
     QExifImageHeader.h \
+    src/osm-gps-map/osm-gps-map-osd-classic.h \
     trackmodel.h \
     infolistmodel.h \
     Utils.h

@@ -62,6 +62,7 @@ struct _OsmGpsMapPrivate
   cairo_region_t* dirty;
 
   gfloat map_factor;
+  int map_depth;
   int map_zoom;
   int max_zoom;
   int min_zoom;
@@ -501,6 +502,7 @@ static float get_distance(float lat1, float lon1, float lat2, float lon2)
   return (aob * 6371000.0); /* great circle radius in meters */
 }
 
+
 float osm_db_last_dist(OsmGpsMap* map, float la, float lo)
 {
   OsmGpsMapPrivate* priv = map->priv;
@@ -775,9 +777,9 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 
 #define UNUSED(x) (void)(x)
 
-char g_szNAVTOKEN[256] = {0};
-char g_szNAVURL1[500] = {0};
-char g_szNAVURL2[500] = {0};
+char g_szNAVTOKEN[1024] = {0};
+char g_szNAVURL1[1024] = {0};
+char g_szNAVURL2[1024] = {0};
 
 #define NAVURL1                                                                                    \
   "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
@@ -1569,6 +1571,7 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   const char* uri;
   gchar* base;
   cairo_t* cr;
+  priv->map_depth = 0;
   // user can specify a map source ID, or a repo URI as the map source
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 ||
       priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
@@ -2648,6 +2651,17 @@ void osm_gps_map_magnifye(OsmGpsMap* map, int nOrder)
   else
     osm_gps_map_set_factor(map, map->priv->map_factor - 0.5);
 }
+
+int osm_gps_map_depth(OsmGpsMap* map)
+{
+  return map->priv->map_depth;
+}
+
+void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
+{
+  map->priv->map_depth = depthDm;
+}
+
 
 int osm_gps_map_zoom_in(OsmGpsMap* map)
 {

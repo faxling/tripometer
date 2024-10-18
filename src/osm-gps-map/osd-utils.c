@@ -111,7 +111,7 @@ osd_render_centered_text(cairo_t *cr, int y, int width, int font_size, char *tex
 
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
     cairo_set_line_width (cr, font_size/6);
-    cairo_move_to (cr, (width - extents.width)/2, y - extents.y_bearing);
+    cairo_move_to (cr, 0, y - extents.y_bearing);
     cairo_text_path (cr, p);
     cairo_stroke (cr);
 

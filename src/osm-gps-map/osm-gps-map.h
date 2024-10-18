@@ -133,6 +133,9 @@ GType osm_gps_map_get_type(void) G_GNUC_CONST;
 
 OsmGpsMap* osm_gps_map_new(void);
 
+int osm_gps_map_depth(OsmGpsMap* map);
+void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
+
 char* osm_gps_map_get_default_cache_directory(void);
 
 void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,

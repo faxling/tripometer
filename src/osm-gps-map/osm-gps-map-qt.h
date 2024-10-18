@@ -418,7 +418,7 @@ namespace Maep
     inline bool compassEnabled() { return compassEnabled_; }
 
   protected:
-    void paint(QPainter* painter);
+    void paint(QPainter* painter) override;
     void keyPressEvent(QKeyEvent* event);
     void touchEvent(QTouchEvent* touchEvent);
 
