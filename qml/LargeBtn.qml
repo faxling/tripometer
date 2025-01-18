@@ -11,8 +11,8 @@ Rectangle {
   radius: 9
   property alias src: idImg.source
   color: idMouseArea.pressed ? "#ff808080" : "#af808080"
-  width: 200
-  height: 200
+  width: Theme.fontSizeMedium * 3.5
+  height: width
 
   MouseArea {
     id: idMouseArea

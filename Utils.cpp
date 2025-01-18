@@ -17,11 +17,11 @@
 #include <QOrientationReading>
 #include <QPainter>
 #include <QPixmap>
+#include <QQmlContext>
 #include <QQuickItemGrabResult>
 #include <QQuickView>
 #include <QStandardPaths>
 #include <QTextCodec>
-#include <QQmlContext>
 
 //#include <qqmlcontext.h>
 #include <qqmlfile.h>
@@ -121,14 +121,17 @@ bool CaptureThumbMaker::HasSelectedCapture()
   return g_selectedScreenCapture->IsSelected;
 }
 
+static int m_H = 0;
+static int m_W = 0;
+
 int CaptureThumbMaker::HEIGHT()
 {
-  return 1920;
+  return m_H;
 }
 
 int CaptureThumbMaker::WIDTH()
 {
-  return 1080;
+  return m_W;
 }
 
 ScreenCapturedImg::ScreenCapturedImg() : QQuickImageProvider(QQuickImageProvider::Image)
@@ -163,7 +166,8 @@ void ScreenCapture::SetView(QQuickView* parent)
 ScreenCapture::ScreenCapture()
 {
 }
-constexpr unsigned short operator ""_us(unsigned long long m)
+
+constexpr unsigned short operator""_us(unsigned long long m)
 {
   return m;
 }
@@ -276,6 +280,8 @@ void ScreenCapture::capture()
   QEventLoop oLoop;
   oLoop.processEvents();
   m_oImage = g_currentView->grabWindow();
+  qDebug() << "w " << m_oImage.width() << " h " << m_oImage.height();
+
   m_oImagePreview = m_oImage.scaledToHeight(height());
   if (g_oOrientationSensor == nullptr)
     g_oOrientationSensor = new QOrientationSensor;
@@ -398,6 +404,19 @@ QString FileMgr::renameToAscii(QString s)
 
 CaptureThumbMaker::CaptureThumbMaker(QObject* parent) : QObject(parent)
 {
+
+  QScreen* screen = QGuiApplication::primaryScreen();
+  if (screen->size().height() + screen->size().width() > 2500)
+  {
+    m_W = 1080;
+    m_H = 1920;
+  }
+  else
+  {
+    m_W = 720;
+    m_H = 1600;
+  }
+
   g_oCaptureThumbMaker = this;
 }
 
@@ -1309,6 +1328,7 @@ QString QExifValue::toString() const
       if (codec)
         return codec->toUnicode(string);
     }
+      break;
     case UndefinedEncoding:
       return QString::fromLocal8Bit(string.constData(), string.length());
     default:
@@ -2539,8 +2559,6 @@ qint64 QExifImageHeader::write(QIODevice* device) const
 
   return offset;
 }
-
-
 
 void QQuickFolderListModelPrivate::init()
 {

@@ -135,6 +135,10 @@ OsmGpsMap* osm_gps_map_new(void);
 
 int osm_gps_map_depth(OsmGpsMap* map);
 void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
+void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg);
+double windSpeedMs(OsmGpsMap* map);
+double windDirRad(OsmGpsMap* map);
+
 
 char* osm_gps_map_get_default_cache_directory(void);
 
@@ -174,6 +178,8 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
 void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status);
 gboolean osm_gps_map_idle_redraw(OsmGpsMap* map);
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y);
+coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map);
+
 void osm_gps_map_from_co_ordinates(OsmGpsMap* map, coord_t* coord, int* pixel_x, int* pixel_y);
 void osm_gps_map_from_deg(OsmGpsMap* map, double log, double lat, int* pixel_x, int* pixel_y);
 void osm_gps_map_screen_to_geographic(OsmGpsMap* map, gint pixel_x, gint pixel_y, gfloat* latitude,

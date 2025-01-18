@@ -22,6 +22,8 @@
 #include "osm-gps-map.h"
 #include "src/misc.h"
 #include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QPainter>
 #include <QPainterPath>
 #include <QStandardPaths>
@@ -29,6 +31,8 @@
 #include <Utils.h>
 #include <float.h>
 #include <glib/gstdio.h>
+#include <limits>
+#include <strstream>
 // #include <../lib/glib-2.0/include/glibconfig.h>
 //#include <cmath>
 #define GCONF_KEY_ZOOM "zoom"
@@ -43,11 +47,13 @@
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
 #define GCONF_KEY_COMPASS_ENABLED "compass-enabled"
+// #define G_MAXFLOAT FLT_MAX
 
 QString Maep::GeonamesPlace::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
 {
   return m_coordinate.toString(format);
 }
+
 QString Maep::GeonamesEntry::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
 {
   return m_coordinate.toString(format);
@@ -106,6 +112,7 @@ bool Maep::Track::toFile(const QString& filename)
   }
   return res;
 }
+
 void Maep::Track::addPoint(QGeoPositionInfo& info)
 {
   QGeoCoordinate coord = info.coordinate();
@@ -118,7 +125,7 @@ void Maep::Track::addPoint(QGeoPositionInfo& info)
   speed = NAN;
   if (info.hasAttribute(QGeoPositionInfo::GroundSpeed))
     speed = info.attribute(QGeoPositionInfo::GroundSpeed);
-  h_acc = G_MAXFLOAT;
+  h_acc = std::numeric_limits<gfloat>::max();
   if (info.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))
     h_acc = info.attribute(QGeoPositionInfo::HorizontalAccuracy);
 
@@ -150,7 +157,8 @@ bool Maep::Track::setMetricAccuracy(qreal value)
 {
   bool ret;
 
-  ret = maep_geodata_track_set_metric_accuracy(track, (value <= 0) ? G_MAXFLOAT : (gfloat)value);
+  ret = maep_geodata_track_set_metric_accuracy(
+      track, (value <= 0) ? std::numeric_limits<gfloat>::max() : (gfloat)value);
   if (ret)
   {
     emit metricAccuracyChanged(value);
@@ -209,6 +217,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
         osm_gps_map_idle_redraw(map);
       }
     }
+
+    getWeatherCurrentPos();
   });
 
   m_pReqCountTimer->Start(200);
@@ -505,7 +515,7 @@ void Maep::GpsMap::mapUpdate()
   cairo_restore(cr);
 
   if (osd)
-    osd->draw(osd, cr);
+   osd->draw(osd, cr);
 
   emit mapChanged();
 }
@@ -514,12 +524,12 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
 {
   int w, h;
 
-//  static QSet<int> ocColors;
-//  static QFile oColorFile;
-  static QMap<int, int> ocColorDeepMap{{0x20b0, 5},  {0x38b8, 10},  {0x48c0, 15},  {0x50c0, 20},
+  //  static QSet<int> ocColors;
+  //  static QFile oColorFile;
+  static QMap<int, int> ocColorDeepMap{{0x20b0, 5},   {0x38b8, 10},  {0x48c0, 15},  {0x50c0, 20},
                                        {0x58c8, 25},  {0x60c8, 30},  {0x68c8, 35},  {0x70c8, 40},
-                                       {0x78d0, 45},  {0x80d0, 50}, {0x88d0, 60}, {0x88d8, 70},
-                                       {0x90d8, 80}, {0x98d8, 90}, {0xa0d8, 100}, {0xa8e0, 120},
+                                       {0x78d0, 45},  {0x80d0, 50},  {0x88d0, 60},  {0x88d8, 70},
+                                       {0x90d8, 80},  {0x98d8, 90},  {0xa0d8, 100}, {0xa8e0, 120},
                                        {0xb0e0, 140}, {0xb8e0, 160}, {0xc0e8, 180}, {0xf8f8, 200}};
 
   if (!img || !screensurf)
@@ -778,6 +788,46 @@ void Maep::GpsMap::centerCurrentGps()
   }
 }
 
+void curl_wind(net_result_t* result, gpointer data)
+{
+  if (result->code == 0)
+  {
+    OsmGpsMap* map = static_cast<OsmGpsMap*>(data);
+    QJsonDocument oJD = QJsonDocument::fromJson(QByteArray(result->data.ptr, result->data.len));
+    auto oJ = oJD.object()["current"].toObject();
+    osm_gps_map_set_windSpeed(map, oJ["wind_speed_10m"].toDouble() / 3.6,
+                              oJ["wind_direction_10m"].toDouble());
+  }
+}
+
+// using namespace std;
+class comma_numpunct : public std::numpunct<char>
+{
+  char do_decimal_point() const override { return '.'; }
+};
+
+std::locale comma_locale(std::locale(), new comma_numpunct());
+
+void Maep::GpsMap::getWeatherCurrentPos()
+{
+  // constexpr char constString[] = "constString";
+  constexpr char WAPI[] =
+      "https://api.open-meteo.com/v1/forecast?current=wind_speed_10m,wind_direction_10m";
+  coord_t tPos;
+  tPos = osm_gps_map_get_center_ordinates(map);
+  tPos.rlat = rad2deg(tPos.rlat);
+  tPos.rlon = rad2deg(tPos.rlon);
+  if (lastLaDeg != tPos.rlat)
+  {
+    lastLaDeg = tPos.rlat;
+    std::strstream os;
+    os.imbue(comma_locale);
+
+    os << WAPI << "&latitude=" << tPos.rlat << "&longitude=" << tPos.rlon << std::ends;
+    net_io_download_async(os.str(), curl_wind, map, 0);
+  }
+}
+
 void Maep::GpsMap::centerTrack(const QString& sTrackName)
 {
   MarkData t = GetMarkData(sTrackName);
@@ -849,9 +899,9 @@ void Maep::GpsMap::addDbPoint()
     pDBTrack = maep_geodata_new();
     osm_gps_map_add_track(map, pDBTrack, -1, -1); // -1 The Distance tool
   }
-  coord_t tPos = osm_gps_map_get_co_ordinates(map, width() / 2, height() / 2);
-  maep_geodata_add_trackpoint(pDBTrack, rad2deg(tPos.rlat), rad2deg(tPos.rlon), G_MAXFLOAT, 0, 0,
-                              NAN, NAN);
+  coord_t tPos = osm_gps_map_get_center_ordinates(map);
+  maep_geodata_add_trackpoint(pDBTrack, rad2deg(tPos.rlat), rad2deg(tPos.rlon),
+                              std::numeric_limits<gfloat>::max(), 0, 0, NAN, NAN);
 }
 
 void Maep::GpsMap::markPikeInMap(int nId)
@@ -919,7 +969,7 @@ QGeoCoordinate Maep::GpsMap::currentPos()
   }
   else
   {
-    tPos = osm_gps_map_get_co_ordinates(map, width() / 2, height() / 2);
+    tPos = osm_gps_map_get_center_ordinates(map);
     tPos.rlat = rad2deg(tPos.rlat);
     tPos.rlon = rad2deg(tPos.rlon);
   }
@@ -1143,7 +1193,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
 
 void Maep::GpsMap::saveMark(int nId)
 {
-  coord_t tPos = osm_gps_map_get_co_ordinates(map, width() / 2, height() / 2);
+  coord_t tPos = osm_gps_map_get_center_ordinates(map);
 
   QDateTime oNow(QDateTime::currentDateTime());
   QString sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");

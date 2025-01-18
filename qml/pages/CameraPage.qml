@@ -47,6 +47,8 @@ Page {
   }
   Camera {
     id: idCamera
+
+    // 1920x1080
     viewfinder.resolution.width: oCaptureThumbMaker.HEIGHT
     viewfinder.resolution.height: oCaptureThumbMaker.WIDTH
     flash.mode: Camera.FlashOff

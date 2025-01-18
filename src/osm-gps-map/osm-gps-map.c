@@ -63,6 +63,10 @@ struct _OsmGpsMapPrivate
 
   gfloat map_factor;
   int map_depth;
+
+  gfloat windDirectionRad;
+  gfloat windSpeedMs;
+
   int map_zoom;
   int max_zoom;
   int min_zoom;
@@ -2662,6 +2666,23 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
   map->priv->map_depth = depthDm;
 }
 
+void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg)
+{
+  map->priv->windSpeedMs = speedMs;
+  map->priv->windDirectionRad= deg2rad(directionDeg);
+}
+
+
+double windSpeedMs(OsmGpsMap* map)
+{
+  return  map->priv->windSpeedMs;
+}
+
+double windDirRad(OsmGpsMap* map)
+{
+  return map->priv->windDirectionRad;
+}
+
 
 int osm_gps_map_zoom_in(OsmGpsMap* map)
 {
@@ -3035,6 +3056,18 @@ void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status)
   if (!map->priv->idle_map_redraw)
     map->priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 }
+
+
+coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map)
+{
+  coord_t coord;
+  OsmGpsMapPrivate* priv = map->priv;
+  coord.rlon = priv->center_rlon;
+  coord.rlat = priv->center_rlat;
+  return coord;
+}
+
+
 
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
 {

@@ -185,6 +185,7 @@ private:
   QImage m_oImagePreview;
   QImage m_oImage;
   int m_nOrientation = 0;
+
 };
 
 class MssListModel : public QAbstractItemModel

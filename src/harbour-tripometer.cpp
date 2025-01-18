@@ -3,6 +3,7 @@
 #include <QtQuick>
 #endif
 
+#include "osm-gps-map/osm-gps-map-qt.h"
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -12,7 +13,6 @@
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/QtPositioning>
 #include <sailfishapp.h>
-#include "osm-gps-map/osm-gps-map-qt.h"
 
 // #include <QtQml/qqml>
 
@@ -44,6 +44,8 @@ int main(int argc, char* argv[])
   // "InfoListModel");
   StopWatch oSW("Start %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);
+
+  QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
   QQuickView* pU = SailfishApp::createView();
   QQmlContext* pContext = pU->rootContext();
   InfoListModel* pInfoListModel = new InfoListModel;
@@ -67,7 +69,7 @@ int main(int argc, char* argv[])
   qmlRegisterType<Maep::GpsMap>("harbour.tripometer", 1, 0, "GpsMap");
   qmlRegisterType<ScreenCapture>("harbour.tripometer", 1, 0, "ScreenCapture");
 
-  qmlRegisterType<QQuickFolderListModel>("harbour.tripometer",1,0,"FolderListModel");
+  qmlRegisterType<QQuickFolderListModel>("harbour.tripometer", 1, 0, "FolderListModel");
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
   qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
   pU->engine()->addImageProvider("capturedImage", new ScreenCapturedImg());

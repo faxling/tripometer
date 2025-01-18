@@ -468,6 +468,7 @@ namespace Maep
     void enableCompass(bool enable);
 
   private:
+    void getWeatherCurrentPos();
     void initBoatMarkers();
     int START_LINE = 0;
     void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize, QImage& sImg,
@@ -529,6 +530,7 @@ namespace Maep
     unsigned int gpsRefreshRate_;
     QGeoPositionInfoSource* gps;
     QGeoPositionInfo lastGps;
+    double lastLaDeg = 0;
     MaepLayerGps* lgps;
 
     /* Tracks */

@@ -1,5 +1,5 @@
 // PikeBtn
-import QtQuick 2.0
+import QtQuick 2.6
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 import "tripometer-functions.js" as Lib
@@ -15,9 +15,9 @@ Rectangle {
   visible: nOwner <= nNrTeams
   property alias src: idImg.source
   color: idMouseArea.pressed ? "#ff808080" : "#af808080"
-  width: 200
-  height: 200
 
+  width: Theme.fontSizeMedium * 4
+  height: width
   Text {
     id: idCount3
     font.pixelSize: Theme.fontSizeMedium

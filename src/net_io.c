@@ -193,9 +193,9 @@ static void* worker_thread(void* ptr)
     return NULL;
   }
   static GMutex mutex;
-  g_mutex_lock (&mutex);
+  g_mutex_lock(&mutex);
   ++g_nOutstaningCurls;
-  g_mutex_unlock (&mutex);
+  g_mutex_unlock(&mutex);
   request->result.data.ptr = NULL;
   request->result.data.len = 0;
   request->result.respCode = -1;
@@ -243,9 +243,9 @@ static void* worker_thread(void* ptr)
   if (request->chunk)
     curl_slist_free_all(request->chunk);
   request->chunk = 0;
-  g_mutex_lock (&mutex);
+  g_mutex_lock(&mutex);
   --g_nOutstaningCurls;
-  g_mutex_unlock (&mutex);
+  g_mutex_unlock(&mutex);
   if (request->cb)
     g_idle_add(net_io_idle_cb, request);
 
@@ -253,8 +253,6 @@ static void* worker_thread(void* ptr)
 
   // g_message("end curl req");
   g_thread_unref(g_thread_self());
-
-
 
   return NULL;
 }
@@ -301,7 +299,7 @@ net_result_t net_io_download_sync(char* url, struct curl_slist* chunk)
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result.data);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mem_write);
-
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000);
   if (chunk)
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
   else
@@ -329,7 +327,7 @@ net_io_t net_io_download_async(char* url, net_io_cb cb, gpointer data, struct cu
   if (!net_io_do_async(request))
   {
     // request->result.code = 1; // failure
-    //cb(&request->result, data);
+    // cb(&request->result, data);
     return NULL;
   }
 

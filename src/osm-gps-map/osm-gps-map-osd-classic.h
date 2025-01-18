@@ -101,7 +101,7 @@ osd_button_t osm_gps_map_osd_check(osm_gps_map_osd_t *osd, gint x, gint y);
 void osm_gps_map_osd_enable_gps (osm_gps_map_osd_t *osd, gboolean status);
 #endif
 
-
+// void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg);
 void osm_gps_map_set_azimuth(osm_gps_map_osd_t *osd, double azimuth);
 
 void osd_render_scale(osm_gps_map_osd_t *osd) ;
