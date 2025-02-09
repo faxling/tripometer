@@ -135,10 +135,10 @@ OsmGpsMap* osm_gps_map_new(void);
 
 int osm_gps_map_depth(OsmGpsMap* map);
 void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
-void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg);
+void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg, double tempDeg);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
-
+double tempDeg(OsmGpsMap* map);
 
 char* osm_gps_map_get_default_cache_directory(void);
 

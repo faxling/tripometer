@@ -449,8 +449,9 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   cairo_set_source_rgb(cr, 0x33 / 255.0, 0, 255);
 
   moveTo(cr, -v, 5);
+  double dTemp = tempDeg(osd->map);
   double dMs = windSpeedMs(osd->map);
-  drawLineTo(cr, -v, OSD_CROSSHAIR_RADIUS * (dMs / 5) + OSD_CROSSHAIR_RADIUS);K
+  drawLineTo(cr, -v, OSD_CROSSHAIR_RADIUS * (dMs / 5) + OSD_CROSSHAIR_RADIUS);
   drawLineTo(cr, -v, OSD_CROSSHAIR_RADIUS * (dMs / 5) + OSD_CROSSHAIR_RADIUS);
   /*
   drawLineTo(cr, v + A, OSD_CROSSHAIR_RADIUS / 3);
@@ -463,9 +464,14 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   cairo_set_font_size(cr, 20);
   moveTo(cr, -M_PI_2, 10);
   char dist_str[20];
-
+  char temp_str[20];
   sprintf(dist_str, "%d", (int)dMs);
   cairo_show_text(cr, dist_str);
+  sprintf(temp_str, "%d", (int)dTemp);
+
+  cairo_move_to(cr, OSD_CROSSHAIR_W / 2 - 10, OSD_CROSSHAIR_H / 2 + 15);
+  cairo_show_text(cr, temp_str);
+
   cairo_destroy(cr);
 }
 

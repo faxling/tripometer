@@ -796,7 +796,7 @@ void curl_wind(net_result_t* result, gpointer data)
     QJsonDocument oJD = QJsonDocument::fromJson(QByteArray(result->data.ptr, result->data.len));
     auto oJ = oJD.object()["current"].toObject();
     osm_gps_map_set_windSpeed(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-                              oJ["wind_direction_10m"].toDouble());
+                              oJ["wind_direction_10m"].toDouble(),oJ["temperature_2m"].toDouble() );
   }
 }
 
@@ -812,7 +812,7 @@ void Maep::GpsMap::getWeatherCurrentPos()
 {
   // constexpr char constString[] = "constString";
   constexpr char WAPI[] =
-      "https://api.open-meteo.com/v1/forecast?current=wind_speed_10m,wind_direction_10m";
+      "https://api.open-meteo.com/v1/forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m";
   coord_t tPos;
   tPos = osm_gps_map_get_center_ordinates(map);
   tPos.rlat = rad2deg(tPos.rlat);
