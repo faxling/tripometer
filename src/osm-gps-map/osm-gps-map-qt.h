@@ -286,6 +286,8 @@ namespace Maep
                    screenRotationChanged)
     Q_PROPERTY(
         bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
+    Q_PROPERTY(bool enable_weather READ weatherEnabled WRITE enableWeather NOTIFY enableWeatherChanged)
+    Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY enableCrossHairChanged)
 
     Q_PROPERTY(unsigned int gps_refresh_rate READ gpsRefreshRate WRITE setGpsRefreshRate NOTIFY
                    gpsRefreshRateChanged)
@@ -416,11 +418,13 @@ namespace Maep
     Q_INVOKABLE QString getCenteredTile(Maep::GpsMap::Source source) const;
     inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
     inline bool compassEnabled() { return compassEnabled_; }
+    bool crossHairEnabled();
+    bool weatherEnabled();
 
   protected:
     void paint(QPainter* painter) override;
-    void keyPressEvent(QKeyEvent* event);
-    void touchEvent(QTouchEvent* touchEvent);
+    void keyPressEvent(QKeyEvent* event) override;
+    void touchEvent(QTouchEvent* touchEvent) override;
 
   signals:
 
@@ -432,8 +436,6 @@ namespace Maep
     void coordinateChanged();
     void gpsCoordinateChanged();
     void autoCenterChanged(bool status);
-    void wikiStatusChanged(bool status);
-    void wikiEntryChanged();
     void searchRequest();
     void searchResults();
     void trackCaptureChanged(bool status);
@@ -442,6 +444,8 @@ namespace Maep
     void gpsRefreshRateChanged(unsigned int rate);
     void enableCompassChanged(bool enable);
     void trippleDrag();
+    void enableWeatherChanged();
+    void enableCrossHairChanged();
 
   public slots:
     void setSource(Source source);
@@ -466,6 +470,8 @@ namespace Maep
     void setGpsRefreshRate(unsigned int rate);
     void compassReadingChanged();
     void enableCompass(bool enable);
+    void enableWeather(bool enable);
+    void enableCrossHair(bool enable);
 
   private:
     void getWeatherCurrentPos();
@@ -513,12 +519,6 @@ namespace Maep
     MssTimer* m_pReqCountTimer = 0;
     // float factor0;
 
-    /* Wiki entry. */
-    /*
-    bool wiki_enabled;
-    MaepWikiContext *wiki ;
-    GeonamesEntry *wiki_entry;
-  */
     /* Screen display. */
     cairo_surface_t* screensurf;
     cairo_t* cr;

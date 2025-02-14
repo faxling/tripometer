@@ -25,6 +25,7 @@ Item {
 
     }
 
+
     onTrippleDrag: {
 
       if (idPikePage.state === "") {

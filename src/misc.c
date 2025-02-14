@@ -31,16 +31,7 @@
 #include "config.h"
 #include "misc.h"
 
-#ifdef MAEMO5
-#include <hildon/hildon-button.h>
-#include <hildon/hildon-note.h>
-#include <hildon/hildon-entry.h>
-#include <hildon/hildon-pannable-area.h>
-#include <mce/dbus-names.h>
-#include <mce/mode-names.h>
-#endif
-
-#define GCONF_PATH         "/apps/" APP "/%s"
+#define GCONF_PATH       "/apps/" APP "/%s"
 #define OLD_PATH         "/apps/maep/%s"
 
 static DConfClient* dconfClient = NULL;
@@ -89,7 +80,7 @@ char *gconf_get_string(const char *m_key) {
   }  
 
   /* char *ret = gconf_client_get_string(client, key, NULL); */
-  gsize len;
+  size_t len;
   char *ret = g_variant_dup_string(value, &len);
   g_free(key);
   g_variant_unref(value);
@@ -271,10 +262,6 @@ void proxy_config_free(struct proxy_config *config)
 //  "~/" APP,                 // in home directory
 static const char *data_paths[] = {
   DATADIR ,                  // final installation path (e.g. /usr/share/maep)
-#ifdef USE_MAEMO
-  "/media/mmc1/" APP,        // path to external memory card
-  "/media/mmc2/" APP,        // path to internal memory card
-#endif
   "./data", "../data",       // local paths for testing
   NULL
 };

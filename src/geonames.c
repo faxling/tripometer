@@ -242,7 +242,7 @@ void maep_geonames_place_list_free(GSList *list) {
 }
 
 MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry *src) {
-  MaepGeonamesEntry *entry = g_memdup(src, sizeof(MaepGeonamesEntry));
+  MaepGeonamesEntry *entry = g_memdup2(src, sizeof(MaepGeonamesEntry));
   
   entry->title         = g_strdup(src->title);
   entry->summary       = g_strdup(src->summary);

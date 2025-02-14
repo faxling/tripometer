@@ -176,15 +176,11 @@ Page {
 
     Row {
       x: Theme.horizontalPageMargin
-      spacing: column.spacing
+      spacing: column.spacing / 2
       Label {
         id: buttonText
-
-        /// anchors.verticalCenter: parent.verticalCenter
-        // width: implicitWidth)
-        //   color: _showPress ? button.highlightColor : button.color
         font.pixelSize: Theme.fontSizeMedium
-        text: "Compas"
+        text: "Compass"
       }
 
       Button {
@@ -200,6 +196,49 @@ Page {
         onClicked: {
           checked = !checked
           mainMap.enable_compass = checked
+        }
+      }
+
+      Label {
+        id: idCrossHairLbl
+        font.pixelSize: Theme.fontSizeMedium
+        text: "CrossHair"
+      }
+
+      Button {
+        id: idCrossHair
+        property bool checked: mainMap.enable_crossHair
+        Image {
+          visible: parent.checked
+          anchors.centerIn: parent
+          source: "image://theme/icon-m-accept"
+        }
+        height: Theme.itemSizeExtraSmall
+        width: Theme.itemSizeExtraSmall
+        onClicked: {
+          checked = !checked
+          mainMap.enable_crossHair = checked
+        }
+      }
+
+      Label {
+        font.pixelSize: Theme.fontSizeMedium
+        text: "Weather"
+      }
+
+      Button {
+        id: idWeather
+        property bool checked: mainMap.enable_weather
+        Image {
+          visible: parent.checked
+          anchors.centerIn: parent
+          source: "image://theme/icon-m-accept"
+        }
+        height: Theme.itemSizeExtraSmall
+        width: Theme.itemSizeExtraSmall
+        onClicked: {
+          checked = !checked
+          mainMap.enable_weather = checked
         }
       }
     }

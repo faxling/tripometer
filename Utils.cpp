@@ -1309,6 +1309,7 @@ QString QExifValue::toString() const
 
   case Undefined:
   {
+
     QByteArray string = static_cast<const QExifUndefinedValuePrivate*>(d.constData())->value.mid(8);
 
     switch (encoding())
@@ -1328,16 +1329,21 @@ QString QExifValue::toString() const
       if (codec)
         return codec->toUnicode(string);
     }
-      break;
+    break;
     case UndefinedEncoding:
+
       return QString::fromLocal8Bit(string.constData(), string.length());
+
     default:
-      break;
-    }
+      return QString();
+    };
   }
+  break;
   default:
     return QString();
   }
+
+  return QString();
 }
 
 quint16 QExifValue::toShort() const

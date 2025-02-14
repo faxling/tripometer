@@ -47,6 +47,8 @@
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
 #define GCONF_KEY_COMPASS_ENABLED "compass-enabled"
+
+
 // #define G_MAXFLOAT FLT_MAX
 
 QString Maep::GeonamesPlace::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
@@ -204,7 +206,7 @@ extern int g_nOutstaningCurls;
 Maep::GpsMap::GpsMap(QQuickItem* parent)
     : QQuickPaintedItem(parent), compass(parent), compassEnabled_(FALSE)
 {
-  char *path, *oldPath;
+  // char *path, *oldPath;
   g_pTheMap = this;
 
   m_pReqCountTimer = new MssTimer([=] {
@@ -230,20 +232,23 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
-  // bool wikipedia = FALSE;  // gconf_get_bool(GCONF_KEY_WIKIPEDIA, FALSE);
-  // bool track = gconf_get_bool(GCONF_KEY_TRACK_CAPTURE, FALSE);
+
+
 
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
-  // int gpsRefresh = gconf_get_int(GCONF_KEY_GPS_REFRESH_RATE, 2000);
   bool compassEnabled = gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE);
 
-  path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
+
+  char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
 
   /* Backward compatibility, move old path. */
+
+  /*
   oldPath = g_build_filename(g_get_user_data_dir(), "maep", NULL);
   if (g_file_test(oldPath, G_FILE_TEST_IS_DIR))
     g_rename(oldPath, path);
   g_free(oldPath);
+*/
 
   screenRotation = orientation;
   map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
@@ -252,6 +257,11 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
                                  "gps-track-point-radius", 10,
                                  // proxy?"proxy-uri":NULL,     proxy,
                                  "double-pixel", dpix, NULL));
+
+
+  g_object_set_data (G_OBJECT(map),GCONF_KEY_WEATHER, new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
+  g_object_set_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR, new int(gconf_get_bool(GCONF_KEY_CROSSHAIR, TRUE)));
+
 
   g_free(path);
 
@@ -273,6 +283,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
     ensureOverlay((Maep::GpsMap::Source)overlaySource);
 
   net_io_init();
+
+
   osd = osm_gps_map_osd_classic_init(map);
 
   search = maep_search_context_new();
@@ -335,9 +347,38 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   maep_layer_gps_set_azimuth(lgps, NAN);
   connect(&compass, SIGNAL(readingChanged()), this, SLOT(compassReadingChanged()));
   enableCompass(compassEnabled);
+
+
+
   initBoatMarkers();
   track_capture = false;
   track_current = NULL;
+}
+
+
+void Maep::GpsMap::enableCrossHair(bool b)
+{
+  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR );
+  *pb = b;
+}
+
+bool Maep::GpsMap::crossHairEnabled()
+{
+  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR );
+  qDebug() << "crossHairEnabled " << *pb;
+  return *pb;
+}
+
+void Maep::GpsMap::enableWeather(bool b)
+{
+  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_WEATHER );
+  *pb = b;
+}
+
+bool Maep::GpsMap::weatherEnabled()
+{
+  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_WEATHER );
+  return *pb;
 }
 
 Maep::GpsMap::~GpsMap()
@@ -379,9 +420,6 @@ Maep::GpsMap::~GpsMap()
     delete (gps);
   if (track_current && track_current->parent() == this)
     delete (track_current);
-  g_object_unref(lgps);
-
-  g_object_unref(map);
 
   /* ... and store it in gconf */
   g_message("Storing configuration.");
@@ -392,9 +430,16 @@ Maep::GpsMap::~GpsMap()
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
   gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
   gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
-
   gconf_set_bool(GCONF_KEY_COMPASS_ENABLED, compassEnabled_);
+  gconf_set_bool(GCONF_KEY_WEATHER, weatherEnabled());
+  gconf_set_bool(GCONF_KEY_CROSSHAIR, crossHairEnabled());
+
   g_message("Storing configuration done.");
+  g_object_unref(lgps);
+
+  g_object_unref(map);
+
+
 }
 
 static void onLatLon(GObject* map, GParamSpec* pspec, OsmGpsMap* overlay)
@@ -426,6 +471,7 @@ void Maep::GpsMap::ensureOverlay(Source source)
 
   g_object_bind_property(G_OBJECT(map), "zoom", G_OBJECT(overlay), "zoom",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
+
   g_object_bind_property(G_OBJECT(map), "factor", G_OBJECT(overlay), "factor",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
   g_object_bind_property(G_OBJECT(map), "double-pixel", G_OBJECT(overlay), "double-pixel",
@@ -435,9 +481,9 @@ void Maep::GpsMap::ensureOverlay(Source source)
   g_object_bind_property(G_OBJECT(map), "viewport-height", G_OBJECT(overlay), "viewport-height",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
   /* Workaround to bind lat and lon together. */
-  g_signal_connect_object(G_OBJECT(map), "notify::latitude", G_CALLBACK(onLatLon),
-                          (gpointer)overlay, (GConnectFlags)0);
-  onLatLon(G_OBJECT(map), NULL, overlay);
+ // g_signal_connect_object(G_OBJECT(map), "notify::latitude", G_CALLBACK(onLatLon),
+  //                         (gpointer)overlay, (GConnectFlags)0);
+  // onLatLon(G_OBJECT(map), NULL, overlay);
 
   g_signal_connect_swapped(G_OBJECT(overlay), "dirty", G_CALLBACK(osm_gps_map_qt_repaint), this);
   g_signal_connect_swapped(G_OBJECT(overlay), "notify::map-source",
@@ -515,7 +561,7 @@ void Maep::GpsMap::mapUpdate()
   cairo_restore(cr);
 
   if (osd)
-   osd->draw(osd, cr);
+    osd->draw(osd, cr);
 
   emit mapChanged();
 }
@@ -565,7 +611,7 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
       break;
     }
 
-    /*
+    /* For figuring out the color codes
     if (ocColors.contains(o) == false)
     {
       if (oColorFile.isOpen() == false)
@@ -668,13 +714,20 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     // Drag/zoom if one or two finger and no wiki layer.
     dragging = touchPoints.count() == 1;
-    zooming = false;
+
+    zooming = touchPoints.count() == 2;;
     nLastDeltaX = 0;
     nLastDeltaY = 0;
     if (dragging)
     {
       m_oElapsed.start();
       tBeginPoint = touchPoints.first();
+    }
+    if (zooming)
+    {
+      const QTouchEvent::TouchPoint& touchPoint0 = touchPoints.first();
+      const QTouchEvent::TouchPoint& touchPoint1 = touchPoints.last();
+      nTDistLast = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
     }
 
     // g_message("touch begin %d", dragging);
@@ -705,11 +758,12 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
       nLastDeltaY = delta.y();
       osm_gps_map_scroll(map);
       osm_gps_map_uppdate_offset(map, 0, 0);
+      osm_gps_map_idle_redraw(map);
     }
     else if (zooming)
     {
       // Zoom and drag case
-      if (touchPoints.count() != 2)
+      if (touchPoints.count() < 2)
         return;
 
       const QTouchEvent::TouchPoint& touchPoint0 = touchPoints.first();
@@ -796,7 +850,7 @@ void curl_wind(net_result_t* result, gpointer data)
     QJsonDocument oJD = QJsonDocument::fromJson(QByteArray(result->data.ptr, result->data.len));
     auto oJ = oJD.object()["current"].toObject();
     osm_gps_map_set_windSpeed(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-                              oJ["wind_direction_10m"].toDouble(),oJ["temperature_2m"].toDouble() );
+                              oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble());
   }
 }
 
@@ -811,10 +865,9 @@ std::locale comma_locale(std::locale(), new comma_numpunct());
 void Maep::GpsMap::getWeatherCurrentPos()
 {
   // constexpr char constString[] = "constString";
-  constexpr char WAPI[] =
-      "https://api.open-meteo.com/v1/forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m";
-  coord_t tPos;
-  tPos = osm_gps_map_get_center_ordinates(map);
+  constexpr char WAPI[] = "https://api.open-meteo.com/v1/"
+                          "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m";
+  coord_t tPos = osm_gps_map_get_center_ordinates(map);
   tPos.rlat = rad2deg(tPos.rlat);
   tPos.rlon = rad2deg(tPos.rlon);
   if (lastLaDeg != tPos.rlat)
@@ -1506,6 +1559,7 @@ void Maep::GpsMap::compassReadingChanged()
     }
   }
 }
+
 void Maep::GpsMap::enableCompass(bool enable)
 {
   if (compassEnabled_ == enable)
@@ -1514,16 +1568,14 @@ void Maep::GpsMap::enableCompass(bool enable)
   compassEnabled_ = enable;
   if (!enable)
   {
-    qDebug() << "Disabling compass.";
     compass.stop();
     maep_layer_gps_set_azimuth(lgps, NAN);
   }
   else
   {
-    qDebug() << "Enabling compass.";
+
     if (compass.isFeatureSupported(QCompass::SkipDuplicates))
     {
-      qDebug() << "Enabling compass powersaving.";
       compass.setSkipDuplicates(true);
     }
     lastAzimuth = -1.;

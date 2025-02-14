@@ -684,7 +684,7 @@ MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error) {
   
   /* parse the file and get the DOM */
   if((doc = xmlReadFile(filename, NULL, 0)) == NULL) {
-    xmlErrorPtr	errP = xmlGetLastError();
+    const xmlErrorPtr	errP = xmlGetLastError();
     g_set_error(error, MAEP_GEODATA_ERROR, MAEP_GEODATA_ERROR_XML,
                 "Wrong track file:\n%s", g_strstrip(errP->message));
     return NULL;
