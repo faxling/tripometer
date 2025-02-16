@@ -324,20 +324,13 @@ static void onLatLon(G_GNUC_UNUSED GObject* obj, G_GNUC_UNUSED GParamSpec* pspec
 
   osd_render_coordinates(osd);
 }
+
 #endif // OSD_COORDINATES
-/*
-static osd_button_t osd_check_int(osm_gps_map_osd_t* osd, gboolean click, gint state, gint x,
-                                  gint y)
-{
-  osd_button_t but = OSD_NONE;
 
-  return but;
-}
-*/
+
 #define OSD_CROSSHAIR_RADIUS 20
+#define OSD_CROSSHAIR_BORDER 30
 
-#define OSD_CROSSHAIR_TICK (OSD_CROSSHAIR_RADIUS)
-#define OSD_CROSSHAIR_BORDER (OSD_CROSSHAIR_TICK + OSD_CROSSHAIR_RADIUS / 4)
 #define OSD_CROSSHAIR_W ((OSD_CROSSHAIR_RADIUS + OSD_CROSSHAIR_BORDER) * 2)
 #define OSD_CROSSHAIR_H ((OSD_CROSSHAIR_RADIUS + OSD_CROSSHAIR_BORDER) * 2)
 
@@ -355,6 +348,31 @@ void drawLineTo(cairo_t* cr, double v, int nR)
   cairo_line_to(cr, x * nR + OSD_CROSSHAIR_W / 2, y * nR + OSD_CROSSHAIR_H / 2);
 }
 
+void drawLineFromTo(cairo_t* cr, double nx, double ny, double v, int nR)
+{
+  double y = -cos(v);
+  double x = sin(v);
+  cairo_line_to(cr, x * nR + nx, y * nR + ny);
+}
+
+#define MAXARR (OSD_CROSSHAIR_H / 2 - 5)
+void drawArrowTo(cairo_t* cr, double v, int nR)
+{
+
+  if (nR > MAXARR)
+    nR = MAXARR;
+  double y = -cos(v) * nR + OSD_CROSSHAIR_H / 2;
+  double x = sin(v) * nR + OSD_CROSSHAIR_W / 2;
+  cairo_line_to(cr, x, y);
+  cairo_stroke(cr);
+  cairo_set_line_width(cr, 1);
+  cairo_move_to(cr, x, y);
+  drawLineFromTo(cr, x, y, v + M_PI + 0.5, 10);
+  cairo_move_to(cr, x, y);
+  drawLineFromTo(cr, x, y, v + M_PI - 0.5, 10);
+  cairo_stroke(cr);
+}
+
 static void drawCrosshair(cairo_t* cr)
 {
   int i;
@@ -370,7 +388,6 @@ static void drawCrosshair(cairo_t* cr)
   cairo_stroke(cr);
 }
 
-// static const double A = 0.6;
 
 static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 {
@@ -402,22 +419,18 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
     return;
   }
 
-  double v = windDirRad(osd->map);
+  double w = windDirRad(osd->map) + M_PI;
 
   cairo_set_line_width(cr, 2);
   cairo_set_source_rgb(cr, 0x33 / 255.0, 0, 255);
 
-  moveTo(cr, -v, 5);
+  moveTo(cr, w, 5);
   int nTemp = tempDeg(osd->map);
   int nMs = windSpeedMs(osd->map);
-  drawLineTo(cr, -v, OSD_CROSSHAIR_RADIUS * (nMs / 5.0) + OSD_CROSSHAIR_RADIUS);
-  // drawLineTo(cr, -v, OSD_CROSSHAIR_RADIUS * (dMs / 5) + OSD_CROSSHAIR_RADIUS);
-  /*
-  drawLineTo(cr, v + A, OSD_CROSSHAIR_RADIUS / 3);
-  drawLineTo(cr, v , OSD_CROSSHAIR_RADIUS / 3 + 5);
-  drawLineTo(cr, v - A, OSD_CROSSHAIR_RADIUS / 3 );
-  */
-  cairo_stroke(cr);
+  int nAL = OSD_CROSSHAIR_RADIUS * (nMs / 5.0) + OSD_CROSSHAIR_RADIUS;
+  drawArrowTo(cr, w, nAL);
+
+
   cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_source_rgb(cr, 0, 0, 0.0);
   cairo_set_font_size(cr, 20);
@@ -457,15 +470,6 @@ void osd_render_scale(osm_gps_map_osd_t* osd)
   if (!priv->scale.surface)
     return;
 
-  /* this only needs to be rendered if the zoom has changed */
-  /* gint zoom; */
-  /* gfloat factor; */
-  /* g_object_get(OSM_GPS_MAP(osd->map), "zoom", &zoom, "factor", &factor, NULL); */
-  /* if(zoom == priv->scale.zoom && factor == priv->scale.factor) */
-  /*     return; */
-
-  /* priv->scale.zoom = zoom; */
-  /* priv->scale.factor = factor; */
 
   float m_per_pix = osm_gps_map_get_scale(OSM_GPS_MAP(osd->map));
 
@@ -624,22 +628,9 @@ static void onZoom(G_GNUC_UNUSED GObject* gobject, G_GNUC_UNUSED GParamSpec* psp
                    gpointer user_data)
 {
   osm_gps_map_osd_t* osd = (osm_gps_map_osd_t*)user_data;
-
   osd_render_scale(osd);
 }
 
-// static void osd_render(osm_gps_map_osd_t* osd)
-//{
-/* this function is actually called pretty often since the */
-/* OSD contents may have changed (due to a coordinate/zoom change). */
-/* The different OSD parts have to make sure that they don't */
-/* render unneccessarily often and thus waste CPU power */
-
-// osd_render_scale(osd);
-// osd_render_crosshair(osd);
-
-// osd_render_coordinates(osd);
-// }
 
 static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 {
@@ -648,11 +639,7 @@ static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 
   if (!priv->scale.surface)
   {
-    priv->scale.surface =
-        // cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-        //                            OSD_SCALE_W, OSD_SCALE_H);
-
-        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 300);
+    priv->scale.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 300);
     priv->scale.zoom = -1;
     priv->scale.factor = 0.f;
     osd_render_scale(osd);
@@ -729,33 +716,14 @@ static void osd_free(osm_gps_map_osd_t* osd)
   osd->priv = NULL;
 }
 
-static gboolean osd_busy(G_GNUC_UNUSED osm_gps_map_osd_t* osd)
-{
-
-  return FALSE;
-}
-/*
-static osd_button_t osd_check(osm_gps_map_osd_t* osd, gboolean down, gint x, gint y)
-{
-  return osd_check_int(osd, TRUE, down ? OSD_STATE_DOWN : OSD_STATE_UP, x, y);
-}
-*/
-
-/* this is the only function that's externally visible */
 osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
 {
   osm_gps_map_osd_t* osd_classic = g_new0(osm_gps_map_osd_t, 1);
   osd_priv_t* priv = g_new0(osd_priv_t, 1);
-
-  /* reset entries to default value */
   osd_classic->map = NULL;
-  // osd_classic->gps_enabled = FALSE;
   osd_classic->priv = priv;
   priv->scale.compass_azimuth = NAN;
   osd_classic->draw = osd_draw;
-  // osd_classic->check = osd_check;
-  // osd_classic->render = osd_render, osd_classic->free = osd_free;
-  osd_classic->busy = osd_busy,
 
   osd_classic->map = map;
   g_object_ref(map);
@@ -766,7 +734,7 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
 
   priv->pbWeather = (int*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
   priv->pbCrossHair = (int*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
-  g_message("crosshair enabled %d", *(priv->pbCrossHair));
+
   return osd_classic;
 }
 
@@ -788,12 +756,3 @@ void osm_gps_map_set_azimuth(osm_gps_map_osd_t* osd, double azimuth)
   }
   priv->scale.compass_azimuth = deg2rad((float)azimuth);
 }
-
-/*
-osd_button_t osm_gps_map_osd_check(osm_gps_map_osd_t* osd, gint x, gint y)
-{
-  g_return_val_if_fail(osd, OSD_NONE);
-
-  return osd_check_int(osd, FALSE, OSD_STATE_CHECK, x, y);
-}
-*/

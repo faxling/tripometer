@@ -1438,7 +1438,10 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
     {
       OsmGpsMapLayer* layer = list->data;
       if (osm_gps_map_layer_busy(layer))
+      {
+        g_message("busy");
         return FALSE;
+      }
     }
   }
 
@@ -1452,12 +1455,11 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
 
   osm_gps_map_fill_tiles_pixel(map);
 
-  g_debug("dirty is %p.", (gpointer)priv->dirty);
+  // g_debug("dirty is %p.", (gpointer)priv->dirty);
   osm_gps_map_print_tracks(map);
   // draw in gps layer
   // osm_gps_map_draw_gps_point(map);
   osm_gps_map_print_images(map);
-
   for (list = priv->layers; list != NULL; list = list->next)
     osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(list->data), priv->cr, map);
 

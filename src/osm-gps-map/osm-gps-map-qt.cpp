@@ -48,7 +48,6 @@
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
 #define GCONF_KEY_COMPASS_ENABLED "compass-enabled"
 
-
 // #define G_MAXFLOAT FLT_MAX
 
 QString Maep::GeonamesPlace::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
@@ -220,7 +219,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
       }
     }
 
-    getWeatherCurrentPos();
+    if (crossHairEnabled() && weatherEnabled())
+      getWeatherCurrentPos();
   });
 
   m_pReqCountTimer->Start(200);
@@ -233,22 +233,10 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
 
-
-
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
   bool compassEnabled = gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE);
 
-
   char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
-
-  /* Backward compatibility, move old path. */
-
-  /*
-  oldPath = g_build_filename(g_get_user_data_dir(), "maep", NULL);
-  if (g_file_test(oldPath, G_FILE_TEST_IS_DIR))
-    g_rename(oldPath, path);
-  g_free(oldPath);
-*/
 
   screenRotation = orientation;
   map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
@@ -258,10 +246,10 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
                                  // proxy?"proxy-uri":NULL,     proxy,
                                  "double-pixel", dpix, NULL));
 
-
-  g_object_set_data (G_OBJECT(map),GCONF_KEY_WEATHER, new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
-  g_object_set_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR, new int(gconf_get_bool(GCONF_KEY_CROSSHAIR, TRUE)));
-
+  g_object_set_data(G_OBJECT(map), GCONF_KEY_WEATHER,
+                    new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
+  g_object_set_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR,
+                    new int(gconf_get_bool(GCONF_KEY_CROSSHAIR, TRUE)));
 
   g_free(path);
 
@@ -283,7 +271,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
     ensureOverlay((Maep::GpsMap::Source)overlaySource);
 
   net_io_init();
-
 
   osd = osm_gps_map_osd_classic_init(map);
 
@@ -348,36 +335,34 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   connect(&compass, SIGNAL(readingChanged()), this, SLOT(compassReadingChanged()));
   enableCompass(compassEnabled);
 
-
-
   initBoatMarkers();
   track_capture = false;
   track_current = NULL;
 }
 
-
 void Maep::GpsMap::enableCrossHair(bool b)
 {
-  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR );
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
   *pb = b;
+  g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
 bool Maep::GpsMap::crossHairEnabled()
 {
-  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_CROSSHAIR );
-  qDebug() << "crossHairEnabled " << *pb;
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
   return *pb;
 }
 
 void Maep::GpsMap::enableWeather(bool b)
 {
-  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_WEATHER );
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
   *pb = b;
+  g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
 bool Maep::GpsMap::weatherEnabled()
 {
-  bool* pb = (bool*)g_object_get_data (G_OBJECT(map),GCONF_KEY_WEATHER );
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
   return *pb;
 }
 
@@ -438,19 +423,18 @@ Maep::GpsMap::~GpsMap()
   g_object_unref(lgps);
 
   g_object_unref(map);
-
-
 }
-
+/*
 static void onLatLon(GObject* map, GParamSpec* pspec, OsmGpsMap* overlay)
 {
   Q_UNUSED(pspec);
-  /* get current map position */
+
   gfloat lat, lon;
   g_object_get(map, "latitude", &lat, "longitude", &lon, NULL);
 
   osm_gps_map_set_center(overlay, lat, lon);
 }
+*/
 
 void Maep::GpsMap::ensureOverlay(Source source)
 {
@@ -481,7 +465,7 @@ void Maep::GpsMap::ensureOverlay(Source source)
   g_object_bind_property(G_OBJECT(map), "viewport-height", G_OBJECT(overlay), "viewport-height",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
   /* Workaround to bind lat and lon together. */
- // g_signal_connect_object(G_OBJECT(map), "notify::latitude", G_CALLBACK(onLatLon),
+  // g_signal_connect_object(G_OBJECT(map), "notify::latitude", G_CALLBACK(onLatLon),
   //                         (gpointer)overlay, (GConnectFlags)0);
   // onLatLon(G_OBJECT(map), NULL, overlay);
 
@@ -493,18 +477,6 @@ void Maep::GpsMap::ensureOverlay(Source source)
 static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map)
 {
   Q_UNUSED(map);
-  static QElapsedTimer oLastCall;
-
-  if (oLastCall.isValid() == false)
-    oLastCall.start();
-
-  if (oLastCall.elapsed() < 100)
-  {
-    return;
-  }
-  oLastCall.start();
-
-  // g_message("got dirty");
   widget->mapUpdate();
   widget->update();
 }
@@ -715,7 +687,8 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     // Drag/zoom if one or two finger and no wiki layer.
     dragging = touchPoints.count() == 1;
 
-    zooming = touchPoints.count() == 2;;
+    zooming = touchPoints.count() == 2;
+    ;
     nLastDeltaX = 0;
     nLastDeltaY = 0;
     if (dragging)
@@ -872,6 +845,7 @@ void Maep::GpsMap::getWeatherCurrentPos()
   tPos.rlon = rad2deg(tPos.rlon);
   if (lastLaDeg != tPos.rlat)
   {
+
     lastLaDeg = tPos.rlat;
     std::strstream os;
     os.imbue(comma_locale);
@@ -1720,7 +1694,7 @@ QString Maep::GpsMap::getCenteredTile(Maep::GpsMap::Source source) const
 /****************/
 /* GpsMapCover. */
 /****************/
-
+/*
 Maep::GpsMapCover::GpsMapCover(QQuickItem* parent) : QQuickPaintedItem(parent)
 {
   map_ = NULL;
@@ -1763,3 +1737,4 @@ void Maep::GpsMapCover::paint(QPainter*)
   g_message("repainting cover %fx%f!", width(), height());
   //  map_->paintTo(painter, width(), height());
 }
+*/

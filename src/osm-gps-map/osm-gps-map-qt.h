@@ -289,10 +289,6 @@ namespace Maep
     Q_PROPERTY(bool enable_weather READ weatherEnabled WRITE enableWeather NOTIFY enableWeatherChanged)
     Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY enableCrossHairChanged)
 
-    Q_PROPERTY(unsigned int gps_refresh_rate READ gpsRefreshRate WRITE setGpsRefreshRate NOTIFY
-                   gpsRefreshRateChanged)
-
-    Q_PROPERTY(QString compilation_date READ compilation_date CONSTANT)
 
   public:
     enum Source
@@ -341,8 +337,6 @@ namespace Maep
     inline bool trackCapture() { return track_capture; }
     inline Maep::Track* getTrack() { return track_current; }
     inline bool screen_rotation() const { return screenRotation; }
-
-    inline QString compilation_date() const { return QString(__DATE__ " " __TIME__); }
 
     inline bool autoCenter()
     {
@@ -542,7 +536,7 @@ namespace Maep
     QHash<int, cairo_surface_t*> m_ocPikeMarkers;
     QElapsedTimer m_oElapsed;
   };
-
+/*
   class GpsMapCover : public QQuickPaintedItem
   {
     Q_OBJECT
@@ -571,7 +565,7 @@ namespace Maep
     bool status_;
     GpsMap* map_;
   };
-
+*/
 } // namespace Maep
 
 #endif

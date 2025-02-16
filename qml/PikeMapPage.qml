@@ -25,7 +25,6 @@ Item {
 
     }
 
-
     onTrippleDrag: {
 
       if (idPikePage.state === "") {
@@ -528,7 +527,7 @@ Item {
   DockedPanel {
     id: idTrackPanel
     width: parent.width
-    height: Theme.itemSizeLarge * 5
+    height: Theme.itemSizeLarge * 6
     dock: Dock.Bottom
 
     RemorseItem {

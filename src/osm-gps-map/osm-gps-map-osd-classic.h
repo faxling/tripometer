@@ -36,61 +36,18 @@ typedef enum {
     OSD_CUSTOM   // first custom buttom
 } osd_button_t;
 
-typedef void (*OsmGpsMapOsdCallback)(osd_button_t but, gpointer data);
-#define	OSM_GPS_MAP_OSD_CALLBACK(f) ((OsmGpsMapOsdCallback) (f))
 
 /* the osd structure mainly contains various callbacks */
-/* required to draw and update the OSD */
 typedef struct osm_gps_map_osd_s {
-    /* To specify color. */
-    double fg[3];
-    double disabled[3];
-    double bg[3];
-
-
-    /* OSM renderer it is associated to. */
     OsmGpsMap *map;
-
-   // void(*render)(struct osm_gps_map_osd_s *);
     void(*draw)(struct osm_gps_map_osd_s *, cairo_t *);
-    // osd_button_t(*check)(struct osm_gps_map_osd_s *,gboolean,gint, gint);       /* check if x/y lies within OSD */
-    gboolean(*busy)(struct osm_gps_map_osd_s *);
-   //  void(*free)(struct osm_gps_map_osd_s *);
     gpointer priv;
 } osm_gps_map_osd_t;
-/*
-typedef enum { 
-    OSM_GPS_MAP_BALLOON_EVENT_TYPE_DRAW,
-    OSM_GPS_MAP_BALLOON_EVENT_TYPE_CLICK,
-    OSM_GPS_MAP_BALLOON_EVENT_TYPE_REMOVED,
-    OSM_GPS_MAP_BALLOON_EVENT_TYPE_SIZE_REQUEST,
-} osm_gps_map_balloon_event_type_t;
-
-typedef struct {
-    osm_gps_map_balloon_event_type_t type;
-    union {
-        struct { 
-            OsmGpsMapRect_t *rect;
-            cairo_t *cr;
-        } draw;
-
-        struct { 
-            int x, y; 
-            gboolean down; 
-        } click;
-    } data;
-} osm_gps_map_balloon_event_t;
-*/
-// typedef void (*OsmGpsMapBalloonCallback)(osm_gps_map_balloon_event_t *event, gpointer data);
-// #define	OSM_GPS_MAP_BALLOON_CALLBACK(f) ((OsmGpsMapBalloonCallback) (f))
 
 osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap *map);
+
 void osm_gps_map_osd_classic_free(osm_gps_map_osd_t *osd);
-// osd_button_t osm_gps_map_osd_check(osm_gps_map_osd_t *osd, gint x, gint y);
-
-// void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg);
 void osm_gps_map_set_azimuth(osm_gps_map_osd_t *osd, double azimuth);
-
 void osd_render_scale(osm_gps_map_osd_t *osd) ;
 
 
