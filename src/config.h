@@ -88,4 +88,6 @@
 // #define OSD_HEARTRATE
 #define GCONF_KEY_WEATHER "weather"
 #define GCONF_KEY_CROSSHAIR "cross-hair"
+#define GCONF_KEY_COMPASS_ENABLED "compass-enabled"
+
 #endif // CONFIG_H

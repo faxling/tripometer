@@ -42,6 +42,9 @@ ApplicationWindow {
   onNPikesCountedChanged: {
     mainMap.reCalc()
   }
+
+  property bool bIsRotated: false
+
   CoverBackground {
     id: blueCover
 
@@ -193,6 +196,12 @@ ApplicationWindow {
           axis.y: 1
           axis.z: 0 // set axis.y to 1 to rotate around y-axis
           angle: 0 // the default angle
+          onAngleChanged: {
+            if (angle === 180)
+              idApp.bIsRotated = true
+            else
+              idApp.bIsRotated = false
+          }
         }
 
         states: State {

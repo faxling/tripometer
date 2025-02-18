@@ -251,7 +251,10 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
 
   QGeoPositionInfoSource* source = QGeoPositionInfoSource::createDefaultSource(this);
   connect(&m_oCompass, SIGNAL(readingChanged()), this, SLOT(CompassReadingChanged()));
+  m_oCompass.setDataRate(4);
   m_oCompass.start();
+
+
   if (source != nullptr)
   {
     connect(source, SIGNAL(positionUpdated(const QGeoPositionInfo&)), this,
@@ -340,9 +343,6 @@ void InfoListModel::CompassReadingChanged()
 {
   double fAz = m_oCompass.reading()->azimuth();
   double fLevel = m_oCompass.reading()->calibrationLevel();
-
-  if (fLevel < 0.7)
-    return;
 
   for (int i = 0; i < 2; ++i)
     m_nData[i][COMPASS].f = FormatBearing(fAz, fLevel);

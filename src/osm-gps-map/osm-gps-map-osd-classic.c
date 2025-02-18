@@ -33,8 +33,8 @@
 #include "osm-gps-map-osd-classic.h"
 #include "osm-gps-map.h"
 
-#define OSD_DPIX_EXTRA 0
-#define OSD_DPIX_SKIP 0
+// #define OSD_DPIX_EXTRA 0
+//#define OSD_DPIX_SKIP 0
 
 // the osd controls
 typedef struct
@@ -67,6 +67,7 @@ typedef struct
   } coordinates;
   int* pbWeather;
   int* pbCrossHair;
+  int* pbCompass;
 
 } osd_priv_t;
 
@@ -109,26 +110,26 @@ typedef struct
 #endif
 
 /* total width and height of controls incl. shadow */
-#define OSD_W (2 * D_RAD + OSD_SHADOW + Z_GPS * 2 * Z_RAD)
-#if !Z_GPS
-#define OSD_H (2 * D_RAD + Z_STEP + 2 * Z_RAD + OSD_SHADOW)
-#else
-#define OSD_H (2 * Z_RAD + OSD_SHADOW)
-#endif
+// #define OSD_W (2 * D_RAD + OSD_SHADOW + Z_GPS * 2 * Z_RAD)
+//#if !Z_GPS
+//#define OSD_H (2 * D_RAD + Z_STEP + 2 * Z_RAD + OSD_SHADOW)
+// #else
+//#define OSD_H (2 * Z_RAD + OSD_SHADOW)
+// #endif
 
-#ifdef OSD_SHADOW_ENABLE
-#define OSD_LBL_SHADOW (OSD_SHADOW / 2)
-#endif
+//#ifdef OSD_SHADOW_ENABLE
+// #define OSD_LBL_SHADOW (OSD_SHADOW / 2)
+//#endif
 
-#define Z_TOP ((1 - Z_GPS) * (2 * D_RAD + Z_STEP))
+// #define Z_TOP ((1 - Z_GPS) * (2 * D_RAD + Z_STEP))
 
-#define Z_MID (Z_TOP + Z_RAD)
-#define Z_BOT (Z_MID + Z_RAD)
-#define Z_LEFT (Z_RAD)
-#define Z_RIGHT (2 * D_RAD - Z_RAD + Z_GPS * 2 * Z_RAD)
-#define Z_CENTER ((Z_RIGHT + Z_LEFT) / 2)
+// #define Z_MID (Z_TOP + Z_RAD)
+// #define Z_BOT (Z_MID + Z_RAD)
+//#define Z_LEFT (Z_RAD)
+//#define Z_RIGHT (2 * D_RAD - Z_RAD + Z_GPS * 2 * Z_RAD)
+//#define Z_CENTER ((Z_RIGHT + Z_LEFT) / 2)
 
-#define Z_LEN (2 * Z_RAD / 3)
+// #define Z_LEN (2 * Z_RAD / 3)
 
 #ifdef OSD_COORDINATES
 
@@ -327,7 +328,6 @@ static void onLatLon(G_GNUC_UNUSED GObject* obj, G_GNUC_UNUSED GParamSpec* pspec
 
 #endif // OSD_COORDINATES
 
-
 #define OSD_CROSSHAIR_RADIUS 20
 #define OSD_CROSSHAIR_BORDER 30
 
@@ -388,7 +388,6 @@ static void drawCrosshair(cairo_t* cr)
   cairo_stroke(cr);
 }
 
-
 static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 {
   osd_priv_t* priv = (osd_priv_t*)osd->priv;
@@ -425,11 +424,10 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   cairo_set_source_rgb(cr, 0x33 / 255.0, 0, 255);
 
   moveTo(cr, w, 5);
-  int nTemp = tempDeg(osd->map);
-  int nMs = windSpeedMs(osd->map);
+  int nTemp = lround(tempDeg(osd->map));
+  int nMs = lround(windSpeedMs(osd->map));
   int nAL = OSD_CROSSHAIR_RADIUS * (nMs / 5.0) + OSD_CROSSHAIR_RADIUS;
   drawArrowTo(cr, w, nAL);
-
 
   cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_source_rgb(cr, 0, 0, 0.0);
@@ -463,13 +461,12 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 #define OSD_SCALE_I (OSD_SCALE_H2 + OSD_SCALE_TICK)
 #define OSD_SCALE_FD (OSD_SCALE_FONT_SIZE / 4)
 #define OSD_SCALE_FD_X 20
-void osd_render_scale(osm_gps_map_osd_t* osd)
+void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
 {
   osd_priv_t* priv = (osd_priv_t*)osd->priv;
 
   if (!priv->scale.surface)
     return;
-
 
   float m_per_pix = osm_gps_map_get_scale(OSM_GPS_MAP(osd->map));
 
@@ -483,10 +480,14 @@ void osd_render_scale(osm_gps_map_osd_t* osd)
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
   // Compass
-  if (!isnan(priv->scale.compass_azimuth))
+
+
+  if (*priv->pbCompass != 0)
   {
     float r = 10;
     int nPos = 150;
+
+   //  g_message("az %f",priv->scale.compass_azimuth);
 
     cairo_move_to(cr, nPos + -r * cos(priv->scale.compass_azimuth),
                   nPos + r * sin(priv->scale.compass_azimuth));
@@ -628,9 +629,8 @@ static void onZoom(G_GNUC_UNUSED GObject* gobject, G_GNUC_UNUSED GParamSpec* psp
                    gpointer user_data)
 {
   osm_gps_map_osd_t* osd = (osm_gps_map_osd_t*)user_data;
-  osd_render_scale(osd);
+  osd_render_scale_and_compass(osd);
 }
-
 
 static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 {
@@ -642,8 +642,9 @@ static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
     priv->scale.surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 300);
     priv->scale.zoom = -1;
     priv->scale.factor = 0.f;
-    osd_render_scale(osd);
   }
+
+  osd_render_scale_and_compass(osd);
 
   if (!priv->crosshair.surface)
   {
@@ -722,7 +723,7 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
   osd_priv_t* priv = g_new0(osd_priv_t, 1);
   osd_classic->map = NULL;
   osd_classic->priv = priv;
-  priv->scale.compass_azimuth = NAN;
+  priv->scale.compass_azimuth = 0;
   osd_classic->draw = osd_draw;
 
   osd_classic->map = map;
@@ -734,7 +735,7 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
 
   priv->pbWeather = (int*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
   priv->pbCrossHair = (int*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
-
+  priv->pbCompass = (int*)g_object_get_data(G_OBJECT(map), GCONF_KEY_COMPASS_ENABLED);
   return osd_classic;
 }
 
@@ -749,10 +750,6 @@ void osm_gps_map_osd_classic_free(osm_gps_map_osd_t* osd)
 void osm_gps_map_set_azimuth(osm_gps_map_osd_t* osd, double azimuth)
 {
   osd_priv_t* priv = (osd_priv_t*)osd->priv;
-  if (isnan(azimuth))
-  {
-    priv->scale.compass_azimuth = NAN;
-    return;
-  }
   priv->scale.compass_azimuth = deg2rad((float)azimuth);
+//  g_message("azimuth %f",azimuth );
 }

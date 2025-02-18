@@ -46,7 +46,6 @@
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
-#define GCONF_KEY_COMPASS_ENABLED "compass-enabled"
 
 // #define G_MAXFLOAT FLT_MAX
 
@@ -202,8 +201,7 @@ extern QObject* g_pTheMap;
 
 extern int g_nOutstaningCurls;
 
-Maep::GpsMap::GpsMap(QQuickItem* parent)
-    : QQuickPaintedItem(parent), compass(parent), compassEnabled_(FALSE)
+Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
 {
   // char *path, *oldPath;
   g_pTheMap = this;
@@ -234,7 +232,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
 
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
-  bool compassEnabled = gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE);
 
   char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
 
@@ -250,6 +247,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
                     new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
   g_object_set_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR,
                     new int(gconf_get_bool(GCONF_KEY_CROSSHAIR, TRUE)));
+  g_object_set_data(G_OBJECT(map), GCONF_KEY_COMPASS_ENABLED,
+                    new int(gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE)));
 
   g_free(path);
 
@@ -331,13 +330,19 @@ Maep::GpsMap::GpsMap(QQuickItem* parent)
   lgps = maep_layer_gps_new();
   g_signal_connect_swapped(G_OBJECT(lgps), "dirty", G_CALLBACK(osm_gps_map_qt_repaint), this);
 
-  maep_layer_gps_set_azimuth(lgps, NAN);
+  // maep_layer_gps_set_azimuth(lgps, NAN);
   connect(&compass, SIGNAL(readingChanged()), this, SLOT(compassReadingChanged()));
-  enableCompass(compassEnabled);
-
+  compass.setDataRate(2);
   initBoatMarkers();
   track_capture = false;
   track_current = NULL;
+  enableCompass(compassEnabled());
+}
+
+bool Maep::GpsMap::crossHairEnabled()
+{
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
+  return *pb;
 }
 
 void Maep::GpsMap::enableCrossHair(bool b)
@@ -347,10 +352,36 @@ void Maep::GpsMap::enableCrossHair(bool b)
   g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
-bool Maep::GpsMap::crossHairEnabled()
+bool Maep::GpsMap::compassEnabled()
 {
-  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_COMPASS_ENABLED);
   return *pb;
+}
+
+void Maep::GpsMap::enableCompass(bool enable)
+{
+  bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_COMPASS_ENABLED);
+  *pb = enable;
+
+  if (!enable)
+  {
+    compass.stop();
+    //  maep_layer_gps_set_azimuth(lgps, NAN);
+  }
+  else
+  {
+
+    if (compass.isFeatureSupported(QCompass::SkipDuplicates))
+    {
+      compass.setSkipDuplicates(true);
+    }
+    //  lastAzimuth = -1.;
+    compass.start();
+  }
+
+  g_signal_emit_by_name(G_OBJECT(map), "dirty");
+
+  // emit enableCompassChanged(enable);
 }
 
 void Maep::GpsMap::enableWeather(bool b)
@@ -415,7 +446,7 @@ Maep::GpsMap::~GpsMap()
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
   gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
   gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
-  gconf_set_bool(GCONF_KEY_COMPASS_ENABLED, compassEnabled_);
+  gconf_set_bool(GCONF_KEY_COMPASS_ENABLED, compassEnabled());
   gconf_set_bool(GCONF_KEY_WEATHER, weatherEnabled());
   gconf_set_bool(GCONF_KEY_CROSSHAIR, crossHairEnabled());
 
@@ -935,8 +966,8 @@ void Maep::GpsMap::markPikeInMap(int nId)
 {
   if (nId < 0)
   {
-    osm_gps_map_set_azimuth(osd, NAN);
-    osd_render_scale(osd);
+    //  osm_gps_map_set_azimuth(osd, NAN);
+    // osd_render_scale_and_compass(osd);
     osm_gps_map_mark_image(map, 0);
   }
   else
@@ -1499,63 +1530,37 @@ void Maep::GpsMap::unsetGps()
 
 void Maep::GpsMap::compassReadingChanged()
 {
-  // Apparently this event fires spuriously once when the class is initialized,
-  // so double-check if we're really activated.
 
-  static QElapsedTimer oLastCall;
+  bool bFlip = property("bIsRotated").toBool();
 
-  if (oLastCall.isValid() == false)
-    oLastCall.start();
-
-  if (oLastCall.elapsed() < 100)
+  if (!bFlip)
     return;
+  /*
+    static QElapsedTimer oLastCall;
 
-  oLastCall.start();
+    if (oLastCall.isValid() == false)
+      oLastCall.start();
+
+    oLastCall.start();
+  */
 
   if (compassEnabled() && compass.isActive())
   {
     QCompassReading* compass_reading = compass.reading();
-    double fLevel = compass_reading->calibrationLevel();
 
-    if (fLevel < 0.6)
-      return;
+    // double fLevel = compass_reading->calibrationLevel();
 
-    if (compass_reading)
-    {
-      double azimuth = compass_reading->azimuth();
-      osm_gps_map_set_azimuth(osd, azimuth);
-      osd_render_scale(osd);
-      if (std::abs(lastAzimuth - azimuth) > 2)
-      {
-        maep_layer_gps_set_azimuth(lgps, static_cast<gfloat>(azimuth));
-        lastAzimuth = azimuth;
-      }
-    }
+    // g_message("fLevel %f az %f", fLevel, compass_reading->azimuth());
+    double azimuth = compass_reading->azimuth();
+    osm_gps_map_set_azimuth(osd, azimuth);
+    //      osd_render_scale_and_compass(osd);
+    //      if (std::abs(lastAzimuth - azimuth) > 2)
+    //      {
+    //         maep_layer_gps_set_azimuth(lgps, static_cast<gfloat>(azimuth));
+    //        lastAzimuth = azimuth;
+    //       }
+    g_signal_emit_by_name(map, "dirty");
   }
-}
-
-void Maep::GpsMap::enableCompass(bool enable)
-{
-  if (compassEnabled_ == enable)
-    return;
-
-  compassEnabled_ = enable;
-  if (!enable)
-  {
-    compass.stop();
-    maep_layer_gps_set_azimuth(lgps, NAN);
-  }
-  else
-  {
-
-    if (compass.isFeatureSupported(QCompass::SkipDuplicates))
-    {
-      compass.setSkipDuplicates(true);
-    }
-    lastAzimuth = -1.;
-    compass.start();
-  }
-  emit enableCompassChanged(enable);
 }
 
 void Maep::GpsMap::positionLost()
@@ -1565,6 +1570,7 @@ void Maep::GpsMap::positionLost()
     track_current->finalizeSegment();
   unsetGps();
 }
+
 void Maep::GpsMap::setGpsRefreshRate(unsigned int rate)
 {
   bool restart;
@@ -1611,8 +1617,6 @@ void Maep::GpsMap::setTrack(Maep::Track* track)
 {
 
   osm_gps_map_clear_tracks(map);
-
-  g_message("Set track %p (track parent is %p)", track, (track) ? (gpointer)track->parent() : NULL);
 
   if (track_current && track_current->parent() == this)
     delete (track_current);

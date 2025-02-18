@@ -31,7 +31,7 @@ struct _MaepLayerGpsPrivate
   gboolean dispose_has_run;
   coord_t gps;
   float gps_heading;
-  float compass_azimuth;
+  // float compass_azimuth;
   gboolean gps_valid;
   guint ui_gps_point_inner_radius;
   guint ui_gps_point_outer_radius;
@@ -330,6 +330,7 @@ gboolean maep_layer_gps_set_coordinates(MaepLayerGps* gps, gfloat lat, gfloat lo
   return changed;
 }
 
+/*
 gboolean maep_layer_gps_set_azimuth(MaepLayerGps* gps, gfloat azimuth)
 {
   g_return_val_if_fail(MAEP_IS_LAYER_GPS(gps), FALSE);
@@ -343,6 +344,7 @@ gboolean maep_layer_gps_set_azimuth(MaepLayerGps* gps, gfloat azimuth)
   }
   return FALSE;
 }
+*/
 
 gboolean maep_layer_gps_set_active(MaepLayerGps* gps, gboolean status)
 {

@@ -13,6 +13,7 @@ Item {
   //// property bool bShowBtns: true
   GpsMap {
     id: idMap
+    property bool bIsRotated: idApp.bIsRotated
     track_capture: !idApp.bIsPause
     function reCalc() {
       Lib.reCalcSizeAndDisplay()

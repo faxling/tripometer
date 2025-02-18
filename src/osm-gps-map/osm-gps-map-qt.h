@@ -411,7 +411,7 @@ namespace Maep
     }
     Q_INVOKABLE QString getCenteredTile(Maep::GpsMap::Source source) const;
     inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
-    inline bool compassEnabled() { return compassEnabled_; }
+    bool compassEnabled();
     bool crossHairEnabled();
     bool weatherEnabled();
 
@@ -498,8 +498,8 @@ namespace Maep
     OsmGpsMap *map, *overlay;
     QGeoCoordinate coordinate;
     QCompass compass;
-    bool compassEnabled_;
-    qreal lastAzimuth;
+
+   //  qreal lastAzimuth;
 
     osm_gps_map_osd_t* osd;
 

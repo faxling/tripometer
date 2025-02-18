@@ -48,7 +48,7 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap *map);
 
 void osm_gps_map_osd_classic_free(osm_gps_map_osd_t *osd);
 void osm_gps_map_set_azimuth(osm_gps_map_osd_t *osd, double azimuth);
-void osd_render_scale(osm_gps_map_osd_t *osd) ;
+void osd_render_scale_and_compass(osm_gps_map_osd_t *osd) ;
 
 
 
