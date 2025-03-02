@@ -186,8 +186,6 @@ int maep_geodata_track_get_contents(const MaepGeodata *track_state);
 guint maep_geodata_track_get_length(const MaepGeodata *track_state);
 gfloat maep_geodata_track_get_metric_length(const MaepGeodata *track_state);
 
-gfloat maep_get_dist_in_track_metric(MaepGeodata *track_state, const coord_t* tP1 , const coord_t* tP2 );
-
 
 coord_t maep_geodata_track_get_lastpoint(const MaepGeodata *track_state);
 
@@ -195,8 +193,7 @@ coord_t maep_geodata_track_get_lastpoint(const MaepGeodata *track_state);
 guint maep_geodata_track_get_duration
 (const MaepGeodata *track_state);
 guint maep_geodata_track_get_start_timestamp(const MaepGeodata *track_state);
-gboolean maep_geodata_track_set_metric_accuracy(MaepGeodata *track_state,
-                                                gfloat metricAccuracy);
+
 gfloat maep_geodata_track_get_metric_accuracy(const MaepGeodata *track_state);
 
 

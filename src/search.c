@@ -63,6 +63,7 @@ static void maep_search_context_class_init(MaepSearchContextClass* klass)
 
   g_type_class_add_private(klass, sizeof(MaepSearchContextPrivate));
 }
+
 static void maep_search_context_init(MaepSearchContext* obj)
 {
   g_message("New search context %p.", (gpointer)obj);
@@ -73,6 +74,7 @@ static void maep_search_context_init(MaepSearchContext* obj)
   obj->priv->list_nominatim_places = NULL;
   obj->priv->downloading_nominatim = FALSE;
 }
+
 static void maep_search_context_dispose(GObject* obj)
 {
   MaepSearchContextPrivate* priv = MAEP_SEARCH_CONTEXT(obj)->priv;
@@ -158,7 +160,7 @@ static void geonames_search_cb(MaepSearchContext* context, GSList* list, GError*
   g_object_unref(context);
 }
 
-/* request geotagged wikipedia entries for current map view */
+
 void maep_search_context_request(MaepSearchContext* context, const gchar* request, guint sources)
 {
   if (sources & MaepSearchContextGeonames && !context->priv->downloading_geonames)

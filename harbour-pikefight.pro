@@ -20,7 +20,7 @@ LIBS += -ljpeg
 LIBS += -lpng
 
 QMAKE_CXXFLAGS += -std=c++0x
-QMAKE_CXXFLAGS += -fdiagnostics-plain-output
+
 
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \

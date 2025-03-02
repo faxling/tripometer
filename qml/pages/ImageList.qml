@@ -13,7 +13,6 @@ Page {
   property int nIndexDeleted: -1
   function setIndex(nI) {
     idView.positionViewAtIndex(nI, ListView.Center)
-    console.log("positionViewAtIndex ")
   }
 
   SilicaListView {

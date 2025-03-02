@@ -30,6 +30,7 @@ ApplicationWindow {
   property bool bScreenallwaysOn: false
   // 0 = km/h 1 kts
   property int nUnit: 1
+  property bool bShowLenSlider
   property var mainMap
   // property string sImage
   // property string sImageThumb

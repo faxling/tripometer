@@ -136,6 +136,7 @@ function calcSizeAndDisplay(nOwner, value) {
 }
 
 function showPike(nOwner) {
+  idApp.bShowLenSlider = false
   if (nOwner === 1) {
     idPikePanel_1.show()
     idPikePanel_1.currentIndex = -1
@@ -177,6 +178,9 @@ function addPikeEx(nId, nOwner, sDate, sImage, nLen, fLo, fLa, bShow) {
   var oPModel
   var nCurrentIndex
   var oPanel
+  if (bShow)
+    idApp.bShowLenSlider = true
+
   if (nOwner === 1) {
     oPModel = idPikeModel1
     oPanel = idPikePanel_1
@@ -298,7 +302,7 @@ function addPike(nOwner) {
     return
   var sDate = pikeDateTimeStrNow()
   var nLen = 50
-
+  idApp.bShowLenSlider = true
   db.transaction(function (tx) {
 
     var rs = tx.executeSql(

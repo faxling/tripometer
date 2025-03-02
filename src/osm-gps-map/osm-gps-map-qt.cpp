@@ -153,27 +153,13 @@ bool Maep::Track::setAutosavePeriod(unsigned int value)
   return ret;
 }
 
-bool Maep::Track::setMetricAccuracy(qreal value)
-{
-  bool ret;
-
-  ret = maep_geodata_track_set_metric_accuracy(
-      track, (value <= 0) ? std::numeric_limits<gfloat>::max() : (gfloat)value);
-  if (ret)
-  {
-    emit metricAccuracyChanged(value);
-    emit characteristicsChanged((qreal)maep_geodata_track_get_metric_length(track),
-                                (unsigned int)maep_geodata_track_get_duration(track));
-  }
-
-  return ret;
-}
 void Maep::Track::addWayPoint(const QGeoCoordinate& coord, const QString& name,
                               const QString& comment, const QString& description)
 {
   maep_geodata_add_waypoint(track, coord.latitude(), coord.longitude(), name.toLocal8Bit().data(),
                             comment.toLocal8Bit().data(), description.toLocal8Bit().data());
 }
+
 void Maep::Track::highlightWayPoint(int iwpt)
 {
   maep_geodata_waypoint_set_highlight(track, iwpt);
@@ -185,12 +171,6 @@ static void osm_gps_map_qt_double_pixel(Maep::GpsMap* widget, GParamSpec* pspec,
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
-/*
-static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,
-                                MaepGeonamesEntry* entry,
-                                MaepWikiContext* wiki);
-                                */
-
 static void osm_gps_map_qt_places(Maep::GpsMap* widget, MaepSearchContextSource source,
                                   GSList* places, MaepSearchContext* wiki);
 static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, MaepSearchContextSource source,
@@ -495,10 +475,6 @@ void Maep::GpsMap::ensureOverlay(Source source)
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
   g_object_bind_property(G_OBJECT(map), "viewport-height", G_OBJECT(overlay), "viewport-height",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
-  /* Workaround to bind lat and lon together. */
-  // g_signal_connect_object(G_OBJECT(map), "notify::latitude", G_CALLBACK(onLatLon),
-  //                         (gpointer)overlay, (GConnectFlags)0);
-  // onLatLon(G_OBJECT(map), NULL, overlay);
 
   g_signal_connect_swapped(G_OBJECT(overlay), "dirty", G_CALLBACK(osm_gps_map_qt_repaint), this);
   g_signal_connect_swapped(G_OBJECT(overlay), "notify::map-source",
@@ -1535,30 +1511,12 @@ void Maep::GpsMap::compassReadingChanged()
 
   if (!bFlip)
     return;
-  /*
-    static QElapsedTimer oLastCall;
-
-    if (oLastCall.isValid() == false)
-      oLastCall.start();
-
-    oLastCall.start();
-  */
 
   if (compassEnabled() && compass.isActive())
   {
     QCompassReading* compass_reading = compass.reading();
-
-    // double fLevel = compass_reading->calibrationLevel();
-
-    // g_message("fLevel %f az %f", fLevel, compass_reading->azimuth());
     double azimuth = compass_reading->azimuth();
     osm_gps_map_set_azimuth(osd, azimuth);
-    //      osd_render_scale_and_compass(osd);
-    //      if (std::abs(lastAzimuth - azimuth) > 2)
-    //      {
-    //         maep_layer_gps_set_azimuth(lgps, static_cast<gfloat>(azimuth));
-    //        lastAzimuth = azimuth;
-    //       }
     g_signal_emit_by_name(map, "dirty");
   }
 }

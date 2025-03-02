@@ -80,6 +80,8 @@ typedef struct
 
 } net_io_request_t;
 
+
+/*
 static char* http_message(int id)
 {
   struct http_message_s* msg = http_messages;
@@ -93,7 +95,7 @@ static char* http_message(int id)
 
   return NULL;
 }
-
+*/
 void net_io_init()
 {
   curl_global_init(CURL_GLOBAL_NOTHING);
@@ -161,14 +163,11 @@ static gboolean net_io_idle_cb(gpointer data)
   if (request->res != 0)
   {
     request->result.code = 2;
-    //  printf("Download failed with message: %s\n", request->buffer);
   }
   else if (request->response != 200)
   {
     /* a valid http connection may have returned an error */
     request->result.code = 3;
-    printf("Download failed with code %ld: %s\n", request->response,
-           http_message(request->response));
   }
 
   /* call application callback */
@@ -208,11 +207,10 @@ static void* worker_thread(void* ptr)
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &request->result.data);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mem_write);
 
-  /* g_message("thread: set proxy"); */
   set_proxy(curl, request->proxy);
 
   /* set user name and password for the authentication */
-  // g_message("thread: set username if any");
+
   if (request->user)
     curl_easy_setopt(curl, CURLOPT_USERPWD, request->user);
 
@@ -231,9 +229,7 @@ static void* worker_thread(void* ptr)
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2L);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1l);
 
-  //  g_message("thread: perform request");
   request->res = curl_easy_perform(curl);
-  // g_message("thread: curl perform returned with %d\n", request->res);
 
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &request->response);
 
@@ -249,9 +245,9 @@ static void* worker_thread(void* ptr)
   if (request->cb)
     g_idle_add(net_io_idle_cb, request);
 
+// done in net_io_idle_cb
   // request_free(request);
 
-  // g_message("end curl req");
   g_thread_unref(g_thread_self());
 
   return NULL;

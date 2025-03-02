@@ -28,6 +28,8 @@
 #include "../config.h"
 
 #include <cairo.h>
+#include <glib/gtypes.h>
+
 #include <glib-object.h>
 #include <glib.h>
 

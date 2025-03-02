@@ -28,15 +28,12 @@
 #include "config.h"
 #include "track.h"
 #include "converter.h"
-/* #include "hxm.h" */
-
 #include <stdio.h>
 #include <math.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
 #include <strings.h>
-#define G_MAXFLOAT FLT_MAX
 
 #ifndef NAN
 #define NAN (0.0/0.0)
@@ -277,16 +274,16 @@ static void track_set_property(GObject* obj, guint property_id,
 
 static void maep_geodata_init(MaepGeodata *obj)
 {
-  obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_GEODATA, MaepGeodataPrivate);
+ //  obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_GEODATA, MaepGeodataPrivate);
   obj->priv->dispose_has_run = FALSE;
 
-  obj->priv->bb_top_left.rlat = G_MAXFLOAT;
-  obj->priv->bb_top_left.rlon = G_MAXFLOAT;
+  obj->priv->bb_top_left.rlat = FLT_MAX;
+  obj->priv->bb_top_left.rlon = FLT_MAX;
 
-  obj->priv->bb_bottom_right.rlat = -G_MAXFLOAT;
-  obj->priv->bb_bottom_right.rlon = -G_MAXFLOAT;
+  obj->priv->bb_bottom_right.rlat = -FLT_MAX;
+  obj->priv->bb_bottom_right.rlon = -FLT_MAX;
 
-  obj->priv->metricAccuracy = G_MAXFLOAT;
+  obj->priv->metricAccuracy = FLT_MAX;
 
   obj->priv->way_points = g_array_new(FALSE, FALSE, sizeof(way_point_t));
   g_array_set_clear_func(obj->priv->way_points, (GDestroyNotify)way_point_free);
@@ -502,7 +499,7 @@ static gboolean track_parse_wpt(way_point_t *wpt, xmlDocPtr doc, xmlNode *a_node
   if (!track_parse_trkpt(&wpt->pt, doc, a_node))
     return FALSE;
 
-  wpt->pt.h_acc = G_MAXFLOAT;
+  wpt->pt.h_acc = FLT_MAX;
   wpt->name = NULL;
   wpt->comment = NULL;
   wpt->description = NULL;
@@ -684,7 +681,7 @@ MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error) {
   
   /* parse the file and get the DOM */
   if((doc = xmlReadFile(filename, NULL, 0)) == NULL) {
-    const xmlErrorPtr	errP = xmlGetLastError();
+    const xmlError*	errP = xmlGetLastError();
     g_set_error(error, MAEP_GEODATA_ERROR, MAEP_GEODATA_ERROR_XML,
                 "Wrong track file:\n%s", g_strstrip(errP->message));
     return NULL;
@@ -726,7 +723,7 @@ static void track_save_point(track_point_t *point, xmlNodePtr node) {
     xmlNodePtr ext =
         xmlNewChild(node, NULL, BAD_CAST "extensions", NULL);
 
-    if(point->h_acc != G_MAXFLOAT) {
+    if(point->h_acc != FLT_MAX) {
       char *lstr = g_strdup_printf("%g", point->h_acc);
       xmlNewTextChild(ext, NULL, BAD_CAST "h_acc", BAD_CAST lstr);
       g_free(lstr);
@@ -900,18 +897,6 @@ gfloat maep_geodata_track_get_metric_length(const MaepGeodata *track_state) {
   
   return track_state->priv->metricLength;
 }
-gboolean maep_geodata_track_set_metric_accuracy(MaepGeodata *track_state,
-                                                gfloat metricAccuracy) {
-  g_return_val_if_fail(MAEP_IS_GEODATA(track_state), FALSE);
-
-  if (metricAccuracy == track_state->priv->metricAccuracy)
-    return FALSE;
-
-  track_state->priv->metricAccuracy = metricAccuracy;
-  track_state_update_length(track_state);
-
-  return TRUE;
-}
 
 
 gfloat maep_geodata_track_get_metric_accuracy(const MaepGeodata *track_state) {
@@ -944,7 +929,7 @@ gfloat maep_get_dist_iter_metric(MaepGeodataTrackIter *tI1, MaepGeodataTrackIter
 
 }
 
-
+/*
 gfloat maep_get_dist_in_track_metric(MaepGeodata *track_state, const coord_t* tP1 , const coord_t* tP2 )
 {
   g_return_val_if_fail(MAEP_IS_GEODATA(track_state), 0);
@@ -984,7 +969,7 @@ gfloat maep_get_dist_in_track_metric(MaepGeodata *track_state, const coord_t* tP
     maep_get_dist_iter_metric(&tI2,&tI1);
 
 }
-
+*/
 guint maep_geodata_track_get_duration(const MaepGeodata *track_state) {
   guint duration, i;
   track_t *track;
@@ -1047,10 +1032,10 @@ gboolean maep_geodata_get_bounding_box(const MaepGeodata *track_state,
                                        coord_t *top_left, coord_t *bottom_right) {
   g_return_val_if_fail(MAEP_IS_GEODATA(track_state), FALSE);
 
-  if (track_state->priv->bb_top_left.rlat == G_MAXFLOAT ||
-      track_state->priv->bb_top_left.rlon == G_MAXFLOAT ||
-      track_state->priv->bb_bottom_right.rlat == -G_MAXFLOAT ||
-      track_state->priv->bb_bottom_right.rlon == -G_MAXFLOAT ||
+  if (track_state->priv->bb_top_left.rlat == FLT_MAX ||
+      track_state->priv->bb_top_left.rlon == FLT_MAX ||
+      track_state->priv->bb_bottom_right.rlat == -FLT_MAX ||
+      track_state->priv->bb_bottom_right.rlon == -FLT_MAX ||
       track_state->priv->bb_top_left.rlat == track_state->priv->bb_bottom_right.rlat ||
       track_state->priv->bb_top_left.rlon == track_state->priv->bb_bottom_right.rlon)
     return FALSE;
@@ -1263,7 +1248,7 @@ void maep_geodata_add_waypoint(MaepGeodata *track_state,
   g_return_if_fail(MAEP_IS_GEODATA(track_state));
 
   track_point_reset(&new_point.pt);
-  new_point.pt.h_acc = G_MAXFLOAT;
+  new_point.pt.h_acc = FLT_MAX;
   new_point.pt.time = time(NULL);
   new_point.pt.coord.rlat = deg2rad(latitude);
   new_point.pt.coord.rlon = deg2rad(longitude);
@@ -1430,89 +1415,4 @@ gboolean maep_geodata_track_iter_next(MaepGeodataTrackIter *iter,
   return FALSE;
 }
 
-#ifdef TEST_ME
-int main(int argc, const char **argv)
-{
-  MaepGeodata *track_state;
-  MaepGeodataTrackIter iter;
-  const way_point_t *wpt;
-  guint i;
-  int st;
 
-  /* Create a track for tests. */
-  track_state = maep_geodata_new();
-  /* First segment. */
-  for (i = 0; i < 10; i++)
-  {
-    maep_geodata_add_trackpoint(track_state, 46. + (gfloat)i / 1000.f,
-                                6. + sin((gfloat)i) / 1000.,
-                                45.f / (gfloat)(i + 1), 200., NAN, NAN, NAN);
-    g_array_index(track_state->priv->current_seg->track_points, track_point_t, track_state->priv->current_seg->track_points->len - 1).time += i;
-  }
-  /* Second segment. */
-  track_state->priv->current_seg = NULL;
-  for (i = 0; i < 15; i++)
-  {
-    maep_geodata_add_trackpoint(track_state, 46. - (gfloat)i / 200.f,
-                                6. + cos((gfloat)i) / 1000.,
-                                45.f / (gfloat)(i + 1), 200., NAN, NAN, NAN);
-    g_array_index(track_state->priv->current_seg->track_points, track_point_t, track_state->priv->current_seg->track_points->len - 1).time += 3 * i;
-    if (i % 5 == 2)
-      maep_geodata_add_waypoint(track_state, 46. - (gfloat)i / 200.f,
-                                6. + cos((gfloat)i) / 1000.,
-                                "Great point", NULL, NULL);
-  }
-
-  st = 0;
-  maep_geodata_track_iter_new(&iter, track_state);
-  while (maep_geodata_track_iter_next(&iter, &st))
-  {
-    g_print("%g %g %d (%g) at %d\n", rad2deg(iter.cur->coord.rlat),
-            rad2deg(iter.cur->coord.rlon), st, iter.cur->h_acc, (int)iter.cur->time);
-  };
-  g_print("%gm %ds\n", track_state->metricLength, maep_geodata_track_get_duration(track_state));
-
-  maep_geodata_track_set_metric_accuracy(track_state, 14.);
-  maep_geodata_track_iter_new(&iter, track_state);
-  while (maep_geodata_track_iter_next(&iter, &st))
-  {
-    g_print("%g %g %d (%g) at %d\n", rad2deg(iter.cur->coord.rlat),
-            rad2deg(iter.cur->coord.rlon), st, iter.cur->h_acc, (int)iter.cur->time);
-  };
-  g_print("%gm %ds\n", track_state->metricLength, maep_geodata_track_get_duration(track_state));
-
-  maep_geodata_track_set_metric_accuracy(track_state, 3.1);
-  maep_geodata_track_iter_new(&iter, track_state);
-  while (maep_geodata_track_iter_next(&iter, &st))
-  {
-    g_print("%g %g %d (%g) at %d\n", rad2deg(iter.cur->coord.rlat),
-            rad2deg(iter.cur->coord.rlon), st, iter.cur->h_acc, (int)iter.cur->time);
-  };
-  g_print("%gm %ds\n", track_state->priv->metricLength, maep_geodata_track_get_duration(track_state));
-  for (i = 0, wpt = track_waypoint_get(track_state, i); wpt;
-       wpt = track_waypoint_get(track_state, ++i))
-    g_print("%d '%s' at %g %g\n", i, wpt->name, wpt->pt.coord.rlat, wpt->pt.coord.rlon);
-
-  maep_geodata_to_file(track_state, "test.gpx", NULL);
-
-  g_object_unref(G_OBJECT(track_state));
-
-  track_state = maep_geodata_new_from_file("test.gpx", NULL);
-
-  st = 0;
-  maep_geodata_track_iter_new(&iter, track_state);
-  while (maep_geodata_track_iter_next(&iter, &st))
-  {
-    g_print("%g %g %d (%g) at %d\n", rad2deg(iter.cur->coord.rlat),
-            rad2deg(iter.cur->coord.rlon), st, iter.cur->h_acc, (int)iter.cur->time);
-  };
-  g_print("%gm %ds\n", track_state->priv->metricLength, maep_geodata_track_get_duration(track_state));
-  for (i = 0, wpt = maep_geodata_waypoint_get(track_state, i); wpt;
-       wpt = maep_geodata_waypoint_get(track_state, ++i))
-    g_print("%d '%s' at %g %g\n", i, wpt->name, wpt->pt.coord.rlat, wpt->pt.coord.rlon);
-
-  g_object_unref(G_OBJECT(track_state));
-
-  return 0;
-}
-#endif

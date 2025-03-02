@@ -55,6 +55,7 @@ DockedPanel {
   StepSlider {
     id: idSlider1
     visible: idPikePage.currentIndex >= 0 && idApp.nPikesCounted !== 0
+             && idApp.bShowLenSlider
     anchors.bottom: parent.bottom
     stepSize: 0.005
     width: parent.width

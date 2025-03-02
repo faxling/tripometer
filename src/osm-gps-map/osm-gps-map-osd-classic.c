@@ -71,24 +71,11 @@ typedef struct
 
 } osd_priv_t;
 
-#define OSD_STATE_DOWN 0
-#define OSD_STATE_UP 1
-#define OSD_STATE_CHECK 2
 
 /* position and extent of bounding box */
 #define OSD_X (10)
 
 #define OSD_Y (-10)
-
-/* parameters of the direction shape */
-#ifndef OSD_DIAMETER
-#define D_RAD (30) // diameter of dpad
-#else
-#define D_RAD (OSD_DIAMETER)
-#endif
-#define D_TIP (4 * D_RAD / 5) // distance of arrow tip from dpad center
-#define D_LEN (D_RAD / 4) // length of arrow
-#define D_WID (D_LEN) // width of arrow
 
 /* parameters of the "zoom" pad */
 #define Z_STEP (D_RAD / 4) // distance between dpad and zoom

@@ -44,6 +44,8 @@ Item {
           pageStack.push("GalleryPage.qml")
         }
       }
+
+      /* this was because of share bugg in sailfish
       MenuItem {
         text: "Screenshot Gallery"
         onClicked: {
@@ -53,7 +55,7 @@ Item {
                          })
         }
       }
-
+*/
       MenuItem {
         text: "Share Report"
         onClicked: {

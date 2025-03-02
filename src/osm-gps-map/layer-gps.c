@@ -24,6 +24,7 @@
 #include "osm-gps-map-layer.h"
 #include <math.h>
 #include <src/misc.h>
+#include <glib/gtypes.h>
 // #include <../lib/glib-2.0/include/glibconfig.h>
 
 struct _MaepLayerGpsPrivate
@@ -105,6 +106,7 @@ static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface)
   iface->busy = NULL;
   iface->button = NULL;
 }
+
 static void maep_layer_gps_init(MaepLayerGps* obj)
 {
   g_message("New layer gps %p.", (gpointer)obj);
@@ -115,6 +117,7 @@ static void maep_layer_gps_init(MaepLayerGps* obj)
 
   obj->priv->surf = NULL;
 }
+
 static void maep_layer_gps_dispose(GObject* obj)
 {
   MaepLayerGpsPrivate* priv = MAEP_LAYER_GPS(obj)->priv;

@@ -107,12 +107,19 @@ SilicaListView {
       }
 
       MenuItem {
-        id: idMenuItem
         text: "Delete"
         onClicked: {
           idListItem.showRemorseItem()
         }
       }
+
+      MenuItem {
+        text: "Adjust Length"
+        onClicked: {
+          idApp.bShowLenSlider = true
+        }
+      }
+
       MenuItem {
         text: "Center"
         onClicked: {

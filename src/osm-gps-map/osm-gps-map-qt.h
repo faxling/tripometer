@@ -18,8 +18,10 @@
 #ifndef OSM_GPS_MAP_QT_H
 #define OSM_GPS_MAP_QT_H
 #include "../misc.h"
-#include "../search.h"
+#include "../geonames.h"
+// #include "../search.h"
 #include "../track.h"
+#include "../search.h"
 #include "layer-gps.h"
 //#include "layer-wiki.h"
 #include "osm-gps-map-osd-classic.h"
@@ -37,6 +39,7 @@
 #include <Utils.h>
 #include <cairo.h>
 #include <memory>
+#include <values.h>
 namespace Maep
 {
 
@@ -168,8 +171,6 @@ namespace Maep
 
     Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
                    autosavePeriodChanged)
-    Q_PROPERTY(qreal metricAccuracy READ getMetricAccuracy WRITE setMetricAccuracy NOTIFY
-                   metricAccuracyChanged)
     Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
     Q_PROPERTY(unsigned int startDate READ getStartDate NOTIFY startDateSet)
     Q_PROPERTY(qreal length READ getLength NOTIFY characteristicsChanged)
@@ -206,7 +207,7 @@ namespace Maep
     {
       gfloat value;
       value = maep_geodata_track_get_metric_accuracy(track);
-      return (value == G_MAXFLOAT) ? 0. : (qreal)value;
+      return (value == FLT_MAX) ? 0. : (qreal)value;
     }
     inline qreal getLength() { return (qreal)maep_geodata_track_get_metric_length(track); }
     inline unsigned int getDuration()
@@ -257,7 +258,6 @@ namespace Maep
     void highlightWayPoint(int iwpt);
     void finalizeSegment();
     bool setAutosavePeriod(unsigned int value);
-    bool setMetricAccuracy(qreal value);
 
   private:
     MaepGeodata* track;

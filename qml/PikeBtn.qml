@@ -47,6 +47,8 @@ Rectangle {
   }
 
   Image {
+    width: parent.width * 0.7
+    fillMode: Image.PreserveAspectFit
     anchors.centerIn: parent
     id: idImg
   }

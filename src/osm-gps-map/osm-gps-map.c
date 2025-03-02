@@ -35,14 +35,15 @@
 #include <unistd.h>
 
 #include <cairo.h>
-
+#include <glib/gfileutils.h>
+#include <glib/gtypes.h>
 // Include generated file to avoid ide warnings
 #include "src/misc.h"
 // #include <../lib/glib-2.0/include/glibconfig.h>
 
 #include "osm-gps-map-types.h"
 #include "osm-gps-map.h"
-#define G_MAXFLOAT FLT_MAX
+
 
 #define ENABLE_DEBUG (0)
 
@@ -782,16 +783,12 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 #define UNUSED(x) (void)(x)
 
 char g_szNAVTOKEN[1024] = {0};
-char g_szNAVURL1[1024] = {0};
-char g_szNAVURL2[1024] = {0};
+char g_szNAVURL1[2048] = {0};
+char g_szNAVURL2[2048] = {0};
 
-#define NAVURL1                                                                                    \
-  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
-  "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+#define NAVURL1 "https://tile3.navionics.com/tile/#Z/#X/#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
-#define NAVURL2                                                                                    \
-  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
-  "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+#define NAVURL2  "https://tile3.navionics.com/tile/#Z/#X/#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
 char* get_navionics_key2()
 {
@@ -3018,7 +3015,7 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
   {
     if (!priv->trip_history)
       priv->trip_history = maep_geodata_new();
-    maep_geodata_add_trackpoint(priv->trip_history, latitude, longitude, G_MAXFLOAT, NAN, NAN, NAN,
+    maep_geodata_add_trackpoint(priv->trip_history, latitude, longitude, FLT_MAX, NAN, NAN, NAN,
                                 NAN);
   }
 

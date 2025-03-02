@@ -43,7 +43,6 @@ BuildRequires: pkgconfig(gobject-2.0)
 BuildRequires: pkgconfig(cairo)
 #BuildRequires: pkgconfig(libpng15)
 BuildRequires: pkgconfig(dconf)
-BuildRequires: pkgconfig(libsoup-2.4)
 BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libcurl)
 BuildRequires: libjpeg-turbo-devel
