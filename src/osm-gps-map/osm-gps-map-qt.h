@@ -18,10 +18,10 @@
 #ifndef OSM_GPS_MAP_QT_H
 #define OSM_GPS_MAP_QT_H
 #include "../misc.h"
-#include "../geonames.h"
+//#include "../geonames.h"
 // #include "../search.h"
-#include "../track.h"
 #include "../search.h"
+#include "../track.h"
 #include "layer-gps.h"
 //#include "layer-wiki.h"
 #include "osm-gps-map-osd-classic.h"
@@ -42,40 +42,6 @@
 #include <values.h>
 namespace Maep
 {
-
-  class Conf : public QObject
-  {
-    Q_OBJECT
-
-  public:
-    Q_INVOKABLE inline QString getString(const QString& key, const QString& fallback = NULL) const
-    {
-      gchar* val;
-      QString ret;
-
-      val = gconf_get_string(key.toLocal8Bit().data());
-      ret = QString(val);
-      if (val)
-        g_free(val);
-      else if (fallback != NULL)
-        ret = QString(fallback);
-      return ret;
-    }
-    Q_INVOKABLE inline int getInt(const QString& key, const int fallback) const
-    {
-      return gconf_get_int(key.toLocal8Bit().data(), fallback);
-    }
-
-  public slots:
-    inline void setString(const QString& key, const QString& value)
-    {
-      gconf_set_string(key.toLocal8Bit().data(), value.toLocal8Bit().data());
-    }
-    inline void setInt(const QString& key, const int value)
-    {
-      gconf_set_int(key.toLocal8Bit().data(), value);
-    }
-  };
 
   class GeonamesPlace : public QObject
   {
@@ -171,7 +137,7 @@ namespace Maep
 
     Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
                    autosavePeriodChanged)
-    Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
+    //  Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
     Q_PROPERTY(unsigned int startDate READ getStartDate NOTIFY startDateSet)
     Q_PROPERTY(qreal length READ getLength NOTIFY characteristicsChanged)
     Q_PROPERTY(unsigned int duration READ getDuration NOTIFY characteristicsChanged)
@@ -249,9 +215,9 @@ namespace Maep
     void startDateSet(unsigned int value);
 
   public slots:
-    void set(MaepGeodata* track);
-    bool set(const QString& filename);
-    bool toFile(const QString& filename);
+    // void set(MaepGeodata* track);
+    // bool set(const QString& filename);
+    // bool toFile(const QString& filename);
     void addPoint(QGeoPositionInfo& info);
     void addWayPoint(const QGeoCoordinate& coord, const QString& name, const QString& comment,
                      const QString& description);
@@ -275,7 +241,8 @@ namespace Maep
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(
         Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
-    Q_PROPERTY(bool double_pixel READ doublePixel WRITE setDoublePixel NOTIFY doublePixelChanged)
+    //  Q_PROPERTY(bool double_pixel READ doublePixel WRITE setDoublePixel NOTIFY
+    //  doublePixelChanged)
     Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
@@ -286,9 +253,10 @@ namespace Maep
                    screenRotationChanged)
     Q_PROPERTY(
         bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
-    Q_PROPERTY(bool enable_weather READ weatherEnabled WRITE enableWeather NOTIFY enableWeatherChanged)
-    Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY enableCrossHairChanged)
-
+    Q_PROPERTY(
+        bool enable_weather READ weatherEnabled WRITE enableWeather NOTIFY enableWeatherChanged)
+    Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY
+                   enableCrossHairChanged)
 
   public:
     enum Source
@@ -321,6 +289,7 @@ namespace Maep
     };
 
     GpsMap(QQuickItem* parent = 0);
+    void Init();
     ~GpsMap();
 
     inline QGeoCoordinate getCoord() const { return coordinate; }
@@ -403,13 +372,15 @@ namespace Maep
       osm_gps_map_source_get_repo_copyright((OsmGpsMapSource_t)id, &notice, &url);
       return QString(url);
     }
+    /*
     inline bool doublePixel()
     {
       gboolean status;
       g_object_get(map, "double-pixel", &status, NULL);
       return status;
     }
-    Q_INVOKABLE QString getCenteredTile(Maep::GpsMap::Source source) const;
+    */
+    // Q_INVOKABLE QString getCenteredTile(Maep::GpsMap::Source source) const;
     inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
     bool compassEnabled();
     bool crossHairEnabled();
@@ -444,7 +415,7 @@ namespace Maep
   public slots:
     void setSource(Source source);
     void setOverlaySource(Source source);
-    void setDoublePixel(bool status);
+    // void setDoublePixel(bool status);
     void setAutoCenter(bool status);
     void setScreenRotation(bool status);
     void setCoordinate(float lat, float lon);
@@ -473,13 +444,14 @@ namespace Maep
     int START_LINE = 0;
     void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize, QImage& sImg,
                            QPainter* p, double fQuote);
-
+    /*
     static int countSearchResults(QQmlListProperty<GeonamesPlace>* prop)
     {
       GpsMap* self = qobject_cast<GpsMap*>(prop->object);
       g_message("#### Hey I've got %d results!", self->searchRes.length());
       return self->searchRes.length();
     }
+
     static GeonamesPlace* atSearchResults(QQmlListProperty<GeonamesPlace>* prop, int index)
     {
       GpsMap* self = qobject_cast<GpsMap*>(prop->object);
@@ -489,6 +461,8 @@ namespace Maep
                 self->searchRes[index]->coordinate().longitude(), index);
       return self->searchRes[index];
     }
+
+    */
     void ensureOverlay(Source source);
     bool mapSized();
     void gpsToTrack();
@@ -498,9 +472,6 @@ namespace Maep
     OsmGpsMap *map, *overlay;
     QGeoCoordinate coordinate;
     QCompass compass;
-
-   //  qreal lastAzimuth;
-
     osm_gps_map_osd_t* osd;
 
     MaepSearchContext* search;
@@ -536,36 +507,7 @@ namespace Maep
     QHash<int, cairo_surface_t*> m_ocPikeMarkers;
     QElapsedTimer m_oElapsed;
   };
-/*
-  class GpsMapCover : public QQuickPaintedItem
-  {
-    Q_OBJECT
-    Q_PROPERTY(Maep::GpsMap* map READ map WRITE setMap NOTIFY mapChanged)
-    Q_PROPERTY(bool status READ status WRITE setStatus NOTIFY statusChanged)
 
-  public:
-    GpsMapCover(QQuickItem* parent = 0);
-    ~GpsMapCover();
-    Maep::GpsMap* map() const;
-    bool status();
-
-  protected:
-    void paint(QPainter* painter);
-
-  signals:
-    void mapChanged();
-    void statusChanged();
-
-  public slots:
-    void setMap(Maep::GpsMap* map);
-    void setStatus(bool active);
-    void updateCover();
-
-  private:
-    bool status_;
-    GpsMap* map_;
-  };
-*/
 } // namespace Maep
 
 #endif

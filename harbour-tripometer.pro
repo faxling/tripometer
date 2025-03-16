@@ -3,21 +3,17 @@
 TARGET = harbour-pikefight
 DEPENDPATH += .
 INCLUDEPATH += .
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\dconf
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\libxml2
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\glib-2.0
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\cairo
-INCLUDEPATH += $$(MER_SSH_SHARED_TARGET)/$$(MER_SSH_TARGET_NAME)\usr\include\c++\4.8.3
-
-QT += multimedia svg qml quick positioning sensors dbus gui
-
-CONFIG += sailfishapp
-
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/glib-2.0/glib
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/glib-2.0
+INCLUDEPATH += $$[QT_HOST_PREFIX]/lib64/glib-2.0/include
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/dconf
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/libxml2
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/cairo
+CONFIG +=  sailfishapp
 PKGCONFIG += gobject-2.0 cairo dconf libxml-2.0 libcurl
-
+QT += qml quick positioning sensors dbus svg
 LIBS += -ljpeg
 LIBS += -lpng
-
 QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
@@ -54,6 +50,7 @@ HEADERS += \
     Utils.h
 
 
+
 packagesExist(qdeclarative5-boostable) {
   DEFINES += HAS_BOOSTER
   PKGCONFIG += qdeclarative5-boostable
@@ -75,9 +72,10 @@ DEFINES += DATADIR=\"\\\"\"$${DEPLOYMENT_PATH}\"\\\"\"
 DEFINES += SAILFISH
 DEFINES += VERSION=\"\\\"\"1.0.0\"\\\"\"
 DEFINES += GLIB_DISABLE_DEPRECATION_WARNINGS
+
 # Input
-HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/icon.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/layer-gps.h
-SOURCES += src/misc.c src/net_io.c src/geonames.c src/search.c src/track.c src/img_loader.c src/icon.c src/converter.c src/osm-gps-map/osm-gps-map.c src/osm-gps-map/osm-gps-map-layer.c src/osm-gps-map/osm-gps-map-qt.cpp  src/osm-gps-map/layer-gps.c
+HEADERS += src/config.h src/misc.h src/net_io.h src/geonames.h src/search.h src/track.h src/img_loader.h src/converter.h src/osm-gps-map/osm-gps-map.h src/osm-gps-map/osm-gps-map-layer.h src/osm-gps-map/osm-gps-map-qt.h src/osm-gps-map/layer-gps.h
+SOURCES += src/misc.c src/net_io.c src/geonames.c src/search.c src/track.c src/img_loader.c src/converter.c src/osm-gps-map/osm-gps-map.c src/osm-gps-map/osm-gps-map-layer.c src/osm-gps-map/osm-gps-map-qt.cpp  src/osm-gps-map/layer-gps.c
 
 # Installation
 #target.path = $$PREFIX/bin
@@ -133,6 +131,7 @@ DISTFILES += \
     qml/btnWorld.png \
     qml/pages/SearchPage.qml \
     rpm/harbour-pikefight.changes
+
 
 RESOURCES += \
     res.qrc

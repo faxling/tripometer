@@ -274,7 +274,7 @@ static void track_set_property(GObject* obj, guint property_id,
 
 static void maep_geodata_init(MaepGeodata *obj)
 {
- //  obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_GEODATA, MaepGeodataPrivate);
+  obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_GEODATA, MaepGeodataPrivate);
   obj->priv->dispose_has_run = FALSE;
 
   obj->priv->bb_top_left.rlat = FLT_MAX;
@@ -291,35 +291,9 @@ static void maep_geodata_init(MaepGeodata *obj)
 }
 
 
-#ifdef USE_MAEMO
-#ifdef MAEMO5
-#define TRACK_PATH  "/home/user/." APP
-#else
-#define TRACK_PATH  "/media/mmc2/" APP
-#endif
-#else
-#define TRACK_PATH  "~/." APP
-#endif
 
 static char *build_path(void) {
-#ifndef SAILFISH
-  const char track_path[] = TRACK_PATH;
-
-  if(track_path[0] == '~') {
-    int skip = 1;
-    char *p = getenv("HOME");
-    if(!p) return NULL;
-
-    while(track_path[strlen(track_path)-skip] == '/')
-      skip++;
-
-    return g_strdup_printf("%s/%s/track.trk", p, track_path+skip);
-  }
-
-  return g_strdup_printf("%s/track.trk", track_path);
-#else
   return g_strdup_printf("%s/%s/track.gpx", g_get_user_data_dir(), APP);
-#endif
 }
 
 static GQuark error_quark = 0;

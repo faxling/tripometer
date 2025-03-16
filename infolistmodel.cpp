@@ -233,7 +233,7 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   QString sDataFileName;
   sDataFileName.sprintf("%ls/%s", (wchar_t*)sDataFilePath.utf16(), "fraxtrip");
   m_pDataFile.setFileName(sDataFileName);
-  m_pDataFile.open(QIODevice::ReadOnly);
+  m_pDataFile.open(QIODevice::ReadWrite);
 
   size_t nSize = m_pDataFile.read((char*)&p, sizeof p);
   m_pDataFile.close();

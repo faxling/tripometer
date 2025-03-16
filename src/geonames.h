@@ -29,7 +29,8 @@
 G_BEGIN_DECLS
 
 struct _MaepGeonamesPlace {
-  char *name, *country;
+  char *name;
+  char *country;
   coord_t pos;
 };
 
@@ -47,13 +48,14 @@ void maep_geonames_place_free(MaepGeonamesPlace *geoname);
 void maep_geonames_place_list_free(GSList *list);
 
 MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry *src);
-void maep_geonames_entry_free(MaepGeonamesEntry *entry);
+
+void maep_geonames_entry_free( gpointer       data,
+                               gpointer       user_data);
 void maep_geonames_entry_list_free(GSList *list);
 
 typedef void (*MaepGeonamesRequestCallback)(gpointer obj, GSList *list,
                                             GError *error);
-void maep_geonames_entry_request(coord_t *pt1, coord_t *pt2,
-                                 MaepGeonamesRequestCallback cb, gpointer obj);
+
 void maep_geonames_place_request(const gchar *request,
                                  MaepGeonamesRequestCallback cb, gpointer obj);
 void maep_nominatim_address_request(const gchar *request,

@@ -73,7 +73,6 @@ static void maep_layer_gps_class_init(MaepLayerGpsClass* klass)
 {
   GObjectClass* oclass = G_OBJECT_CLASS(klass);
 
-  g_message("Class init gps layer context.");
   /* Connect the overloading methods. */
   oclass->dispose = maep_layer_gps_dispose;
   oclass->finalize = maep_layer_gps_finalize;
@@ -100,7 +99,6 @@ static void maep_layer_gps_class_init(MaepLayerGpsClass* klass)
 
 static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface)
 {
-  g_message("setup layer interface for gps layer context.");
   iface->render = NULL;
   iface->draw = maep_layer_gps_draw;
   iface->busy = NULL;
@@ -109,12 +107,9 @@ static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface)
 
 static void maep_layer_gps_init(MaepLayerGps* obj)
 {
-  g_message("New layer gps %p.", (gpointer)obj);
   obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_LAYER_GPS, MaepLayerGpsPrivate);
   obj->priv->dispose_has_run = FALSE;
-
   obj->priv->gps_valid = FALSE;
-
   obj->priv->surf = NULL;
 }
 
@@ -333,21 +328,7 @@ gboolean maep_layer_gps_set_coordinates(MaepLayerGps* gps, gfloat lat, gfloat lo
   return changed;
 }
 
-/*
-gboolean maep_layer_gps_set_azimuth(MaepLayerGps* gps, gfloat azimuth)
-{
-  g_return_val_if_fail(MAEP_IS_LAYER_GPS(gps), FALSE);
 
-  azimuth = deg2rad(azimuth);
-  if (gps->priv->compass_azimuth != azimuth)
-  {
-    gps->priv->compass_azimuth = azimuth;
-    g_signal_emit(gps, _signals[DIRTY_SIGNAL], 0, NULL);
-    return TRUE;
-  }
-  return FALSE;
-}
-*/
 
 gboolean maep_layer_gps_set_active(MaepLayerGps* gps, gboolean status)
 {

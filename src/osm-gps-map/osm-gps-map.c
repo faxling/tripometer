@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "glibconfig.h"
 #include <cairo.h>
 #include <glib/gfileutils.h>
 #include <glib/gtypes.h>
@@ -43,7 +44,6 @@
 
 #include "osm-gps-map-types.h"
 #include "osm-gps-map.h"
-
 
 #define ENABLE_DEBUG (0)
 
@@ -96,10 +96,9 @@ struct _OsmGpsMapPrivate
   // the uri string contains, that will be replaced when calculating
   // the uri to download.
   OsmGpsMapSource_t map_source;
-  char* repo_uri;
+  const char* repo_const_uri;
   char* image_format;
   int uri_format;
-
   gboolean the_navionics;
 
   // gps tracking state
@@ -131,7 +130,7 @@ struct _OsmGpsMapPrivate
 
   guint fullscreen : 1;
   guint is_disposed : 1;
-  guint double_pixel : 1;
+  //   guint double_pixel : 1;
 };
 
 #define OSM_GPS_MAP_PRIVATE(o) (OSM_GPS_MAP(o)->priv)
@@ -155,13 +154,11 @@ typedef struct
 enum
 {
   PROP_0,
-
-  PROP_DOUBLE_PIXEL,
   PROP_AUTO_CENTER,
   PROP_RECORD_TRIP_HISTORY,
   PROP_SHOW_TRIP_HISTORY,
   PROP_AUTO_DOWNLOAD,
-  PROP_REPO_URI,
+  // PROP_REPO_URI,
   PROP_PROXY_URI,
   PROP_TILE_CACHE_DIR,
   PROP_TILE_CACHE_BASE_DIR,
@@ -194,7 +191,7 @@ G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
  * Drawing function forward defintions
  */
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navionics);
+static void inspect_map_uri(OsmGpsMapPrivate* priv);
 static void osm_gps_map_print_images(OsmGpsMap* map);
 // static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 
@@ -329,12 +326,20 @@ static void map_convert_coords_to_quadtree_string(gint x, gint y, gint zoomlevel
   *ptr++ = '\0';
 }
 
-static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navionics)
+void inspect_map_uri(OsmGpsMapPrivate* priv)
 {
   int uri_format;
 
+  if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 ||
+      priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
+  {
+    priv->the_navionics = 1;
+    priv->uri_format = URI_HAS_X | URI_HAS_Y | URI_HAS_Z;
+    return;
+  }
+  priv->the_navionics = 0;
+  const gchar* repo_uri = priv->repo_const_uri;
   uri_format = 0;
-  *the_navionics = FALSE;
 
   if (g_strrstr(repo_uri, URI_MARKER_X))
     uri_format |= URI_HAS_X;
@@ -360,17 +365,18 @@ static int inspect_map_uri(const gchar* repo_uri, gboolean* the_navionics)
   if (g_strrstr(repo_uri, URI_MARKER_R))
     uri_format |= URI_HAS_R;
 
-  if (g_strrstr(repo_uri, "navionics.com"))
-    *the_navionics = TRUE;
-
-  g_debug("URI Format: 0x%X (navionics: %X)", uri_format, *the_navionics);
-
-  return uri_format;
+  priv->uri_format = uri_format;
 }
 
 static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int zoom, int x, int y)
 {
   char* url;
+  if (uri == 0)
+    return 0;
+
+  if (uri[0] == 0)
+    return 0;
+
   unsigned int i;
   char location[22];
 
@@ -419,11 +425,6 @@ static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int z
     case URI_HAS_YS:
       s = g_strdup_printf("%d", (1 << (zoom)) - y - 1);
       url = replace_string(url, URI_MARKER_YS, s);
-      //  g_warning("FOUND " URI_MARKER_YS " NOT IMPLEMENTED");
-      //            retval = g_strdup_printf(repo->url,
-      //                    tilex,
-      //                    (1 << (MAX_ZOOM - zoom)) - tiley - 1,
-      //                    zoom - (MAX_ZOOM - 17));
       break;
     case URI_HAS_R:
       s = g_strdup_printf("%d", g_random_int_range(0, 4));
@@ -447,6 +448,7 @@ static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int z
   return url;
 }
 
+/*
 gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x, int y)
 {
   const gchar* repo_uri = osm_gps_map_source_get_repo_uri(source);
@@ -455,7 +457,7 @@ gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x
   return get_tile_uri(repo_uri, inspect_map_uri(repo_uri, &the_goole),
                       osm_gps_map_source_get_max_zoom(source), zoom, x, y);
 }
-
+*/
 static void my_log_handler(const gchar* log_domain, GLogLevelFlags log_level, const gchar* message,
                            gpointer user_data)
 {
@@ -506,7 +508,6 @@ static float get_distance(float lat1, float lon1, float lat2, float lon2)
 
   return (aob * 6371000.0); /* great circle radius in meters */
 }
-
 
 float osm_db_last_dist(OsmGpsMap* map, float la, float lo)
 {
@@ -781,16 +782,34 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 }
 
 #define UNUSED(x) (void)(x)
+#define MAXTOKEN 1024
 
-char g_szNAVTOKEN[1024] = {0};
+char g_szNAVTOKEN[MAXTOKEN] = {0};
 char g_szNAVURL1[2048] = {0};
 char g_szNAVURL2[2048] = {0};
 
-#define NAVURL1 "https://tile3.navionics.com/tile/#Z/#X/#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+#define NAVURL1                                                                                    \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
+  "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
-#define NAVURL2  "https://tile3.navionics.com/tile/#Z/#X/#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
+#define NAVURL2                                                                                    \
+  "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
+  "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
-char* get_navionics_key2()
+static void navionics_request_cb(net_result_t* result, gpointer p)
+{
+  UNUSED(p);
+  if (result->code != 0)
+    return;
+
+  memcpy(g_szNAVTOKEN, result->data.ptr,
+         (result->data.len > MAXTOKEN) ? MAXTOKEN : result->data.len);
+
+  sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN);
+  sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN);
+}
+
+const char* get_navionics_key2()
 {
   if (g_szNAVURL1[0] != 0)
     return g_szNAVTOKEN;
@@ -802,21 +821,9 @@ char* get_navionics_key2()
 
   net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
 
-  net_result_t pRes =
-      net_io_download_sync("https://tile3.navionics.com/tile/get_key/Navionics_webapi_04041/"
-                           "maps.garmin.com?_=1690792122212",
-                           chunk);
-
-  if (pRes.respCode != 200)
-    return 0;
-
-  memcpy(g_szNAVTOKEN, pRes.data.ptr, pRes.data.len);
-  g_szNAVTOKEN[pRes.data.len] = 0;
-
-  g_free(pRes.data.ptr);
-
-  sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN);
-  sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN);
+  net_io_download_async("https://tile3.navionics.com/tile/get_key/Navionics_webapi_04041/"
+                        "maps.garmin.com?_=1690792122212",
+                        navionics_request_cb, 0, chunk);
 
   return g_szNAVTOKEN;
 }
@@ -883,8 +890,14 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
 {
   OsmGpsMapPrivate* priv = map->priv;
 
+  gchar* szUrl = get_tile_uri(priv->repo_const_uri, priv->uri_format, priv->max_zoom, zoom, x, y);
+
+  if (szUrl == 0)
+    return;
+
   tile_download_t* dl = g_new0(tile_download_t, 1);
-  dl->uri = get_tile_uri(priv->repo_uri, priv->uri_format, priv->max_zoom, zoom, x, y);
+
+  dl->uri = szUrl;
 
   if (g_hash_table_lookup_extended(priv->tile_queue, dl->uri, NULL, NULL) ||
       g_hash_table_lookup_extended(priv->missing_tiles, dl->uri, NULL, NULL))
@@ -896,6 +909,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
   }
   else
   {
+
     dl->folder = g_strdup_printf("%s%c%d%c%d%c", priv->cache_dir, G_DIR_SEPARATOR, zoom,
                                  G_DIR_SEPARATOR, x, G_DIR_SEPARATOR);
     dl->filename = g_strdup_printf("%s%c%d%c%d%c%d.%s", priv->cache_dir, G_DIR_SEPARATOR, zoom,
@@ -923,7 +937,6 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
     net_io_append_header(&chunk, "sec-fetch-dest: image");
     net_io_append_header(&chunk, "sec-fetch-mode: cors");
     net_io_append_header(&chunk, "sec-fetch-site: same-site");
-    //    printf("Try Download tile %s\n", dl->uri);
   }
   net_io_download_async(dl->uri, curl_cb, dl, chunk);
 }
@@ -1037,23 +1050,6 @@ static OsmCachedTile* osm_gps_map_render_missing_tile(OsmGpsMap* map, int zoom, 
   return osm_gps_map_render_missing_tile_upscaled(map, zoom, x, y, modulo, area_x, area_y);
 }
 
-/* default tile lifetime is one week */
-/*
-#ifndef OSM_GPS_MAP_TILE_TTL
-#define OSM_GPS_MAP_TILE_TTL (60 * 60 * 24 * 7)
-#endif
-
-static gboolean osm_gps_map_tile_age_exceeded(char* filename, guint period)
-{
-  struct stat buf;
-
-  if (!g_stat(filename, &buf))
-    return (time(NULL) - buf.st_mtime > (gint)period);
-
-  return FALSE;
-}
-*/
-
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t* cairohandle)
 {
@@ -1158,8 +1154,8 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
   int tilesize, zoom;
 
   g_debug("Fill tiles: %d,%d z:%d", priv->map_x, priv->map_y, priv->map_zoom);
-  tilesize = (priv->double_pixel) ? TILESIZE * 2 : TILESIZE;
-  zoom = (priv->double_pixel) ? priv->map_zoom - 1 : priv->map_zoom;
+  tilesize = TILESIZE;
+  zoom = priv->map_zoom;
   fmap_x = priv->map_x + 0.5 * priv->viewport_width * (1. - 1. / priv->map_factor);
   fmap_y = priv->map_y + 0.5 * priv->viewport_height * (1. - 1. / priv->map_factor);
 
@@ -1209,7 +1205,7 @@ void osm_gps_map_get_tile_xy_at(OsmGpsMap* map, float lat, float lon, int* zoom,
 
   g_return_if_fail(OSM_IS_GPS_MAP(map));
 
-  tilesize = (map->priv->double_pixel) ? TILESIZE * 2 : TILESIZE;
+  tilesize = TILESIZE;
   *zoom = map->priv->map_zoom;
   *x = (int)floor(lon2pixel(map->priv->map_zoom, deg2rad(lon)) / (float)tilesize);
   *y = (int)floor(lat2pixel(map->priv->map_zoom, deg2rad(lat)) / (float)tilesize);
@@ -1515,7 +1511,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->viewport_height = 0;
   priv->dirty = cairo_region_create();
   priv->uri_format = 0;
-  priv->the_navionics = FALSE;
+  // priv->the_navionics = FALSE;
   priv->map_source = -1;
   priv->idle_map_redraw = 0;
   priv->tile_queue = g_hash_table_new(g_str_hash, g_str_equal);
@@ -1544,11 +1540,7 @@ gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* t
 {
   gchar* cache_dir;
 
-  if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_DISABLED) == 0)
-  {
-    cache_dir = NULL;
-  }
-  else if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_AUTO) == 0)
+  if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_AUTO) == 0)
   {
     char* md5 =
         g_compute_checksum_for_string(G_CHECKSUM_MD5, osm_gps_map_source_get_repo_uri(source), -1);
@@ -1578,12 +1570,16 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
   // user can specify a map source ID, or a repo URI as the map source
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS_2 ||
       priv->map_source == OSM_GPS_MAP_SOURCE_NAVIONICS)
-    get_navionics_key2();
-
-  uri = osm_gps_map_source_get_repo_uri(OSM_GPS_MAP_SOURCE_NULL);
-  if ((priv->map_source == 0) || (strcmp(priv->repo_uri, uri) == 0))
   {
-    g_debug("Using null source");
+    priv->uri_format = URI_HAS_X | URI_HAS_Y | URI_HAS_Z;
+    priv->the_navionics = 1;
+    get_navionics_key2();
+  }
+  else
+    priv->the_navionics = 0;
+
+  if (priv->map_source == OSM_GPS_MAP_SOURCE_NULL)
+  {
     priv->map_source = OSM_GPS_MAP_SOURCE_NULL;
 
     priv->null_tile = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, TILESIZE, TILESIZE);
@@ -1597,24 +1593,22 @@ static void osm_gps_map_setup(OsmGpsMapPrivate* priv)
     // check if the source given is valid
 
     uri = osm_gps_map_source_get_repo_uri(priv->map_source);
+
     if (uri)
     {
-      g_debug("Setting map source from ID");
-      g_free(priv->repo_uri);
 
-      priv->repo_uri = g_strdup(uri);
+      // 77g_free((char*)priv->repo_uri);
+      // inspect_map_uri(priv->repo_const_uri);
+      priv->repo_const_uri = uri;
       priv->image_format = g_strdup(osm_gps_map_source_get_image_format(priv->map_source));
       priv->max_zoom = osm_gps_map_source_get_max_zoom(priv->map_source);
       priv->min_zoom = osm_gps_map_source_get_min_zoom(priv->map_source);
     }
   }
 
-  if (priv->tile_dir == NULL)
-    priv->tile_dir = g_strdup(OSM_GPS_MAP_CACHE_DISABLED);
-
   base = osm_gps_map_get_cache_dir(priv);
   priv->cache_dir = osm_gps_map_source_get_cache_dir(priv->map_source, priv->tile_dir, base);
-  g_debug("Cache dir: %s", priv->cache_dir);
+
   g_free(base);
 }
 
@@ -1629,7 +1623,7 @@ static GObject* osm_gps_map_constructor(GType gtype, guint n_properties,
 
   priv = OSM_GPS_MAP_PRIVATE(object);
   osm_gps_map_setup(priv);
-  priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_navionics);
+  inspect_map_uri(priv);
 
   return object;
 }
@@ -1682,7 +1676,7 @@ static void osm_gps_map_finalize(GObject* object)
   if (priv->cache_dir)
     g_free(priv->cache_dir);
 
-  g_free(priv->repo_uri);
+  // g_free((char*)priv->repo_uri);
   g_free(priv->image_format);
 
   /* trip and tracks contain simple non GObject types, so free them here */
@@ -1704,11 +1698,13 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_AUTO_CENTER:
     priv->map_auto_center = g_value_get_boolean(value);
     break;
+    /*
   case PROP_DOUBLE_PIXEL:
     priv->double_pixel = g_value_get_boolean(value);
     if (!priv->idle_map_redraw)
       priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, (gpointer)map);
     break;
+    */
   case PROP_RECORD_TRIP_HISTORY:
     priv->record_trip_history = g_value_get_boolean(value);
     break;
@@ -1718,9 +1714,9 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_AUTO_DOWNLOAD:
     priv->map_auto_download = g_value_get_boolean(value);
     break;
-  case PROP_REPO_URI:
-    priv->repo_uri = g_value_dup_string(value);
-    break;
+    //  case PROP_REPO_URI:
+    //    priv->repo_const_uri = g_value_dup_string(value);
+    //    break;
   case PROP_PROXY_URI:
     if (g_value_get_string(value))
     {
@@ -1769,29 +1765,27 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
     priv->ui_gps_point_inner_radius = g_value_get_int(value);
     break;
   case PROP_GPS_POINT_R2:
-    /* The value is given in meters. */
+    // The value is given in meters.
     priv->ui_gps_point_outer_radius = g_value_get_int(value);
     break;
   case PROP_MAP_SOURCE:
   {
     OsmGpsMapSource_t old = priv->map_source;
     priv->map_source = g_value_get_uint(value);
-    if (priv->map_source != old && priv->map_source < OSM_GPS_MAP_SOURCE_LAST && priv->repo_uri)
+    if (priv->map_source != old && priv->map_source < OSM_GPS_MAP_SOURCE_LAST &&
+        priv->repo_const_uri)
     {
       g_message("Change map source to %d.", priv->map_source);
-      /* we now have to switch the entire map */
 
-      /* flush the ram cache */
       g_hash_table_remove_all(priv->tile_cache);
 
       osm_gps_map_setup(priv);
 
-      priv->uri_format = inspect_map_uri(priv->repo_uri, &priv->the_navionics);
+      inspect_map_uri(priv);
 
       if (!priv->idle_map_redraw)
         priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 
-      /* adjust zoom if necessary */
       if (priv->map_zoom > priv->max_zoom)
         osm_gps_map_set_zoom(map, priv->max_zoom);
 
@@ -1824,9 +1818,12 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
 
   switch (prop_id)
   {
+  /*
   case PROP_DOUBLE_PIXEL:
     g_value_set_boolean(value, priv->double_pixel);
     break;
+
+    */
   case PROP_AUTO_CENTER:
     g_value_set_boolean(value, priv->map_auto_center);
     break;
@@ -1839,9 +1836,9 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_AUTO_DOWNLOAD:
     g_value_set_boolean(value, priv->map_auto_download);
     break;
-  case PROP_REPO_URI:
-    g_value_set_string(value, priv->repo_uri);
-    break;
+  // case PROP_REPO_URI:
+  //  g_value_set_string(value, priv->repo_uri);
+  //  break;
   case PROP_PROXY_URI:
     g_value_set_string(value, priv->proxy_uri);
     break;
@@ -1960,10 +1957,15 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
   object_class->set_property = osm_gps_map_set_property;
   object_class->get_property = osm_gps_map_get_property;
 
+  /*
   properties[PROP_DOUBLE_PIXEL] = g_param_spec_boolean(
       "double-pixel", "double pixel", "double map pixels for better readability", FALSE,
       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
   g_object_class_install_property(object_class, PROP_DOUBLE_PIXEL, properties[PROP_DOUBLE_PIXEL]);
+*/
+
+
+  g_object_class_install_property(object_class, PROP_AUTO_CENTER, properties[PROP_AUTO_CENTER]);
 
   properties[PROP_AUTO_CENTER] =
       g_param_spec_boolean("auto-center", "auto center", "map auto center", TRUE,
@@ -1987,6 +1989,7 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       g_param_spec_boolean("auto-download", "auto download", "map auto download", TRUE,
                            G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
+  /*
   g_object_class_install_property(
       object_class, PROP_REPO_URI,
       g_param_spec_string("repo-uri", "repo uri", "map source tile repository uri", OSM_REPO_URI,
@@ -1996,7 +1999,7 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       object_class, PROP_PROXY_URI,
       g_param_spec_string("proxy-uri", "proxy uri", "http proxy uri on NULL", NULL,
                           G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
+*/
   g_object_class_install_property(
       object_class, PROP_TILE_CACHE_DIR,
       g_param_spec_string("tile-cache", "tile cache", "osm local tile cache dir",
@@ -2014,10 +2017,8 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
                                                        "tile cache is full path", "DEPRECIATED",
                                                        FALSE, G_PARAM_READABLE | G_PARAM_WRITABLE));
 
-  properties[PROP_ZOOM] =
-      g_param_spec_int("zoom", "zoom", "initial zoom level", MIN_ZOOM, /* minimum property value */
-                       MAX_ZOOM,                                       /* maximum property value */
-                       3, G_PARAM_READABLE | G_PARAM_WRITABLE);
+  properties[PROP_ZOOM] = g_param_spec_int("zoom", "zoom", "initial zoom level", MIN_ZOOM, MAX_ZOOM,
+                                           3, G_PARAM_READABLE | G_PARAM_WRITABLE);
   g_object_class_install_property(object_class, PROP_ZOOM, properties[PROP_ZOOM]);
 
   properties[PROP_FACTOR] = g_param_spec_float("factor", "factor", "zooming adjustment factor", 0.4,
@@ -2026,74 +2027,55 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
 
   g_object_class_install_property(
       object_class, PROP_MAX_ZOOM,
-      g_param_spec_int("max-zoom", "max zoom", "maximum zoom level",
-                       MIN_ZOOM, /* minimum property value */
-                       MAX_ZOOM, /* maximum property value */
+      g_param_spec_int("max-zoom", "max zoom", "maximum zoom level", MIN_ZOOM, MAX_ZOOM,
                        OSM_MAX_ZOOM, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
   g_object_class_install_property(
       object_class, PROP_MIN_ZOOM,
-      g_param_spec_int("min-zoom", "min zoom", "minimum zoom level",
-                       MIN_ZOOM, /* minimum property value */
-                       MAX_ZOOM, /* maximum property value */
+      g_param_spec_int("min-zoom", "min zoom", "minimum zoom level", MIN_ZOOM, MAX_ZOOM,
                        OSM_MIN_ZOOM, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
   properties[PROP_LATITUDE] = g_param_spec_float("latitude", "latitude", "latitude in degrees",
-                                                 -90.0, /* minimum property value */
-                                                 90.0,  /* maximum property value */
-                                                 0, G_PARAM_READABLE);
+                                                 -90.0, 90.0, 0, G_PARAM_READABLE);
   g_object_class_install_property(object_class, PROP_LATITUDE, properties[PROP_LATITUDE]);
 
   properties[PROP_LONGITUDE] = g_param_spec_float("longitude", "longitude", "longitude in degrees",
-                                                  -180.0, /* minimum property value */
-                                                  180.0,  /* maximum property value */
-                                                  0, G_PARAM_READABLE);
+                                                  -180.0, 180.0, 0, G_PARAM_READABLE);
   g_object_class_install_property(object_class, PROP_LONGITUDE, properties[PROP_LONGITUDE]);
 
-  properties[PROP_MAP_X] = g_param_spec_int("map-x", "map-x", "initial map x location",
-                                            G_MININT, /* minimum property value */
-                                            G_MAXINT, /* maximum property value */
-                                            890, G_PARAM_READABLE | G_PARAM_WRITABLE);
+  properties[PROP_MAP_X] = g_param_spec_int("map-x", "map-x", "initial map x location", G_MININT,
+                                            G_MAXINT, 890, G_PARAM_READABLE | G_PARAM_WRITABLE);
   g_object_class_install_property(object_class, PROP_MAP_X, properties[PROP_MAP_X]);
 
-  properties[PROP_MAP_Y] = g_param_spec_int("map-y", "map-y", "initial map y location",
-                                            G_MININT, /* minimum property value */
-                                            G_MAXINT, /* maximum property value */
-                                            515, G_PARAM_READABLE | G_PARAM_WRITABLE);
+  properties[PROP_MAP_Y] = g_param_spec_int("map-y", "map-y", "initial map y location", G_MININT,
+                                            G_MAXINT, 515, G_PARAM_READABLE | G_PARAM_WRITABLE);
   g_object_class_install_property(object_class, PROP_MAP_Y, properties[PROP_MAP_Y]);
 
   g_object_class_install_property(object_class, PROP_TILES_QUEUED,
                                   g_param_spec_int("tiles-queued", "tiles-queued",
                                                    "number of tiles currently waiting to download",
-                                                   G_MININT, /* minimum property value */
-                                                   G_MAXINT, /* maximum property value */
-                                                   0, G_PARAM_READABLE));
+                                                   G_MININT, G_MAXINT, 0, G_PARAM_READABLE));
 
   g_object_class_install_property(
       object_class, PROP_GPS_TRACK_WIDTH,
       g_param_spec_int("gps-track-width", "gps-track-width",
-                       "width of the lines drawn for the gps track", 1, /* minimum property value */
-                       G_MAXINT,                                        /* maximum property value */
-                       4, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+                       "width of the lines drawn for the gps track", 1, G_MAXINT, 4,
+                       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
   g_object_class_install_property(
       object_class, PROP_GPS_POINT_R1,
       g_param_spec_int("gps-track-point-radius", "gps-track-point-radius",
-                       "radius of the gps point inner circle", 0, /* minimum property value */
-                       G_MAXINT,                                  /* maximum property value */
-                       5, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+                       "radius of the gps point inner circle", 0, G_MAXINT, 5,
+                       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
   g_object_class_install_property(
       object_class, PROP_GPS_POINT_R2,
       g_param_spec_int("gps-track-highlight-radius", "gps-track-highlight-radius",
-                       "radius of the gps point highlight circle", 0, /* minimum property value */
-                       G_MAXINT,                                      /* maximum property value */
-                       20, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
+                       "radius of the gps point highlight circle", 0, G_MAXINT, 20,
+                       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
   properties[PROP_MAP_SOURCE] = g_param_spec_uint(
-      "map-source", "map source", "map source ID",
-      OSM_GPS_MAP_SOURCE_NULL, /* minimum property value */
-      OSM_GPS_MAP_SOURCE_LAST, /* maximum property value */
+      "map-source", "map source", "map source ID", OSM_GPS_MAP_SOURCE_NULL, OSM_GPS_MAP_SOURCE_LAST,
       OSM_GPS_MAP_SOURCE_LAST, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
 
   g_object_class_install_property(object_class, PROP_MAP_SOURCE, properties[PROP_MAP_SOURCE]);
@@ -2105,18 +2087,14 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
                           G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
   properties[PROP_VIEWPORT_WIDTH] =
-      g_param_spec_uint("viewport-width", "Viewport width", "width of the viewable area",
-                        1,    /* minimum property value */
-                        2048, /* maximum property value */
+      g_param_spec_uint("viewport-width", "Viewport width", "width of the viewable area", 1, 2048,
                         1, G_PARAM_READABLE | G_PARAM_WRITABLE);
   g_object_class_install_property(object_class, PROP_VIEWPORT_WIDTH,
                                   properties[PROP_VIEWPORT_WIDTH]);
 
   properties[PROP_VIEWPORT_HEIGHT] =
-      g_param_spec_uint("viewport-height", "Viewport height", "height of the viewable area",
-                        1,    /* minimum property value */
-                        2048, /* maximum property value */
-                        1, G_PARAM_READABLE | G_PARAM_WRITABLE);
+      g_param_spec_uint("viewport-height", "Viewport height", "height of the viewable area", 1,
+                        2048, 1, G_PARAM_READABLE | G_PARAM_WRITABLE);
   g_object_class_install_property(object_class, PROP_VIEWPORT_HEIGHT,
                                   properties[PROP_VIEWPORT_HEIGHT]);
 
@@ -2209,7 +2187,7 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
     /* OpenAerialMap is down, offline till furthur notice
                http://openaerialmap.org/pipermail/talk_openaerialmap.org/2008-December/000055.html
      */
-    return NULL;
+    return "";
 
     // curl
     // 'https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/webapp.navionics.com?_=1690792123234'
@@ -2241,7 +2219,7 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
     /* No longer working
                "http://mt#R.google.com/mt?n=404&v=w2t.99&x=#X&y=#Y&zoom=#S" */
-    return NULL;
+    return "";
   case OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE:
     return "http://khm#R.google.com/kh/v=51&x=#X&y=#Y&z=#Z";
   case OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC:
@@ -2261,12 +2239,12 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
      *  y = (1 << (MAX_ZOOM - zoom)) - tiley - 1,
      *  z = zoom - (MAX_ZOOM - 17));
      */
-    return NULL;
+    return "";
   case OSM_GPS_MAP_SOURCE_LAST:
   default:
-    return NULL;
+    return "";
   }
-  return NULL;
+  return "";
 }
 
 void osm_gps_map_source_get_repo_copyright(OsmGpsMapSource_t source, const gchar** notice,
@@ -2427,90 +2405,6 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   }
   return 17;
 }
-/*
-static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source)
-{
-  switch (source)
-  {
-  case OSM_GPS_MAP_SOURCE_NULL:
-    return 0;
-  case OSM_GPS_MAP_SOURCE_NAVIONICS:
-  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
-  case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-  case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
-  case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
-  case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
-  case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID:
-  case OSM_GPS_MAP_SOURCE_YAHOO_STREET:
-  case OSM_GPS_MAP_SOURCE_YAHOO_SATELLITE:
-  case OSM_GPS_MAP_SOURCE_YAHOO_HYBRID:
-  case OSM_GPS_MAP_SOURCE_OSMC_TRAILS:
-  case OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE:
-    return OSM_GPS_MAP_TILE_TTL;
-  case OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC:
-    return 60 * 10;
-  case OSM_GPS_MAP_SOURCE_LAST:
-  default:
-    return 0;
-  }
-  return 0;
-}
-
-*/
-/*
-static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source)
-{
-  switch (source)
-  {
-  case OSM_GPS_MAP_SOURCE_NULL:
-    return FALSE;
-  case OSM_GPS_MAP_SOURCE_NAVIONICS:
-  case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
-  case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-  case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
-  case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
-  case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
-  case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
-  case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID:
-  case OSM_GPS_MAP_SOURCE_YAHOO_STREET:
-  case OSM_GPS_MAP_SOURCE_YAHOO_SATELLITE:
-  case OSM_GPS_MAP_SOURCE_YAHOO_HYBRID:
-  case OSM_GPS_MAP_SOURCE_OSMC_TRAILS:
-  case OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE:
-  case OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE:
-    return TRUE;
-  case OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC:
-    return FALSE;
-  case OSM_GPS_MAP_SOURCE_LAST:
-  default:
-    return FALSE;
-  }
-  return 0;
-}
-*/
-
-gboolean osm_gps_map_source_is_valid(OsmGpsMapSource_t source)
-{
-  return osm_gps_map_source_get_repo_uri(source) != NULL;
-}
 
 void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,
                                int zoom_end)
@@ -2657,6 +2551,8 @@ void osm_gps_map_magnifye(OsmGpsMap* map, int nOrder)
 
 int osm_gps_map_depth(OsmGpsMap* map)
 {
+  if (map->priv->the_navionics == 0)
+    return -1;
   return map->priv->map_depth;
 }
 
@@ -2665,24 +2561,22 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
   map->priv->map_depth = depthDm;
 }
 
-void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg, double tempDeg)
+void osm_gps_map_set_windSpeed(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg)
 {
   map->priv->tempDeg = tempDeg;
   map->priv->windSpeedMs = speedMs;
-  map->priv->windDirectionRad= deg2rad(directionDeg);
+  map->priv->windDirectionRad = deg2rad(directionDeg);
 }
-
 
 double windSpeedMs(OsmGpsMap* map)
 {
-  return  map->priv->windSpeedMs;
+  return map->priv->windSpeedMs;
 }
 
 double windDirRad(OsmGpsMap* map)
 {
   return map->priv->windDirectionRad;
 }
-
 
 double tempDeg(OsmGpsMap* map)
 {
@@ -3062,7 +2956,6 @@ void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status)
     map->priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 }
 
-
 coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map)
 {
   coord_t coord;
@@ -3071,8 +2964,6 @@ coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map)
   coord.rlat = priv->center_rlat;
   return coord;
 }
-
-
 
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
 {

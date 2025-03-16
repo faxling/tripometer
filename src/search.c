@@ -46,7 +46,6 @@ G_DEFINE_TYPE(MaepSearchContext, maep_search_context, G_TYPE_OBJECT)
 
 static void maep_search_context_class_init(MaepSearchContextClass* klass)
 {
-  g_message("Class init search context.");
   /* Connect the overloading methods. */
   G_OBJECT_CLASS(klass)->dispose = maep_search_context_dispose;
   G_OBJECT_CLASS(klass)->finalize = maep_search_context_finalize;
@@ -66,7 +65,6 @@ static void maep_search_context_class_init(MaepSearchContextClass* klass)
 
 static void maep_search_context_init(MaepSearchContext* obj)
 {
-  g_message("New search context %p.", (gpointer)obj);
   obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_SEARCH_CONTEXT, MaepSearchContextPrivate);
   obj->priv->dispose_has_run = FALSE;
   obj->priv->list_geonames_places = NULL;

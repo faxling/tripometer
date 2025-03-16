@@ -28,6 +28,8 @@
 #include <../lib/glib-2.0/include/glibconfig.h>
 #endif
 
+#define UNUSED(x) (void)(x)
+
 G_BEGIN_DECLS
 
 char *find_file(const char *name);

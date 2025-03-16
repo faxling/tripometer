@@ -5,4 +5,9 @@ Icon=harbour-pikefight
 Exec=harbour-pikefight
 Name=PikeFight
 
+[X-Sailjail]
+Permissions=UserDirs;Camera;Internet;MediaIndexing;Pictures;Location;WebView
+OrganizationName=harbour-pikefight
+ApplicationName=harbour-pikefight
+
 

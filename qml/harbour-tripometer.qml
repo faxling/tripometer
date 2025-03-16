@@ -17,6 +17,7 @@ ApplicationWindow {
     mainMap.saveTrack(0)
   }
 
+  property int nFontSizePx: Theme.fontSizeTiny
   property int nExportMapW: 2480
   property int nExportMapH: 3508
   property var ocSumSize: ["", "", ""]

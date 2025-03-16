@@ -23,10 +23,14 @@
 #include "trackmodel.h"
 
 QObject* g_pTheTrackModel;
-QObject* g_pTheMap;
+Maep::GpsMap* g_pTheMap;
+int g_nFontSizePx = 0;
 
 int main(int argc, char* argv[])
 {
+
+  // https://studio.app-mockup.com
+
   // https://www.appstorescreenshot.com
 
   // Xperia 10 III /home/defaultuser
@@ -42,7 +46,7 @@ int main(int argc, char* argv[])
 
   // qmlRegisterType<InfoListModel>("harbour.tripometer", 1, 0,
   // "InfoListModel");
-  StopWatch oSW("Start %1");
+  StopWatch oSW("Start pike application %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);
 
   QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
@@ -97,6 +101,9 @@ int main(int argc, char* argv[])
   pU->rootObject()->setProperty("nExportMapW", oSettings.value("nExportMapW", 2480));
   pU->rootObject()->setProperty("nExportMapH", oSettings.value("nExportMapH", 3508));
 
+  g_nFontSizePx = pU->rootObject()->property("nFontSizePx").toInt();
+  qDebug() << "font =" << g_nFontSizePx;
+  g_pTheMap->Init();
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName", QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));

@@ -52,11 +52,9 @@ static gboolean string_get(xmlNode* node, char* name, char** dst)
 
 static MaepGeonamesPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
 {
-  xmlNode* cur_node = NULL;
   xmlAttr* attr;
   xmlChar* value;
   MaepGeonamesPlace* geoname = g_new0(MaepGeonamesPlace, 1);
-  gchar *id, *road, *city;
 
   geoname->pos.rlat = geoname->pos.rlon = OSM_GPS_MAP_INVALID;
 
@@ -248,8 +246,12 @@ MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry* src)
   return entry;
 }
 
-void maep_geonames_entry_free(MaepGeonamesEntry* entry)
+void maep_geonames_entry_free( gpointer       data,
+                               gpointer       user_data)
 {
+
+  UNUSED(user_data);
+  MaepGeonamesEntry* entry = data;
   if (entry->title)
     g_free(entry->title);
   if (entry->summary)
@@ -294,8 +296,6 @@ static void geonames_request_cb(net_result_t* result, gpointer data)
 
     LIBXML_TEST_VERSION;
 
-    g_message("Got: %s", result->data.ptr);
-    g_message("analysing...");
 
     /* parse the file and get the DOM */
     if ((doc = xmlReadMemory(result->data.ptr, result->data.len, NULL, NULL, 0)) == NULL)
@@ -322,47 +322,6 @@ static void geonames_request_cb(net_result_t* result, gpointer data)
   g_free(context);
 }
 
-/* request geotagged wikipedia entries for current map view */
-void maep_geonames_entry_request(coord_t* pt1, coord_t* pt2, MaepGeonamesRequestCallback cb,
-                                 gpointer obj)
-{
-  request_cb_t* context;
-  /* create ascii (dot decimal point) strings */
-  char str[4][16];
-  g_ascii_formatd(str[0], sizeof(str[0]), "%.07f", rad2deg(pt1->rlat));
-  g_ascii_formatd(str[1], sizeof(str[1]), "%.07f", rad2deg(pt2->rlat));
-  g_ascii_formatd(str[2], sizeof(str[2]), "%.07f", rad2deg(pt1->rlon));
-  g_ascii_formatd(str[3], sizeof(str[3]), "%.07f", rad2deg(pt2->rlon));
-
-  gchar *locale, lang[3] = {0, 0, 0};
-  gchar* lang_avail[] = {"de", "en", "es", "fr", "it", "nl", "pl", "pt", "ru", "zh", NULL};
-  int i;
-  locale = setlocale(LC_MESSAGES, NULL);
-  g_utf8_strncpy(lang, locale, 2);
-
-  /* currently only "de" and "en" are supported by geonames.org */
-  /* force to "en" in any other case */
-  g_message("Look for entries in %s", lang);
-  for (i = 0; lang_avail[i] && strcasecmp(lang, lang_avail[i]); i++)
-    ;
-  if (!lang_avail[i])
-    strncpy(lang, "en", 2);
-
-  /* build complete url for request */
-  char* url = g_strdup_printf(
-      GEONAMES "wikipediaBoundingBox?"
-               "north=%s&south=%s&west=%s&east=%s&lang=%s&maxRows=%u&username=" PACKAGE,
-      str[0], str[1], str[2], str[3], lang, MAX_RESULT);
-
-  /* start download in background */
-  g_message("start asynchronous geonames download.");
-  context = g_malloc0(sizeof(request_cb_t));
-  context->cb = cb;
-  context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context, 0);
-
-  g_free(url);
-}
 
 void maep_geonames_place_request(const gchar* request, MaepGeonamesRequestCallback cb, gpointer obj)
 {
@@ -392,10 +351,11 @@ void maep_geonames_place_request(const gchar* request, MaepGeonamesRequestCallba
   g_free(url);
 }
 
-#define NOMINATIM "http://nominatim.openstreetmap.org/"
+#define NOMINATIM "https://nominatim.openstreetmap.org/"
 void maep_nominatim_address_request(const gchar* request, MaepGeonamesRequestCallback cb,
                                     gpointer obj)
 {
+
   request_cb_t* context;
 
   /* gconf_set_string("search_text", phrase); */
@@ -407,7 +367,7 @@ void maep_nominatim_address_request(const gchar* request, MaepGeonamesRequestCal
   /* build search request */
   char* encoded_phrase = url_encode(request);
   char* url =
-      g_strdup_printf(NOMINATIM "search?q=%s&format=xml&limit=%u", encoded_phrase, MAX_RESULT);
+      g_strdup_printf(NOMINATIM "search.php?q=%s&format=xml&limit=%u", encoded_phrase, MAX_RESULT);
   g_free(encoded_phrase);
 
   /* request search results asynchronously */

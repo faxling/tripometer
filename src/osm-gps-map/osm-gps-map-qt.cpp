@@ -32,22 +32,17 @@
 #include <float.h>
 #include <glib/gstdio.h>
 #include <limits>
-#include <strstream>
-// #include <../lib/glib-2.0/include/glibconfig.h>
-//#include <cmath>
+#include <math.h>
+#include <sstream>
 #define GCONF_KEY_ZOOM "zoom"
 #define GCONF_KEY_SOURCE "source"
 #define GCONF_KEY_OVERLAY_SOURCE "overlay-source"
 #define GCONF_KEY_LATITUDE "latitude"
 #define GCONF_KEY_LONGITUDE "longitude"
-#define GCONF_KEY_DOUBLEPIX "double-pixel"
-// #define GCONF_KEY_WIKIPEDIA "wikipedia"
-//#define GCONF_KEY_TRACK_CAPTURE "track_capture_enabled"
+// #define GCONF_KEY_DOUBLEPIX "double-pixel"
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
-
-// #define G_MAXFLOAT FLT_MAX
 
 QString Maep::GeonamesPlace::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
 {
@@ -59,6 +54,7 @@ QString Maep::GeonamesEntry::coordinateToString(QGeoCoordinate::CoordinateFormat
   return m_coordinate.toString(format);
 }
 
+/*
 void Maep::Track::set(MaepGeodata* t)
 {
   if (!t)
@@ -68,6 +64,8 @@ void Maep::Track::set(MaepGeodata* t)
   g_object_ref(G_OBJECT(t));
   track = t;
 }
+*/
+/*
 bool Maep::Track::set(const QString& filename)
 {
   MaepGeodata* t;
@@ -91,6 +89,9 @@ bool Maep::Track::set(const QString& filename)
   }
   return false;
 }
+*/
+
+/*
 bool Maep::Track::toFile(const QString& filename)
 {
   GError* error;
@@ -112,17 +113,13 @@ bool Maep::Track::toFile(const QString& filename)
   }
   return res;
 }
-
+*/
 void Maep::Track::addPoint(QGeoPositionInfo& info)
 {
   QGeoCoordinate coord = info.coordinate();
   qreal speed, h_acc;
-
-#ifndef NAN
-#define NAN (0.0 / 0.0)
-#endif
-
   speed = NAN;
+
   if (info.hasAttribute(QGeoPositionInfo::GroundSpeed))
     speed = info.attribute(QGeoPositionInfo::GroundSpeed);
   h_acc = std::numeric_limits<gfloat>::max();
@@ -167,7 +164,7 @@ void Maep::Track::highlightWayPoint(int iwpt)
 
 static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map);
 static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
-static void osm_gps_map_qt_double_pixel(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
+// static void osm_gps_map_qt_double_pixel(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
@@ -177,14 +174,26 @@ static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, MaepSearchContex
                                           GError* error, MaepSearchContext* wiki);
 
 extern QObject* g_pTheTrackModel;
-extern QObject* g_pTheMap;
+extern Maep::GpsMap* g_pTheMap;
 
 extern int g_nOutstaningCurls;
-
 Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
 {
-  // char *path, *oldPath;
   g_pTheMap = this;
+  char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
+
+  gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
+  map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
+                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
+                                 FALSE, "record-trip-history", FALSE, "show-trip-history", FALSE,
+                                 "gps-track-point-radius", 10, NULL));
+  g_free(path);
+
+}
+
+void Maep::GpsMap::Init()
+{
+  // char *path, *oldPath;
 
   m_pReqCountTimer = new MssTimer([=] {
     if (g_nOutstaningCurls != numberPendingReq_)
@@ -203,25 +212,19 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
 
   m_pReqCountTimer->Start(200);
 
-  gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
 
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
-  gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
+  //   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
 
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
 
-  char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
-
   screenRotation = orientation;
-  map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
-                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
-                                 FALSE, "record-trip-history", FALSE, "show-trip-history", FALSE,
-                                 "gps-track-point-radius", 10,
-                                 // proxy?"proxy-uri":NULL,     proxy,
-                                 "double-pixel", dpix, NULL));
+
+  // proxy?"proxy-uri":NULL,     proxy,
+  // "double-pixel", dpix, NULL));
 
   g_object_set_data(G_OBJECT(map), GCONF_KEY_WEATHER,
                     new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
@@ -230,7 +233,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
   g_object_set_data(G_OBJECT(map), GCONF_KEY_COMPASS_ENABLED,
                     new int(gconf_get_bool(GCONF_KEY_COMPASS_ENABLED, FALSE)));
 
-  g_free(path);
 
   osm_gps_map_set_mapcenter(map, lat, lon, zoom);
   coordinate = QGeoCoordinate(lat, lon);
@@ -240,8 +242,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
                            this);
   g_signal_connect_swapped(G_OBJECT(map), "notify::auto-center",
                            G_CALLBACK(osm_gps_map_qt_auto_center), this);
-  g_signal_connect_swapped(G_OBJECT(map), "notify::double-pixel",
-                           G_CALLBACK(osm_gps_map_qt_double_pixel), this);
+
   g_signal_connect_swapped(G_OBJECT(map), "notify::map-source", G_CALLBACK(osm_gps_map_qt_source),
                            this);
 
@@ -278,7 +279,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
     connect(gps, SIGNAL(positionUpdated(QGeoPositionInfo)), this,
             SLOT(positionUpdate(QGeoPositionInfo)));
     connect(gps, SIGNAL(updateTimeout()), this, SLOT(positionLost()));
-    g_message("Start gps with rate at %d", gpsRefreshRate_);
+
     if (gpsRefreshRate_ > 0)
     {
       gps->setUpdateInterval(gpsRefreshRate_);
@@ -346,7 +347,6 @@ void Maep::GpsMap::enableCompass(bool enable)
   if (!enable)
   {
     compass.stop();
-    //  maep_layer_gps_set_azimuth(lgps, NAN);
   }
   else
   {
@@ -355,7 +355,6 @@ void Maep::GpsMap::enableCompass(bool enable)
     {
       compass.setSkipDuplicates(true);
     }
-    //  lastAzimuth = -1.;
     compass.start();
   }
 
@@ -384,7 +383,7 @@ Maep::GpsMap::~GpsMap()
   delete m_pReqCountTimer;
   gint zoom, source, overlaySource;
   gfloat lat, lon;
-  gboolean dpix;
+  //  gboolean dpix;
 
   /* get state information from map ... */
   overlaySource = OSM_GPS_MAP_SOURCE_NULL;
@@ -399,7 +398,7 @@ Maep::GpsMap::~GpsMap()
   compass.stop();
 
   g_object_get(map, "zoom", &zoom, "map-source", &source, "latitude", &lat, "longitude", &lon,
-               "double-pixel", &dpix, NULL);
+               NULL);
   osm_gps_map_osd_classic_free(osd);
   osd = NULL;
 
@@ -424,7 +423,7 @@ Maep::GpsMap::~GpsMap()
   gconf_set_int(GCONF_KEY_OVERLAY_SOURCE, overlaySource);
   gconf_set_float(GCONF_KEY_LATITUDE, lat);
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
-  gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
+  //  gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
   gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
   gconf_set_bool(GCONF_KEY_COMPASS_ENABLED, compassEnabled());
   gconf_set_bool(GCONF_KEY_WEATHER, weatherEnabled());
@@ -435,17 +434,6 @@ Maep::GpsMap::~GpsMap()
 
   g_object_unref(map);
 }
-/*
-static void onLatLon(GObject* map, GParamSpec* pspec, OsmGpsMap* overlay)
-{
-  Q_UNUSED(pspec);
-
-  gfloat lat, lon;
-  g_object_get(map, "latitude", &lat, "longitude", &lon, NULL);
-
-  osm_gps_map_set_center(overlay, lat, lon);
-}
-*/
 
 void Maep::GpsMap::ensureOverlay(Source source)
 {
@@ -469,14 +457,15 @@ void Maep::GpsMap::ensureOverlay(Source source)
 
   g_object_bind_property(G_OBJECT(map), "factor", G_OBJECT(overlay), "factor",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
-  g_object_bind_property(G_OBJECT(map), "double-pixel", G_OBJECT(overlay), "double-pixel",
-                         (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
+
   g_object_bind_property(G_OBJECT(map), "viewport-width", G_OBJECT(overlay), "viewport-width",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
+
   g_object_bind_property(G_OBJECT(map), "viewport-height", G_OBJECT(overlay), "viewport-height",
                          (GBindingFlags)(G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE));
 
   g_signal_connect_swapped(G_OBJECT(overlay), "dirty", G_CALLBACK(osm_gps_map_qt_repaint), this);
+
   g_signal_connect_swapped(G_OBJECT(overlay), "notify::map-source",
                            G_CALLBACK(osm_gps_map_qt_overlay_source), this);
 }
@@ -784,15 +773,6 @@ static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGp
 void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 {
   Source orig;
-
-  if (value == SOURCE_NAVIONICS1 || value == SOURCE_NAVIONICS2)
-  {
-    get_navionics_key2();
-    osm_gps_map_set_depth(map, 0);
-  }
-  else
-    osm_gps_map_set_depth(map, -1);
-
   orig = source();
   if (orig == value)
     return;
@@ -822,7 +802,7 @@ void Maep::GpsMap::centerCurrentGps()
   }
 }
 
-void curl_wind(net_result_t* result, gpointer data)
+void curl_wind_cb(net_result_t* result, gpointer data)
 {
   if (result->code == 0)
   {
@@ -854,11 +834,11 @@ void Maep::GpsMap::getWeatherCurrentPos()
   {
 
     lastLaDeg = tPos.rlat;
-    std::strstream os;
+    std::stringstream os;
     os.imbue(comma_locale);
 
     os << WAPI << "&latitude=" << tPos.rlat << "&longitude=" << tPos.rlon << std::ends;
-    net_io_download_async(os.str(), curl_wind, map, 0);
+    net_io_download_async(os.str().c_str(), curl_wind_cb, map, 0);
   }
 }
 
@@ -941,11 +921,7 @@ void Maep::GpsMap::addDbPoint()
 void Maep::GpsMap::markPikeInMap(int nId)
 {
   if (nId < 0)
-  {
-    //  osm_gps_map_set_azimuth(osd, NAN);
-    // osd_render_scale_and_compass(osd);
     osm_gps_map_mark_image(map, 0);
-  }
   else
     osm_gps_map_mark_image(map, m_ocPikeMarkers[nId]);
 }
@@ -1319,7 +1295,7 @@ void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
     update();
   }
 }
-
+/*
 static void osm_gps_map_qt_double_pixel(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {
   Q_UNUSED(pspec);
@@ -1327,6 +1303,9 @@ static void osm_gps_map_qt_double_pixel(Maep::GpsMap* widget, GParamSpec* pspec,
 
   widget->doublePixelChanged(widget->doublePixel());
 }
+*/
+
+/*
 void Maep::GpsMap::setDoublePixel(bool status)
 {
   gboolean orig;
@@ -1337,6 +1316,8 @@ void Maep::GpsMap::setDoublePixel(bool status)
 
   g_object_set(map, "double-pixel", status, NULL);
 }
+*/
+
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {
   Q_UNUSED(pspec);
@@ -1623,6 +1604,7 @@ void Maep::GpsMap::gpsToTrack()
     track_current->addPoint(lastGps);
 }
 
+/*
 QString Maep::GpsMap::getCenteredTile(Maep::GpsMap::Source source) const
 {
   gchar *cache_dir, *base, *file, *uri;
@@ -1651,52 +1633,5 @@ QString Maep::GpsMap::getCenteredTile(Maep::GpsMap::Source source) const
   out = QString(uri);
   g_free(uri);
   return out;
-}
-
-/****************/
-/* GpsMapCover. */
-/****************/
-/*
-Maep::GpsMapCover::GpsMapCover(QQuickItem* parent) : QQuickPaintedItem(parent)
-{
-  map_ = NULL;
-  status_ = false;
-}
-Maep::GpsMapCover::~GpsMapCover()
-{
-  map_ = NULL;
-}
-Maep::GpsMap* Maep::GpsMapCover::map() const
-{
-  return map_;
-}
-void Maep::GpsMapCover::setMap(Maep::GpsMap* map)
-{
-  map_ = map;
-  QObject::connect(map, &Maep::GpsMap::mapChanged, this, &Maep::GpsMapCover::updateCover);
-  emit mapChanged();
-}
-void Maep::GpsMapCover::updateCover()
-{
-  update();
-}
-bool Maep::GpsMapCover::status()
-{
-  return status_;
-}
-void Maep::GpsMapCover::setStatus(bool status)
-{
-  status_ = status;
-  emit statusChanged();
-
-  update();
-}
-void Maep::GpsMapCover::paint(QPainter*)
-{
-  if (!map_ || !status_)
-    return;
-
-  g_message("repainting cover %fx%f!", width(), height());
-  //  map_->paintTo(painter, width(), height());
 }
 */

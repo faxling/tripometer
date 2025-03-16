@@ -265,7 +265,8 @@ static gboolean net_io_do_async(net_io_request_t* request)
     return FALSE;
   }
 
-  GThread* p = g_thread_try_new("worker_thread", &worker_thread, request, &error);
+
+  g_thread_try_new("worker_thread", &worker_thread, request, &error);
 
   if (error != 0)
   {
@@ -283,7 +284,8 @@ void net_io_append_header(struct curl_slist** chunk, const char* szVal)
   *chunk = curl_slist_append(*chunk, szVal);
 }
 
-net_result_t net_io_download_sync(char* url, struct curl_slist* chunk)
+
+net_result_t net_io_download_sync(const char* url, struct curl_slist* chunk)
 {
   net_result_t result;
   result.data.ptr = NULL;
@@ -311,7 +313,7 @@ net_result_t net_io_download_sync(char* url, struct curl_slist* chunk)
   return result;
 }
 
-net_io_t net_io_download_async(char* url, net_io_cb cb, gpointer data, struct curl_slist* chunk)
+net_io_t net_io_download_async(const char* url, net_io_cb cb, gpointer data, struct curl_slist* chunk)
 {
   net_io_request_t* request = g_new0(net_io_request_t, 1);
   request->proxy = proxy_config_get();

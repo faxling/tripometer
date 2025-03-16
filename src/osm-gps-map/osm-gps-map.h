@@ -95,7 +95,7 @@ typedef enum
   OSM_GPS_MAP_SOURCE_LAST
 } OsmGpsMapSource_t;
 
-#define OSM_GPS_MAP_CACHE_DISABLED "none://"
+// #define OSM_GPS_MAP_CACHE_DISABLED "none://"
 #define OSM_GPS_MAP_CACHE_AUTO "auto://"
 #define OSM_GPS_MAP_CACHE_FRIENDLY "friendly://"
 
@@ -118,10 +118,10 @@ void osm_gps_map_source_get_repo_copyright(OsmGpsMapSource_t source, const gchar
                                            const gchar** url);
 int osm_gps_map_source_get_min_zoom(OsmGpsMapSource_t source);
 int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source);
-gboolean osm_gps_map_source_is_valid(OsmGpsMapSource_t source);
+
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
                                         const gchar* base);
-gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x, int y);
+// gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x, int y);
 gchar* osm_gps_map_source_get_cached_file(OsmGpsMapSource_t source, const gchar* cache_dir,
                                           int zoom, int x, int y);
 typedef struct
@@ -129,7 +129,7 @@ typedef struct
   gint x, y, w, h;
 } OsmGpsMapRect_t;
 
-char* get_navionics_key2();
+const char* get_navionics_key2();
 
 GType osm_gps_map_get_type(void) G_GNUC_CONST;
 

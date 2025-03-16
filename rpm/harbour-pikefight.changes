@@ -8,6 +8,15 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sun Mar 16 2025 Fredrik Axling <faxling11@gmail.com> 1.5.2
+- Ver 1.5.2
+- Add wind and temerature (m/s and deg c) indication to crosshair
+- Add option for edit pike length to avoid accidental editing
+- Add options in settings page for turning crosshair options on anf off
+- Fix bugg turning compass on and off
+- Smother map panning
+- Handle switching map source to sea charts when offline
+
 * Fri Oct 18 2024 Fredrik Axling <faxling11@gmail.com> 1.5.1
 - Ver 1.5.1
 - Fix broken sea charts. Key length to long overflow
