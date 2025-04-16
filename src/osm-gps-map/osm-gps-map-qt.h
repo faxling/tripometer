@@ -43,91 +43,97 @@
 namespace Maep
 {
 
-  class GeonamesPlace : public QObject
-  {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ getName NOTIFY nameChanged)
-    Q_PROPERTY(QString country READ getCountry NOTIFY countryChanged)
-    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
-
-  public:
-    inline GeonamesPlace(const MaepGeonamesPlace* place = NULL, QObject* parent = NULL)
-        : QObject(parent)
+  /*
+    class GeonamesPlace : public QObject
     {
-      if (place)
+      Q_OBJECT
+      Q_PROPERTY(QString name READ getName NOTIFY nameChanged)
+      Q_PROPERTY(QString country READ getCountry NOTIFY countryChanged)
+      Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
+
+    public:
+      inline GeonamesPlace(const MaepGeonamesPlace* place = NULL, QObject* parent = NULL)
+          : QObject(parent)
       {
-        this->name = QString(place->name);
-        this->country = QString(place->country);
-        this->m_coordinate = QGeoCoordinate(rad2deg(place->pos.rlat), rad2deg(place->pos.rlon));
+        if (place)
+        {
+          this->name = QString(place->name);
+          this->country = QString(place->country);
+          this->m_coordinate = QGeoCoordinate(rad2deg(place->pos.rlat), rad2deg(place->pos.rlon));
+        }
       }
-    }
-    inline QString getName() const { return this->name; }
-    inline QString getCountry() const { return this->country; }
+      inline QString getName() const { return this->name; }
+      inline QString getCountry() const { return this->country; }
 
-    inline double lat() const { return m_coordinate.latitude(); }
+      inline double lat() const { return m_coordinate.latitude(); }
 
-    inline double lo() const { return m_coordinate.longitude(); }
+      inline double lo() const { return m_coordinate.longitude(); }
 
-    inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
+      inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
 
-  signals:
-    void nameChanged();
-    void countryChanged();
-    void coordinateChanged();
+    signals:
+      void nameChanged();
+      void countryChanged();
+      void coordinateChanged();
 
-  public slots:
-    QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
-                                   QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
+    public slots:
+      QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
+                                     QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
 
-  private:
-    QString name, country;
-    QGeoCoordinate m_coordinate;
-  };
+    private:
+      QString name, country;
+      QGeoCoordinate m_coordinate;
+    };
 
-  class GeonamesEntry : public QObject
-  {
-    Q_OBJECT
-    Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
-    Q_PROPERTY(QString summary READ getSummary NOTIFY summaryChanged)
-    Q_PROPERTY(QString thumbnail READ getThumbnail NOTIFY thumbnailChanged)
-    Q_PROPERTY(QString url READ getURL NOTIFY urlChanged)
-    Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
 
-  public:
-    inline GeonamesEntry(const MaepGeonamesEntry* entry = NULL, QObject* parent = NULL)
-        : QObject(parent)
+
+    class GeonamesEntry : public QObject
     {
-      if (entry)
+      Q_OBJECT
+      Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
+      Q_PROPERTY(QString summary READ getSummary NOTIFY summaryChanged)
+      Q_PROPERTY(QString thumbnail READ getThumbnail NOTIFY thumbnailChanged)
+      Q_PROPERTY(QString url READ getURL NOTIFY urlChanged)
+      Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
+
+    public:
+
+      inline GeonamesEntry(const MaepGeonamesEntry* entry = NULL, QObject* parent = NULL)
+          : QObject(parent)
       {
-        this->title = QString(entry->title);
-        this->summary = QString(entry->summary);
-        this->thumbnail = QString(entry->thumbnail_url);
-        this->url = QString(entry->url);
-        this->m_coordinate = QGeoCoordinate(rad2deg(entry->pos.rlat), rad2deg(entry->pos.rlon));
+        if (entry)
+        {
+          this->title = QString(entry->title);
+          this->summary = QString(entry->summary);
+          this->thumbnail = QString(entry->thumbnail_url);
+          this->url = QString(entry->url);
+          this->m_coordinate = QGeoCoordinate(rad2deg(entry->pos.rlat), rad2deg(entry->pos.rlon));
+        }
       }
-    }
-    inline void set(const Maep::GeonamesEntry* entry) { title = QString(entry->getTitle()); }
-    inline QString getTitle() const { return this->title; }
-    inline QString getSummary() const { return this->summary; }
-    inline QString getThumbnail() const { return this->thumbnail; }
-    inline QString getURL() const { return this->url; }
-    inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
 
-  signals:
-    void titleChanged();
-    void summaryChanged();
-    void thumbnailChanged();
-    void urlChanged();
-    void coordinateChanged();
+      inline void set(const Maep::GeonamesEntry* entry) { title = QString(entry->getTitle()); }
+      inline QString getTitle() const { return this->title; }
+      inline QString getSummary() const { return this->summary; }
+      inline QString getThumbnail() const { return this->thumbnail; }
+      inline QString getURL() const { return this->url; }
+      inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
 
-  public slots:
-    QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
-                                   QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
+    signals:
+      void titleChanged();
+      void summaryChanged();
+      void thumbnailChanged();
+      void urlChanged();
+      void coordinateChanged();
 
-  private:
-    QString title, summary, thumbnail, url;
-    QGeoCoordinate m_coordinate;
-  };
+    public slots:
+      QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
+                                     QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
+
+    private:
+      QString title, summary, thumbnail, url;
+      QGeoCoordinate m_coordinate;
+    };
+  */
 
   class Track : public QObject
   {
@@ -385,6 +391,7 @@ namespace Maep
     bool compassEnabled();
     bool crossHairEnabled();
     bool weatherEnabled();
+    void setSearchResults(GSList* places);
 
   protected:
     void paint(QPainter* painter) override;
@@ -420,7 +427,7 @@ namespace Maep
     void setScreenRotation(bool status);
     void setCoordinate(float lat, float lon);
     void setSearchRequest(const QString& request);
-    void setSearchResults(MaepSearchContextSource source, GSList* places);
+
     void setLookAt(float lat, float lon);
     inline void setLookAt(const QGeoCoordinate& coord)
     {
@@ -475,7 +482,7 @@ namespace Maep
     osm_gps_map_osd_t* osd;
 
     MaepSearchContext* search;
-    QList<GeonamesPlace*> searchRes;
+    // QList<GeonamesPlace*> searchRes;
 
     gboolean dragging;
     gboolean zooming;

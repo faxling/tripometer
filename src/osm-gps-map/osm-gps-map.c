@@ -2227,7 +2227,7 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
     return "http://a#R.ortho.tiles.virtualearth.net/tiles/r#W.jpeg?g=50";
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
-    return "http://a#R.ortho.tiles.virtualearth.net/tiles/a#W.jpeg?g=50";
+    return "http://a#R.ortho.tiles.virtualearth.net/tiles/a#W.png?g=50";
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID:
     return "http://a#R.ortho.tiles.virtualearth.net/tiles/h#W.jpeg?g=50";
   case OSM_GPS_MAP_SOURCE_YAHOO_STREET:

@@ -13,7 +13,7 @@
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/QtPositioning>
 #include <sailfishapp.h>
-
+#include "libsailfishsilica/silicatheme.h"
 // #include <QtQml/qqml>
 
 //
@@ -23,7 +23,8 @@
 #include "trackmodel.h"
 
 QObject* g_pTheTrackModel;
-Maep::GpsMap* g_pTheMap;
+
+// To be shared with the c implementation
 int g_nFontSizePx = 0;
 
 int main(int argc, char* argv[])
@@ -75,10 +76,18 @@ int main(int argc, char* argv[])
 
   qmlRegisterType<QQuickFolderListModel>("harbour.tripometer", 1, 0, "FolderListModel");
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
-  qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
+  // qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
   pU->engine()->addImageProvider("capturedImage", new ScreenCapturedImg());
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
   // &QGuiApplication::quit,Qt::DirectConnection);
+
+  auto pTheme = Silica::Theme::instance();
+  g_nFontSizePx = pTheme->fontSizeTiny();
+
+  qDebug() << "fontsize =" << g_nFontSizePx;
+
+
+
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
   oSW.Stop();
@@ -101,9 +110,7 @@ int main(int argc, char* argv[])
   pU->rootObject()->setProperty("nExportMapW", oSettings.value("nExportMapW", 2480));
   pU->rootObject()->setProperty("nExportMapH", oSettings.value("nExportMapH", 3508));
 
-  g_nFontSizePx = pU->rootObject()->property("nFontSizePx").toInt();
-  qDebug() << "font =" << g_nFontSizePx;
-  g_pTheMap->Init();
+
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName", QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));

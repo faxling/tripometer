@@ -29,16 +29,13 @@
 #include "misc.h"
 #include "net_io.h"
 
-#ifndef LIBXML_TREE_ENABLED
-#error "Tree not enabled in libxml"
-#endif
-
 /* -------------- begin of xml parser ---------------- */
 
+/*
 static gboolean string_get(xmlNode* node, char* name, char** dst)
 {
   if (*dst)
-    return FALSE; /* don't overwrite anything */
+    return FALSE;
 
   if (strcasecmp((char*)node->name, name) != 0)
     return FALSE;
@@ -49,16 +46,19 @@ static gboolean string_get(xmlNode* node, char* name, char** dst)
 
   return TRUE;
 }
-
-static MaepGeonamesPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
+*/
+static NominatimPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
 {
   xmlAttr* attr;
   xmlChar* value;
-  MaepGeonamesPlace* geoname = g_new0(MaepGeonamesPlace, 1);
+  NominatimPlace* geoname = g_new0(NominatimPlace, 1);
 
   geoname->pos.rlat = geoname->pos.rlon = OSM_GPS_MAP_INVALID;
 
   for (attr = a_node->properties; attr; attr = attr->next)
+  {
+    g_message("got from osm %s", (char*)attr->name);
+
     if (attr->name && !strcmp((char*)attr->name, "lat") && attr->children)
     {
       value = xmlNodeListGetString(doc, attr->children, 1);
@@ -83,9 +83,12 @@ static MaepGeonamesPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
       geoname->country = g_strdup((gchar*)value);
       xmlFree(value);
     }
+  }
+   g_message("got all");
   return geoname;
 }
 
+/*
 static MaepGeonamesPlace* geonames_parse_geoname(G_GNUC_UNUSED xmlDocPtr doc, xmlNode* a_node)
 {
   xmlNode* cur_node = NULL;
@@ -117,7 +120,8 @@ static MaepGeonamesPlace* geonames_parse_geoname(G_GNUC_UNUSED xmlDocPtr doc, xm
 
   return geoname;
 }
-
+*/
+/*
 static MaepGeonamesEntry* geonames_parse_entry(G_GNUC_UNUSED xmlDocPtr doc, xmlNode* a_node)
 {
   xmlNode* cur_node = NULL;
@@ -157,8 +161,9 @@ static MaepGeonamesEntry* geonames_parse_entry(G_GNUC_UNUSED xmlDocPtr doc, xmlN
 
   return entry;
 }
+*/
 
-static GSList* geonames_parse_geonames(xmlDocPtr doc, xmlNode* a_node)
+static GSList* geonames_parse_nominatim(xmlDocPtr doc, xmlNode* a_node)
 {
   GSList* list = NULL;
   xmlNode* cur_node = NULL;
@@ -167,6 +172,7 @@ static GSList* geonames_parse_geonames(xmlDocPtr doc, xmlNode* a_node)
   {
     if (cur_node->type == XML_ELEMENT_NODE)
     {
+      /*
       if (strcasecmp((char*)cur_node->name, "geoname") == 0)
       {
         list = g_slist_append(list, geonames_parse_geoname(doc, cur_node));
@@ -175,12 +181,16 @@ static GSList* geonames_parse_geonames(xmlDocPtr doc, xmlNode* a_node)
       {
         list = g_slist_append(list, geonames_parse_entry(doc, cur_node));
       }
-      else if (strcasecmp((char*)cur_node->name, "place") == 0)
+      else
+        */
+      if (strcasecmp((char*)cur_node->name, "place") == 0)
       {
         list = g_slist_append(list, nominatim_parse_place(doc, cur_node));
+        g_message("got place");
       }
     }
   }
+  g_message("parsed palace");
   return list;
 }
 
@@ -196,9 +206,10 @@ static GSList* geonames_parse_root(xmlDocPtr doc, xmlNode* a_node)
     {
       if (!list && (strcasecmp((char*)cur_node->name, "geonames") == 0 ||
                     strcasecmp((char*)cur_node->name, "searchresults") == 0))
-        list = geonames_parse_geonames(doc, cur_node);
+        list = geonames_parse_nominatim(doc, cur_node);
     }
   }
+  g_message("searchresults");
   return list;
 }
 
@@ -208,6 +219,7 @@ static GSList* geonames_parse_doc(xmlDocPtr doc)
   xmlNode* root_element = xmlDocGetRootElement(doc);
 
   GSList* list = geonames_parse_root(doc, root_element);
+  g_message("geonames_parse_doc");
 
   xmlFreeDoc(doc);
 
@@ -220,8 +232,9 @@ static GSList* geonames_parse_doc(xmlDocPtr doc)
 
 /* ------------- begin of freeing ------------------ */
 
-void maep_geonames_place_free(MaepGeonamesPlace* geoname)
+void nominatim_place_free(NominatimPlace* geoname, gpointer* p)
 {
+  UNUSED(p);
   if (geoname->name)
     g_free(geoname->name);
   if (geoname->country)
@@ -229,12 +242,13 @@ void maep_geonames_place_free(MaepGeonamesPlace* geoname)
   g_free(geoname);
 }
 
-void maep_geonames_place_list_free(GSList* list)
+void nominatim_place_list_free(GSList* list)
 {
-  g_slist_foreach(list, (GFunc)maep_geonames_place_free, NULL);
+  g_slist_foreach(list, (GFunc)nominatim_place_free, NULL);
   g_slist_free(list);
 }
 
+/*
 MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry* src)
 {
   MaepGeonamesEntry* entry = g_memdup2(src, sizeof(MaepGeonamesEntry));
@@ -269,35 +283,63 @@ void maep_geonames_entry_list_free(GSList* list)
   g_slist_free(list);
 }
 
-/* ------------- end of freeing ------------------ */
 
-#define MAX_RESULT 30
+
+
+
 #define GEONAMES "http://api.geonames.org/"
 #define GEONAMES_SEARCH "geonames_search"
 
+
+
+
+void maep_geonames_place_request(const gchar* request, MaepGeonamesRequestCallback cb, gpointer obj)
+{
+  request_cb_t* context;
+
+
+  gchar *locale, lang[3] = {0, 0, 0};
+  locale = setlocale(LC_MESSAGES, NULL);
+  g_utf8_strncpy(lang, locale, 2);
+
+  char* encoded_phrase = url_encode(request);
+  char* url = g_strdup_printf(GEONAMES "search?q=%s&maxRows=%u&lang=%s"
+                                       "&isNameRequired=1&featureClass=P&username=" PACKAGE,
+
+                              encoded_phrase, MAX_RESULT, lang);
+  g_free(encoded_phrase);
+
+  g_message("start asynchronous place download (%s).", url);
+  context = g_malloc0(sizeof(request_cb_t));
+  context->cb = cb;
+  context->obj = obj;
+  net_io_download_async(url, geonames_request_cb, context, 0);
+
+  g_free(url);
+}
+*/
+
+#define MAX_RESULT 30
+#define NOMINATIM "https://nominatim.openstreetmap.org/"
 typedef struct
 {
-  MaepGeonamesRequestCallback cb;
+  NominatimRequestCallback cb;
   gpointer obj;
 } request_cb_t;
 
-static void geonames_request_cb(net_result_t* result, gpointer data)
+static void nominatim_request_cb(net_result_t* result, gpointer data)
 {
   GError* err;
   request_cb_t* context = (request_cb_t*)data;
 
-  g_message("asynchronous request callback.");
   g_return_if_fail(context && context->cb);
 
   if (!result->code)
   {
-    /* feed this into the xml parser */
     xmlDoc* doc = NULL;
 
     LIBXML_TEST_VERSION;
 
-
-    /* parse the file and get the DOM */
     if ((doc = xmlReadMemory(result->data.ptr, result->data.len, NULL, NULL, 0)) == NULL)
     {
       const xmlError* errP = xmlGetLastError();
@@ -307,53 +349,22 @@ static void geonames_request_cb(net_result_t* result, gpointer data)
     }
     else
     {
-      g_message("XML parsed without error");
       GSList* list = geonames_parse_doc(doc);
-
+      g_message("call cb");
       context->cb(context->obj, list, (GError*)0);
+      g_message("call cb done");
     }
   }
   else
   {
-    err = g_error_new(MAEP_NET_IO_ERROR, 0, "Geonames download failed!");
+    err = g_error_new(MAEP_NET_IO_ERROR, 0, "Nominatim download failed!");
     context->cb(context->obj, NULL, err);
     g_error_free(err);
   }
   g_free(context);
 }
 
-
-void maep_geonames_place_request(const gchar* request, MaepGeonamesRequestCallback cb, gpointer obj)
-{
-  request_cb_t* context;
-
-  /* gconf_set_string("search_text", phrase); */
-
-  gchar *locale, lang[3] = {0, 0, 0};
-  locale = setlocale(LC_MESSAGES, NULL);
-  g_utf8_strncpy(lang, locale, 2);
-
-  /* build search request */
-  char* encoded_phrase = url_encode(request);
-  char* url = g_strdup_printf(GEONAMES "search?q=%s&maxRows=%u&lang=%s"
-                                       "&isNameRequired=1&featureClass=P&username=" PACKAGE,
-
-                              encoded_phrase, MAX_RESULT, lang);
-  g_free(encoded_phrase);
-
-  /* request search results asynchronously */
-  g_message("start asynchronous place download (%s).", url);
-  context = g_malloc0(sizeof(request_cb_t));
-  context->cb = cb;
-  context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context, 0);
-
-  g_free(url);
-}
-
-#define NOMINATIM "https://nominatim.openstreetmap.org/"
-void maep_nominatim_address_request(const gchar* request, MaepGeonamesRequestCallback cb,
-                                    gpointer obj)
+void nominatim_address_request(const gchar* request, NominatimRequestCallback cb, gpointer obj)
 {
 
   request_cb_t* context;
@@ -375,7 +386,7 @@ void maep_nominatim_address_request(const gchar* request, MaepGeonamesRequestCal
   context = g_malloc0(sizeof(request_cb_t));
   context->cb = cb;
   context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context, 0);
+  net_io_download_async(url, nominatim_request_cb, context, 0);
 
   g_free(url);
 }

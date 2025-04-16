@@ -41,11 +41,7 @@
 
 #define DATE_FORMAT "%FT%T"
 //#define TRACK_CAPTURE_ENABLED "track_capture_enabled"
-#define TRACK_CAPTURE_LAST    "track_capture_last"
-
-#ifndef LIBXML_TREE_ENABLED
-#error "Tree not enabled in libxml"
-#endif
+// #define TRACK_CAPTURE_LAST    "track_capture_last"
 
 /* --------------------------------------------------------------- */
 
@@ -614,11 +610,8 @@ gboolean maep_geodata_set_autosave_period(MaepGeodata *track_state, guint elaps)
     g_message("Track: adding timeout every %ds.", elaps);
     if (!track_state->priv->path)
       track_state->priv->path = build_path();
-#if GLIB_MINOR_VERSION > 13
     track_state->priv->timer_handler = g_timeout_add_seconds(elaps, track_autosave, track_state);
-#else
-    track_state->priv->timer_handler = g_timeout_add(elaps*1000, track_autosave, track_state);
-#endif
+
   }
 
   return TRUE;

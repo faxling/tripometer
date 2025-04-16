@@ -43,7 +43,7 @@
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
-
+/*
 QString Maep::GeonamesPlace::coordinateToString(QGeoCoordinate::CoordinateFormat format) const
 {
   return m_coordinate.toString(format);
@@ -53,7 +53,7 @@ QString Maep::GeonamesEntry::coordinateToString(QGeoCoordinate::CoordinateFormat
 {
   return m_coordinate.toString(format);
 }
-
+*/
 /*
 void Maep::Track::set(MaepGeodata* t)
 {
@@ -168,13 +168,13 @@ static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, O
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
-static void osm_gps_map_qt_places(Maep::GpsMap* widget, MaepSearchContextSource source,
-                                  GSList* places, MaepSearchContext* wiki);
-static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, MaepSearchContextSource source,
-                                          GError* error, MaepSearchContext* wiki);
+static void osm_gps_map_qt_places(Maep::GpsMap* widget, GSList* places);
+
+static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget,
+                                          GError* error);
 
 extern QObject* g_pTheTrackModel;
-extern Maep::GpsMap* g_pTheMap;
+Maep::GpsMap* g_pTheMap;
 
 extern int g_nOutstaningCurls;
 Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
@@ -189,6 +189,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
                                  "gps-track-point-radius", 10, NULL));
   g_free(path);
 
+  Init();
 }
 
 void Maep::GpsMap::Init()
@@ -255,8 +256,7 @@ void Maep::GpsMap::Init()
   osd = osm_gps_map_osd_classic_init(map);
 
   search = maep_search_context_new();
-  g_signal_connect_swapped(G_OBJECT(search), "places-available", G_CALLBACK(osm_gps_map_qt_places),
-                           this);
+  g_signal_connect_swapped(G_OBJECT(search), "places-available", G_CALLBACK(osm_gps_map_qt_places), this);
   g_signal_connect_swapped(G_OBJECT(search), "download-error",
                            G_CALLBACK(osm_gps_map_qt_places_failure), this);
 
@@ -1356,9 +1356,8 @@ static void osm_gps_map_qt_wiki(Maep::GpsMap* widget,
   widget->setWikiEntry(entry);
 }
 */
-void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList* places)
+void Maep::GpsMap::setSearchResults( GSList* places)
 {
-  Q_UNUSED(source);
   g_message("hello got %d places", g_slist_length(places));
 
   // 1 is the id no of the result model
@@ -1389,7 +1388,7 @@ void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList* plac
   int nRow = 0;
   for (; places; places = places->next)
   {
-    const MaepGeonamesPlace* p = (const MaepGeonamesPlace*)places->data;
+    const NominatimPlace* p = (const NominatimPlace*)places->data;
     pResultModel->updateItem(nRow, 0, p->name);
     pResultModel->updateItem(nRow, 1, rad2deg(p->pos.rlat));
     pResultModel->updateItem(nRow, 2, rad2deg(p->pos.rlon));
@@ -1400,30 +1399,28 @@ void Maep::GpsMap::setSearchResults(MaepSearchContextSource source, GSList* plac
   InfoListModel::m_pRoot->setProperty("nSearchBusy", false);
 }
 
-static void osm_gps_map_qt_places(Maep::GpsMap* widget, MaepSearchContextSource source,
-                                  GSList* places, MaepSearchContext* wiki)
-{
-  Q_UNUSED(wiki);
 
+// This is called trough g_obj signaling
+static void osm_gps_map_qt_places(Maep::GpsMap* widget, GSList* places)
+{
   g_message("Got %d matching places.", g_slist_length(places));
-  widget->setSearchResults(source, places);
+  widget->setSearchResults( places);
 }
-static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, MaepSearchContextSource source,
-                                          GError* error, MaepSearchContext* wiki)
-{
-  Q_UNUSED(wiki);
 
+static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget,
+                                          GError* error)
+{
   g_message("Got download error '%s'.", error->message);
-  widget->setSearchResults(source, NULL);
+  widget->setSearchResults(NULL);
 }
 
 void Maep::GpsMap::setSearchRequest(const QString& request)
 {
-  qDeleteAll(searchRes);
+ // qDeleteAll(searchRes);
   if (request.size() < 3)
     return;
 
-  searchRes.clear();
+ // searchRes.clear();
 
   maep_search_context_request(search, request.toLocal8Bit().data(), MaepSearchContextNominatim);
 }

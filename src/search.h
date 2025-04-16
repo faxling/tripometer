@@ -39,14 +39,13 @@ typedef struct _MaepSearchContextPrivate MaepSearchContextPrivate;
 typedef struct _MaepSearchContextClass   MaepSearchContextClass;
 
 typedef enum {
-  MaepSearchContextGeonames  = 1,
+ //  MaepSearchContextGeonames  = 1,
   MaepSearchContextNominatim = 2
 } MaepSearchContextSource;
 
 struct _MaepSearchContext
 {
   GObject parent;
-
   MaepSearchContextPrivate *priv;
 };
 

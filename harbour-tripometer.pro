@@ -9,18 +9,23 @@ INCLUDEPATH += $$[QT_HOST_PREFIX]/lib64/glib-2.0/include
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/dconf
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/libxml2
 INCLUDEPATH += $$[QT_HOST_PREFIX]/include/cairo
-CONFIG +=  sailfishapp
+INCLUDEPATH += $$[QT_HOST_PREFIX]/include/libsailfishsilica
+CONFIG +=  sailfishapp  c++latest
 PKGCONFIG += gobject-2.0 cairo dconf libxml-2.0 libcurl
 QT += qml quick positioning sensors dbus svg
 LIBS += -ljpeg
 LIBS += -lpng
-QMAKE_CXXFLAGS += -std=c++0x
+LIBS += -lsailfishsilica
+# QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \
     src/osm-gps-map/osm-gps-map-osd-classic.c \
     trackmodel.cpp \
     Utils.cpp
+
+
+# message($$[QT_HOST_PREFIX])
 
 
 OTHER_FILES += \

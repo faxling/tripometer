@@ -24,12 +24,14 @@ Source: %{name}-%{version}.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Requires: sailfishsilica-qt5
+Requires: sailfishsilica-qt5
 Requires: mapplauncherd-booster-silica-qt5
 Requires: qt5-qtdeclarative-import-positioning
 Requires: qt5-qtdeclarative-import-folderlistmodel
 Requires: nemo-qml-plugin-notifications-qt5
 Requires:   sailfishsilica-qt5 >= 0.10.9
 BuildRequires: pkgconfig(qdeclarative5-boostable)
+BuildRequires: pkgconfig(sailfishsilica)
 BuildRequires: pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5Qml)
@@ -45,7 +47,7 @@ BuildRequires: pkgconfig(cairo)
 BuildRequires: pkgconfig(dconf)
 BuildRequires: pkgconfig(libxml-2.0)
 BuildRequires: pkgconfig(libcurl)
-BuildRequires: libjpeg-turbo-devel
+#BuildRequires: libjpeg-turbo-devel
 
 %description
 Pike Fight Uses Maep. Maep is a tile based map utility for services like OpenStreetMap, Google maps
