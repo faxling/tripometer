@@ -187,22 +187,17 @@ static GParamSpec* properties[PROP_LAST];
 
 G_DEFINE_TYPE(OsmGpsMap, osm_gps_map, G_TYPE_OBJECT)
 
-/*
- * Drawing function forward defintions
- */
 static gchar* replace_string(const gchar* src, const gchar* from, const gchar* to);
+
 static void inspect_map_uri(OsmGpsMapPrivate* priv);
+
 static void osm_gps_map_print_images(OsmGpsMap* map);
-// static void osm_gps_map_draw_gps_point(OsmGpsMap* map);
 
 static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
 
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t*);
 static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map);
-
-// static guint osm_gps_map_source_get_cache_period(OsmGpsMapSource_t source);
-// static gboolean osm_gps_map_source_get_cache_policy(OsmGpsMapSource_t source);
 
 static void cached_tile_free(OsmCachedTile* tile)
 {
@@ -255,11 +250,8 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
       if (match != NULL)
       {
         gchar* temp;
-        /* Find out how many characters to copy up to the 'match'. */
         size_t count = match - src;
 
-        /* Calculate the total size the string will be after the
-         * replacement is performed. */
         size += tolen - fromlen;
 
         temp = g_realloc(value, size);
@@ -269,36 +261,20 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
           return NULL;
         }
 
-        /* we'll want to return 'value' eventually, so let's point it
-         * to the memory that we are now working with.
-         * And let's not forget to point to the right location in
-         * the destination as well. */
         dst = temp + (dst - value);
         value = temp;
 
-        /*
-         * Copy from the source to the point where we matched. Then
-         * move the source pointer ahead by the amount we copied. And
-         * move the destination pointer ahead by the same amount.
-         */
         memmove(dst, src, count);
         src += count;
         dst += count;
 
-        /* Now copy in the replacement text 'to' at the position of
-         * the match. Adjust the source pointer by the text we replaced.
-         * Adjust the destination pointer by the amount of replacement
-         * text. */
         memmove(dst, to, tolen);
         src += fromlen;
         dst += tolen;
       }
       else
       {
-        /*
-         * Copy any remaining part of the string. This includes the null
-         * termination character.
-         */
+
         strcpy(dst, src);
         break;
       }
@@ -393,34 +369,28 @@ static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int z
     case URI_HAS_X:
       s = g_strdup_printf("%d", x);
       url = replace_string(url, URI_MARKER_X, s);
-      // g_debug("FOUND " URI_MARKER_X);
       break;
     case URI_HAS_Y:
       s = g_strdup_printf("%d", y);
       url = replace_string(url, URI_MARKER_Y, s);
-      // g_debug("FOUND " URI_MARKER_Y);
       break;
     case URI_HAS_Z:
       s = g_strdup_printf("%d", zoom);
       url = replace_string(url, URI_MARKER_Z, s);
-      // g_debug("FOUND " URI_MARKER_Z);
       break;
     case URI_HAS_S:
       s = g_strdup_printf("%d", max_zoom - zoom);
       url = replace_string(url, URI_MARKER_S, s);
-      // g_debug("FOUND " URI_MARKER_S);
       break;
     case URI_HAS_Q:
       map_convert_coords_to_quadtree_string(x, y, zoom, location, 't', "qrts");
       s = g_strdup_printf("%s", location);
       url = replace_string(url, URI_MARKER_Q, s);
-      // g_debug("FOUND " URI_MARKER_Q);
       break;
     case URI_HAS_Q0:
       map_convert_coords_to_quadtree_string(x, y, zoom, location, '\0', "0123");
       s = g_strdup_printf("%s", location);
       url = replace_string(url, URI_MARKER_Q0, s);
-      // g_debug("FOUND " URI_MARKER_Q0);
       break;
     case URI_HAS_YS:
       s = g_strdup_printf("%d", (1 << (zoom)) - y - 1);
@@ -448,16 +418,6 @@ static gchar* get_tile_uri(const gchar* uri, int uri_format, int max_zoom, int z
   return url;
 }
 
-/*
-gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x, int y)
-{
-  const gchar* repo_uri = osm_gps_map_source_get_repo_uri(source);
-  gboolean the_goole;
-
-  return get_tile_uri(repo_uri, inspect_map_uri(repo_uri, &the_goole),
-                      osm_gps_map_source_get_max_zoom(source), zoom, x, y);
-}
-*/
 static void my_log_handler(const gchar* log_domain, GLogLevelFlags log_level, const gchar* message,
                            gpointer user_data)
 {
@@ -671,12 +631,7 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
     // pixel_x,y, offsets
     pixel_x = lon2pixel(priv->map_zoom, im->pt.rlon);
     pixel_y = lat2pixel(priv->map_zoom, im->pt.rlat);
-    /*
-        g_debug("Image %dx%d @: %f,%f (%d,%d)",
-                im->w, im->h,K
-                im->pt.rlat, im->pt.rlon,
-                pixel_x, pixel_y);
-    */
+
     x = pixel_x - map_x0;
     y = pixel_y - map_y0;
 
@@ -716,38 +671,11 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
   // g_debug("dirty is %p", priv->dirty);
   cairo_region_union_rectangle(priv->dirty, &rect);
 }
-/*
-static void osm_gps_map_draw_gps_point(OsmGpsMap* map)
-{
-  OsmGpsMapPrivate* priv = map->priv;
 
-  // incase we get called before we have got a gps point
-
-  g_debug("Queing redraw");
-
-  if (priv->osm_gps_valid)
-  {
-    int map_x0, map_y0;
-    map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER + 20;
-    map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER + 20;
-  }
-}
-*/
 
 static void osm_gps_map_blit_surface(cairo_t* cr, cairo_surface_t* cr_surf, int offset_x,
                                      int offset_y, int modulo, int area_x, int area_y)
 {
-  // OsmGpsMapPrivate* priv = map->priv;
-
-  // g_debug("Queing redraw @ %d,%d (w:%d h:%d)", offset_x, offset_y, TILESIZE, TILESIZE);
-  /*
-  if (priv->double_pixel)
-  {
-    modulo *= 2;
-    cairo_rectangle(priv->cr, offset_x, offset_y, TILESIZE * 2, TILESIZE * 2);
-  }
-  else
-    */
   cairo_rectangle(cr, offset_x, offset_y, TILESIZE, TILESIZE);
   cairo_save(cr);
   cairo_translate(cr, offset_x - area_x * modulo, offset_y - area_y * modulo);
@@ -1945,6 +1873,8 @@ void osm_gps_map_set_viewport(OsmGpsMap* map, guint width, guint height)
   g_signal_emit_by_name(map, "changed");
 }
 
+
+// This is called through some macro magic on g_object_new
 static void osm_gps_map_class_init(OsmGpsMapClass* klass)
 {
   GObjectClass* object_class = G_OBJECT_CLASS(klass);
@@ -1965,11 +1895,11 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
 */
 
 
-  g_object_class_install_property(object_class, PROP_AUTO_CENTER, properties[PROP_AUTO_CENTER]);
 
   properties[PROP_AUTO_CENTER] =
       g_param_spec_boolean("auto-center", "auto center", "map auto center", TRUE,
                            G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
+
   g_object_class_install_property(object_class, PROP_AUTO_CENTER, properties[PROP_AUTO_CENTER]);
 
   g_object_class_install_property(

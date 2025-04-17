@@ -1007,12 +1007,9 @@ gboolean maep_geodata_get_bounding_box(const MaepGeodata *track_state,
       track_state->priv->bb_top_left.rlon == track_state->priv->bb_bottom_right.rlon)
     return FALSE;
 
-  g_message("Track, top left coord is %g x %g",
-            track_state->priv->bb_top_left.rlat, track_state->priv->bb_top_left.rlon);
   if (top_left)
     *top_left = track_state->priv->bb_top_left;
-  g_message("Track, bottom right coord is %g x %g",
-            track_state->priv->bb_bottom_right.rlat, track_state->priv->bb_bottom_right.rlon);
+
   if (bottom_right)
     *bottom_right = track_state->priv->bb_bottom_right;
 

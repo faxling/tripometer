@@ -18,6 +18,11 @@ Item {
     function reCalc() {
       Lib.reCalcSizeAndDisplay()
     }
+
+    function scrollToBottom() {
+      idSecondPage.scrollToBottom()
+    }
+
     Component.onDestruction: {
 
     }
@@ -422,6 +427,9 @@ Item {
       anchors.fill: parent
       anchors.leftMargin: Theme.itemSizeLarge + Theme.paddingMedium
       anchors.topMargin: Theme.itemSizeLarge
+      onCreateMarker: {
+        idMap.saveSearchMark(idTrackModel.nextId(), name, lon, lat)
+      }
       onSelection: {
         idMap.setLookAt(lat, lon)
       }
@@ -569,7 +577,7 @@ Item {
           idDeleteRemorse.execute(idTrackPanel,
                                   "Deleting  " + nSelectCount + " Item(s)",
                                   function () {
-                                    oM.unloadSelected()
+                                    oM.unloadSelected(mainMap)
                                     oM.deleteSelected()
                                   })
         }
@@ -579,14 +587,14 @@ Item {
         color: "black"
         width: Theme.itemSizeLarge
         text: "Load"
-        onClicked: idTrackModel.loadSelected()
+        onClicked: idTrackModel.loadSelected(mainMap)
       }
 
       Button {
         color: "black"
         width: Theme.itemSizeLarge
         text: "Unload"
-        onClicked: idTrackModel.unloadSelected()
+        onClicked: idTrackModel.unloadSelected(mainMap)
       }
 
       Button {

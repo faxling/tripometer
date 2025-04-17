@@ -29,24 +29,6 @@
 #include "misc.h"
 #include "net_io.h"
 
-/* -------------- begin of xml parser ---------------- */
-
-/*
-static gboolean string_get(xmlNode* node, char* name, char** dst)
-{
-  if (*dst)
-    return FALSE;
-
-  if (strcasecmp((char*)node->name, name) != 0)
-    return FALSE;
-
-  char* str = (char*)xmlNodeGetContent(node);
-  *dst = g_strdup(str);
-  xmlFree(str);
-
-  return TRUE;
-}
-*/
 static NominatimPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
 {
   xmlAttr* attr;
@@ -57,111 +39,42 @@ static NominatimPlace* nominatim_parse_place(xmlDocPtr doc, xmlNode* a_node)
 
   for (attr = a_node->properties; attr; attr = attr->next)
   {
-    g_message("got from osm %s", (char*)attr->name);
-
-    if (attr->name && !strcmp((char*)attr->name, "lat") && attr->children)
+    if (attr->name == 0 || attr->children == 0)
+      continue;
+    if (!strcmp((char*)attr->name, "lat"))
     {
       value = xmlNodeListGetString(doc, attr->children, 1);
       geoname->pos.rlat = deg2rad(g_ascii_strtod((gchar*)value, NULL));
       xmlFree(value);
     }
-    else if (attr->name && !strcmp((char*)attr->name, "lon") && attr->children)
+    else if (!strcmp((char*)attr->name, "lon"))
     {
       value = xmlNodeListGetString(doc, attr->children, 1);
       geoname->pos.rlon = deg2rad(g_ascii_strtod((gchar*)value, NULL));
       xmlFree(value);
     }
-    else if (attr->name && !strcmp((char*)attr->name, "display_name") && attr->children)
+    else if ( !strcmp((char*)attr->name, "display_name"))
     {
       value = xmlNodeListGetString(doc, attr->children, 1);
       geoname->name = g_strdup((gchar*)value);
       xmlFree(value);
     }
-    else if (attr->name && !strcmp((char*)attr->name, "type") && attr->children)
+    else if (!strcmp((char*)attr->name, "type") )
     {
       value = xmlNodeListGetString(doc, attr->children, 1);
-      geoname->country = g_strdup((gchar*)value);
+      geoname->type = g_strdup((gchar*)value);
+      xmlFree(value);
+    }
+    else if (!strcmp((char*)attr->name, "ref"))
+    {
+      value = xmlNodeListGetString(doc, attr->children, 1);
+      geoname->ref = g_strdup((gchar*)value);
       xmlFree(value);
     }
   }
-   g_message("got all");
   return geoname;
 }
 
-/*
-static MaepGeonamesPlace* geonames_parse_geoname(G_GNUC_UNUSED xmlDocPtr doc, xmlNode* a_node)
-{
-  xmlNode* cur_node = NULL;
-  MaepGeonamesPlace* geoname = g_new0(MaepGeonamesPlace, 1);
-  geoname->pos.rlat = geoname->pos.rlon = OSM_GPS_MAP_INVALID;
-
-  for (cur_node = a_node->children; cur_node; cur_node = cur_node->next)
-  {
-    if (cur_node->type == XML_ELEMENT_NODE)
-    {
-
-      string_get(cur_node, "name", &geoname->name);
-      string_get(cur_node, "countryName", &geoname->country);
-
-      if (strcasecmp((char*)cur_node->name, "lat") == 0)
-      {
-        char* str = (char*)xmlNodeGetContent(cur_node);
-        geoname->pos.rlat = deg2rad(g_ascii_strtod(str, NULL));
-        xmlFree(str);
-      }
-      else if (strcasecmp((char*)cur_node->name, "lng") == 0)
-      {
-        char* str = (char*)xmlNodeGetContent(cur_node);
-        geoname->pos.rlon = deg2rad(g_ascii_strtod(str, NULL));
-        xmlFree(str);
-      }
-    }
-  }
-
-  return geoname;
-}
-*/
-/*
-static MaepGeonamesEntry* geonames_parse_entry(G_GNUC_UNUSED xmlDocPtr doc, xmlNode* a_node)
-{
-  xmlNode* cur_node = NULL;
-  MaepGeonamesEntry* entry = g_new0(MaepGeonamesEntry, 1);
-  entry->pos.rlat = entry->pos.rlon = OSM_GPS_MAP_INVALID;
-
-  for (cur_node = a_node->children; cur_node; cur_node = cur_node->next)
-  {
-    if (cur_node->type == XML_ELEMENT_NODE)
-    {
-
-      string_get(cur_node, "title", &entry->title);
-      string_get(cur_node, "summary", &entry->summary);
-      string_get(cur_node, "thumbnailImg", &entry->thumbnail_url);
-      string_get(cur_node, "wikipediaUrl", &entry->url);
-
-      if (strcasecmp((char*)cur_node->name, "lat") == 0)
-      {
-        char* str = (char*)xmlNodeGetContent(cur_node);
-        entry->pos.rlat = deg2rad(g_ascii_strtod(str, NULL));
-        xmlFree(str);
-      }
-      else if (strcasecmp((char*)cur_node->name, "lng") == 0)
-      {
-        char* str = (char*)xmlNodeGetContent(cur_node);
-        entry->pos.rlon = deg2rad(g_ascii_strtod(str, NULL));
-        xmlFree(str);
-      }
-    }
-  }
-
-  if (entry->thumbnail_url && strlen(entry->thumbnail_url) == 0)
-  {
-    g_free(entry->thumbnail_url);
-    entry->thumbnail_url = NULL;
-  }
-
-  return entry;
-}
-*/
 
 static GSList* geonames_parse_nominatim(xmlDocPtr doc, xmlNode* a_node)
 {
@@ -172,29 +85,17 @@ static GSList* geonames_parse_nominatim(xmlDocPtr doc, xmlNode* a_node)
   {
     if (cur_node->type == XML_ELEMENT_NODE)
     {
-      /*
-      if (strcasecmp((char*)cur_node->name, "geoname") == 0)
-      {
-        list = g_slist_append(list, geonames_parse_geoname(doc, cur_node));
-      }
-      else if (strcasecmp((char*)cur_node->name, "entry") == 0)
-      {
-        list = g_slist_append(list, geonames_parse_entry(doc, cur_node));
-      }
-      else
-        */
       if (strcasecmp((char*)cur_node->name, "place") == 0)
       {
         list = g_slist_append(list, nominatim_parse_place(doc, cur_node));
-        g_message("got place");
       }
     }
   }
-  g_message("parsed palace");
+
   return list;
 }
 
-/* parse root element and search for "track" */
+
 static GSList* geonames_parse_root(xmlDocPtr doc, xmlNode* a_node)
 {
   GSList* list = NULL;
@@ -204,41 +105,33 @@ static GSList* geonames_parse_root(xmlDocPtr doc, xmlNode* a_node)
   {
     if (cur_node->type == XML_ELEMENT_NODE)
     {
-      if (!list && (strcasecmp((char*)cur_node->name, "geonames") == 0 ||
-                    strcasecmp((char*)cur_node->name, "searchresults") == 0))
+      if (strcasecmp((char*)cur_node->name, "searchresults") == 0)
         list = geonames_parse_nominatim(doc, cur_node);
     }
   }
-  g_message("searchresults");
   return list;
 }
 
 static GSList* geonames_parse_doc(xmlDocPtr doc)
 {
-  /* Get the root element node */
-  xmlNode* root_element = xmlDocGetRootElement(doc);
 
+  xmlNode* root_element = xmlDocGetRootElement(doc);
   GSList* list = geonames_parse_root(doc, root_element);
-  g_message("geonames_parse_doc");
 
   xmlFreeDoc(doc);
 
-  /* xmlCleanupParser(); */
-
   return list;
 }
-
-/* -------------- end of xml parser ---------------- */
-
-/* ------------- begin of freeing ------------------ */
 
 void nominatim_place_free(NominatimPlace* geoname, gpointer* p)
 {
   UNUSED(p);
   if (geoname->name)
     g_free(geoname->name);
-  if (geoname->country)
-    g_free(geoname->country);
+  if (geoname->type)
+    g_free(geoname->type);
+  if (geoname->ref)
+    g_free(geoname->ref);
   g_free(geoname);
 }
 
@@ -248,76 +141,6 @@ void nominatim_place_list_free(GSList* list)
   g_slist_free(list);
 }
 
-/*
-MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry* src)
-{
-  MaepGeonamesEntry* entry = g_memdup2(src, sizeof(MaepGeonamesEntry));
-
-  entry->title = g_strdup(src->title);
-  entry->summary = g_strdup(src->summary);
-  entry->thumbnail_url = g_strdup(src->thumbnail_url);
-  entry->url = g_strdup(src->url);
-  return entry;
-}
-
-void maep_geonames_entry_free( gpointer       data,
-                               gpointer       user_data)
-{
-
-  UNUSED(user_data);
-  MaepGeonamesEntry* entry = data;
-  if (entry->title)
-    g_free(entry->title);
-  if (entry->summary)
-    g_free(entry->summary);
-  if (entry->thumbnail_url)
-    g_free(entry->thumbnail_url);
-  if (entry->url)
-    g_free(entry->url);
-  g_free(entry);
-}
-
-void maep_geonames_entry_list_free(GSList* list)
-{
-  g_slist_foreach(list, (GFunc)maep_geonames_entry_free, NULL);
-  g_slist_free(list);
-}
-
-
-
-
-
-#define GEONAMES "http://api.geonames.org/"
-#define GEONAMES_SEARCH "geonames_search"
-
-
-
-
-void maep_geonames_place_request(const gchar* request, MaepGeonamesRequestCallback cb, gpointer obj)
-{
-  request_cb_t* context;
-
-
-  gchar *locale, lang[3] = {0, 0, 0};
-  locale = setlocale(LC_MESSAGES, NULL);
-  g_utf8_strncpy(lang, locale, 2);
-
-  char* encoded_phrase = url_encode(request);
-  char* url = g_strdup_printf(GEONAMES "search?q=%s&maxRows=%u&lang=%s"
-                                       "&isNameRequired=1&featureClass=P&username=" PACKAGE,
-
-                              encoded_phrase, MAX_RESULT, lang);
-  g_free(encoded_phrase);
-
-  g_message("start asynchronous place download (%s).", url);
-  context = g_malloc0(sizeof(request_cb_t));
-  context->cb = cb;
-  context->obj = obj;
-  net_io_download_async(url, geonames_request_cb, context, 0);
-
-  g_free(url);
-}
-*/
 
 #define MAX_RESULT 30
 #define NOMINATIM "https://nominatim.openstreetmap.org/"
@@ -349,10 +172,11 @@ static void nominatim_request_cb(net_result_t* result, gpointer data)
     }
     else
     {
+      // Here is the main thing with the result
+      // geonames_parse_doc -> eonames_parse_root -> geonames_parse_nominatim -> nominatim_parse_place
       GSList* list = geonames_parse_doc(doc);
-      g_message("call cb");
+      // the callback just sends a signal
       context->cb(context->obj, list, (GError*)0);
-      g_message("call cb done");
     }
   }
   else
@@ -378,7 +202,7 @@ void nominatim_address_request(const gchar* request, NominatimRequestCallback cb
   /* build search request */
   char* encoded_phrase = url_encode(request);
   char* url =
-      g_strdup_printf(NOMINATIM "search.php?q=%s&format=xml&limit=%u", encoded_phrase, MAX_RESULT);
+      g_strdup_printf(NOMINATIM "search?q=%s&format=xml&limit=%u", encoded_phrase, MAX_RESULT);
   g_free(encoded_phrase);
 
   /* request search results asynchronously */

@@ -192,6 +192,7 @@ SilicaListView {
         text: sDuration === "x" ? "" : sDuration
       }
     }
+
     Component {
       id: contextMenu
       ContextMenu {
@@ -203,6 +204,7 @@ SilicaListView {
             bSelected = !bSelected
           }
         }
+
         MenuItem {
           height: Theme.itemSizeExtraSmall
           text: "Delete"
@@ -217,25 +219,6 @@ SilicaListView {
           }
         }
 
-
-        /*
-        MenuItem {
-          text: "Load/Unload"
-          onClicked: {
-            if (!bLoaded) {
-              idTrackModel.trackLoaded(nId)
-
-              // invocable function
-              mainMap.loadTrack(aValue, nId)
-            } else {
-              idTrackModel.trackUnloaded(nId)
-
-              // invocable function
-              mainMap.unloadTrack(nId)
-            }
-          }
-        }
-        */
         MenuItem {
           text: "Rename"
           height: Theme.itemSizeExtraSmall
@@ -245,12 +228,13 @@ SilicaListView {
             idEditText.forceActiveFocus()
           }
         }
+
         MenuItem {
           text: "Center"
           height: Theme.itemSizeExtraSmall
           onClicked: {
             mainMap.loadTrack(aValue, nId)
-            idTrackModel.trackCenter(nId)
+            idTrackModel.trackCenter(nId, mainMap)
           }
         }
 

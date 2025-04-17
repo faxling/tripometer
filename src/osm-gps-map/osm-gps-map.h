@@ -47,12 +47,13 @@ G_BEGIN_DECLS
 #define OSM_GPS_MAP_GET_CLASS(obj)                                                                 \
   (G_TYPE_INSTANCE_GET_CLASS((obj), OSM_TYPE_GPS_MAP, OsmGpsMapClass))
 
+
+
 typedef struct _OsmGpsMapClass OsmGpsMapClass;
 typedef struct _OsmGpsMap OsmGpsMap;
 typedef struct _OsmGpsMapPrivate OsmGpsMapPrivate;
 
 #include "osm-gps-map-layer.h"
-
 struct _OsmGpsMapClass
 {
   GObjectClass parent_class;
@@ -63,6 +64,8 @@ struct _OsmGpsMap
   GObject parent_instance;
   OsmGpsMapPrivate* priv;
 };
+
+
 
 /* New tiles should be appended to avoid id breakage. */
 typedef enum

@@ -36,33 +36,29 @@ struct _MaepGeonamesEntry {
 };
 */
 
-struct _NominatimPlace {
-  char *name;
-  char *country;
+struct _NominatimPlace
+{
+  char* name;
+  char* type;
+  char* ref;
   coord_t pos;
 };
 
-
-
 typedef struct _NominatimPlace NominatimPlace;
-
 
 // void nominatim_place_free(NominatimPlace *geoname);
 
-void nominatim_place_list_free(GSList *list);
+void nominatim_place_list_free(GSList* list);
 
 // MaepGeonamesEntry* maep_geonames_entry_copy(MaepGeonamesEntry *src);
 
-
-typedef void (*NominatimRequestCallback)(gpointer obj, GSList *list,
-                                            GError *error);
+typedef void (*NominatimRequestCallback)(gpointer obj, GSList* list, GError* error);
 /*
 void maep_geonames_place_request(const gchar *request,
                                  MaepGeonamesRequestCallback cb, gpointer obj);
 */
 
-void nominatim_address_request(const gchar *request,
-                                    NominatimRequestCallback cb, gpointer obj);
+void nominatim_address_request(const gchar* request, NominatimRequestCallback cb, gpointer obj);
 
 G_END_DECLS
 

@@ -22,7 +22,6 @@
 #include <QQuickView>
 #include <QStandardPaths>
 #include <QTextCodec>
-
 //#include <qqmlcontext.h>
 #include <qqmlfile.h>
 
@@ -602,22 +601,53 @@ QString StorageDir()
   return sRet;
 }
 
-QString GpxNewName(const QString& _sTrackName, int nCount)
+QString SubStr(const QString& s, int nStart, int nEnd)
+{
+  return s.mid(nStart + 1, nEnd - nStart - 1);
+}
+
+QString StrInPar(const QString& s)
+{
+  return SubStr(s, s.indexOf('('), s.indexOf(')'));
+}
+
+int GatMaxNr(const QString& sName)
+{
+
+  if (QFile::exists(StorageDir() ^ sName + ".dat") == false)
+    return 0;
+
+
+  QDir oDir(StorageDir(), sName + "(*).dat");
+
+  auto oc = oDir.entryList();
+  if (oc.isEmpty())
+    return 1;
+
+  auto maxStr = *std::max_element(oc.begin(), oc.end());
+
+  int nRet = SubStr(maxStr, maxStr.indexOf('('), maxStr.indexOf(')')).toInt();
+
+  return nRet;
+}
+
+QString GpxNewName(const QString& _sTrackName, int nN)
 {
   QString sTrackName;
-  for (;;)
-  {
-    if (nCount != -1)
-      sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), ++nCount);
-    else
-    {
-      sTrackName = _sTrackName;
-      nCount = 0;
-    }
+  int nM = GatMaxNr(_sTrackName);
 
-    if (QFile::exists(GpxDatFullName(sTrackName)) == false)
-      break;
+  if ((nN != -1 && nM > 0) || nN == 0)
+  {
+    if (nM == 1)
+      nM = 0;
+    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nM+1);
   }
+  else
+  {
+    sTrackName = _sTrackName;
+  }
+  sTrackName[0] = sTrackName[0].toUpper();
+
   return sTrackName;
 }
 
@@ -854,6 +884,7 @@ MssListModel* MssListModel::Instance(int nInstanceId)
     return 0;
   return msslistmodel::g_ocInstance[nInstanceId];
 }
+
 void MssListModel::Reset(InitFunc pfInit)
 {
   if (m_ocRows.size() > 0)

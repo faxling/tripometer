@@ -19,49 +19,39 @@
 GType osm_gps_map_layer_get_type()
 {
   static GType object_type = 0;
-  if (!object_type) {
-    static const GTypeInfo object_info = {
-      sizeof(OsmGpsMapLayerIface),
-      NULL,	/* base init */
-      NULL,	/* base finalize */
-      NULL,
-      NULL,
-      NULL,
-      0,
-      0,
-      NULL,
-      NULL
-    };
-    object_type =
-        g_type_register_static(G_TYPE_INTERFACE,
-                               "OsmGpsMapLayer",
-                               &object_info, 0);
+  if (!object_type)
+  {
+    static const GTypeInfo object_info = {sizeof(OsmGpsMapLayerIface),
+                                          NULL, /* base init */
+                                          NULL, /* base finalize */
+                                          NULL,
+                                          NULL,
+                                          NULL,
+                                          0,
+                                          0,
+                                          NULL,
+                                          NULL};
+    object_type = g_type_register_static(G_TYPE_INTERFACE, "OsmGpsMapLayer", &object_info, 0);
   }
   return object_type;
 }
 
-void
-osm_gps_map_layer_render (OsmGpsMapLayer *self, OsmGpsMap *map)
+void osm_gps_map_layer_render(OsmGpsMapLayer* self, OsmGpsMap* map)
 {
-  OSM_GPS_MAP_LAYER_GET_INTERFACE (self)->render (self, map);
+  OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->render(self, map);
 }
 
-void
-osm_gps_map_layer_draw (OsmGpsMapLayer *self, cairo_t *cr,
-                        OsmGpsMap *map)
+void osm_gps_map_layer_draw(OsmGpsMapLayer* self, cairo_t* cr, OsmGpsMap* map)
 {
-  OSM_GPS_MAP_LAYER_GET_INTERFACE (self)->draw (self, cr, map);
+  OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->draw(self, cr, map);
 }
 
-gboolean
-osm_gps_map_layer_busy (OsmGpsMapLayer *self)
+gboolean osm_gps_map_layer_busy(OsmGpsMapLayer* self)
 {
-  return OSM_GPS_MAP_LAYER_GET_INTERFACE (self)->busy (self);
+  return OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->busy(self);
 }
 
-gboolean
-osm_gps_map_layer_button (OsmGpsMapLayer *self, int x, int y, gboolean press)
+gboolean osm_gps_map_layer_button(OsmGpsMapLayer* self, int x, int y, gboolean press)
 {
-  return OSM_GPS_MAP_LAYER_GET_INTERFACE (self)->button (self, x, y, press);
+  return OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->button(self, x, y, press);
 }
-

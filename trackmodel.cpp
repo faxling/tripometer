@@ -20,7 +20,7 @@ enum TRACK_ROLES_t
   TYPE_t
 };
 
-extern QObject* g_pTheMap;
+// extern QObject* g_pTheMap;
 
 TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded)
 {
@@ -126,13 +126,13 @@ bool TrackModelFiltered::filterAcceptsRow(int sourceRow, const QModelIndex& sour
   return s.contains(m_sFilterStr, Qt::CaseSensitivity::CaseInsensitive);
 }
 
-void TrackModel::trackCenter(int nId)
+void TrackModel::trackCenter(int nId, QObject* mapObj)
 {
   std::find_if(m_oc.begin(), m_oc.end(), [&](const ModelDataNode& t) {
     if (t.nId == nId)
     {
       trackLoaded(nId);
-      QMetaObject::invokeMethod(g_pTheMap, "centerTrack", Q_ARG(QString, t.sName));
+      QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
       return true;
     }
     else
@@ -182,9 +182,9 @@ void TrackModel::trackLoaded(int nId)
   emit dataChanged(oMI, oMI, oc);
 }
 
-extern QObject* g_pTheMap;
+// extern QObject* g_pTheMap;
 
-void TrackModel::loadSelected()
+void TrackModel::loadSelected(QObject* mapObj)
 {
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
@@ -193,7 +193,7 @@ void TrackModel::loadSelected()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = true;
-      QMetaObject::invokeMethod(g_pTheMap, "loadTrack", Q_ARG(QString, oJ.sName),
+      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName),
                                 Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
@@ -216,7 +216,7 @@ void TrackModel::markAllUnload()
   }
 }
 
-void TrackModel::unloadSelected()
+void TrackModel::unloadSelected(QObject* mapObj)
 {
 
   QVector<int> oc;
@@ -226,7 +226,7 @@ void TrackModel::unloadSelected()
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = false;
-      QMetaObject::invokeMethod(g_pTheMap, "unloadTrack", Q_ARG(int, oJ.nId));
+      QMetaObject::invokeMethod(mapObj, "unloadTrack", Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
     }

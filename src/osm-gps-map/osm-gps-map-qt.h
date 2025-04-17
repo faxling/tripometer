@@ -247,8 +247,7 @@ namespace Maep
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(
         Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
-    //  Q_PROPERTY(bool double_pixel READ doublePixel WRITE setDoublePixel NOTIFY
-    //  doublePixelChanged)
+
     Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
@@ -347,6 +346,7 @@ namespace Maep
     Q_INVOKABLE void markPikeInMap(int nId);
     Q_INVOKABLE void removePikeInMap(int nId);
     Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
+    Q_INVOKABLE void saveSearchMark(int nId, QString sName,float fLo, float fLa);
     Q_INVOKABLE void saveMark(int nId);
     Q_INVOKABLE void saveTrack(int nId);
     Q_INVOKABLE QString savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
@@ -358,7 +358,7 @@ namespace Maep
     Q_INVOKABLE void clearTrack();
     Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
     Q_INVOKABLE void unloadTrack(int nId);
-    Q_INVOKABLE void centerTrack(const QString& sTrackName);
+    Q_INVOKABLE void centerTrack(float fLo,float fLa);
     Q_INVOKABLE void renameTrack(const QString& sTrackName, int nId);
 
     Q_INVOKABLE void centerCurrentGps();

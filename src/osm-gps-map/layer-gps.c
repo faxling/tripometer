@@ -25,7 +25,6 @@
 #include <math.h>
 #include <src/misc.h>
 #include <glib/gtypes.h>
-// #include <../lib/glib-2.0/include/glibconfig.h>
 
 struct _MaepLayerGpsPrivate
 {

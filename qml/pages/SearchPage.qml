@@ -2,31 +2,50 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 
+SilicaListView {
+  id: idSearchResulView
 
+  signal selection(real lat, real lon)
+  signal createMarker(string name, real lat, real lon)
 
-SilicaListView
-{
-  id:idSearchResulView
+  Component {
+    id: contextMenu
+    ContextMenu {
 
-  signal selection(string place, real lat, real lon)
+      MenuItem {
+        height: Theme.itemSizeExtraSmall
+        text: "Save As Marker"
+        onClicked: {
+          if (currentItem === undefined)
+            return
 
-  delegate: ListItem  {
+          createMarker(currentItem.myData.ref, currentItem.myData.lat,
+                       currentItem.myData.lo)
+        }
+      }
+    }
+  }
 
+  delegate: ListItem {
+    property variant myData: model
     width: ListView.view.width
 
+    menu: contextMenu
+
     Label {
-      maximumLineCount :2
-      wrapMode : Text.WrapAnywhere
-      anchors.fill : parent
+      maximumLineCount: 2
+      wrapMode: Text.WrapAnywhere
+      anchors.fill: parent
+      font.pixelSize: Theme.fontSizeExtraSmall
       font.bold: idSearchResulView.currentIndex === index
-      color:  "black"
-      text: "[" + model.type + "]" + model.name
+      color: "black"
+      text: "[" + model.type + "]" + " (" + model.ref + ")" + model.fullName
     }
 
-    onClicked: {
+    onPressed: {
       idSearchResulView.currentIndex = index
-      selection(model.name, model.lat, model.lo)
+
+      selection(model.lat, model.lo)
     }
   }
 }
-

@@ -670,7 +670,6 @@ static void osd_free(osm_gps_map_osd_t* osd)
 
 osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
 {
-  g_message("osm_gps_map_osd_classic_init");
   osm_gps_map_osd_t* osd_classic = g_new0(osm_gps_map_osd_t, 1);
   osd_priv_t* priv = g_new0(osd_priv_t, 1);
   osd_classic->map = NULL;

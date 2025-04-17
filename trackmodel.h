@@ -33,13 +33,13 @@ public:
   Q_INVOKABLE int nextId();
   Q_INVOKABLE void trackAdd(const QString& sName);
   Q_INVOKABLE void trackImport(const QString& sPath);
-  Q_INVOKABLE void trackCenter(int nId);
+  Q_INVOKABLE void trackCenter(int nId, QObject* mapObj);
   Q_INVOKABLE void trackLoaded(int nId);
   Q_INVOKABLE void trackUnloaded(int nId);
   Q_INVOKABLE void deleteSelected();
-  Q_INVOKABLE void loadSelected();
+  Q_INVOKABLE void loadSelected(QObject* mapObj);
   Q_INVOKABLE void markAllUnload();
-  Q_INVOKABLE void unloadSelected();
+  Q_INVOKABLE void unloadSelected(QObject* mapObj);
   Q_INVOKABLE void trackDelete(int nId);
   Q_INVOKABLE void trackRename(QString sName, int nId);
 
@@ -50,7 +50,6 @@ public:
   enum
   {
     ValueRole = Qt::UserRole + 1,
-
   };
   QModelIndex index(int, int, const QModelIndex&) const override;
   QModelIndex IndexFromId(int nId) const;

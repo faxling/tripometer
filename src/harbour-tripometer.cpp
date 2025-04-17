@@ -14,9 +14,6 @@
 #include <QtPositioning/QtPositioning>
 #include <sailfishapp.h>
 #include "libsailfishsilica/silicatheme.h"
-// #include <QtQml/qqml>
-
-//
 
 #include "Utils.h"
 #include "infolistmodel.h"
@@ -40,13 +37,9 @@ int main(int argc, char* argv[])
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
   // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
-  // To display the view, call "show()" (will show fullscreen on device).
 
-  // QStringList oc = QGeoPositionInfoSource::availableSources();
-  // QtPositioning::
 
-  // qmlRegisterType<InfoListModel>("harbour.tripometer", 1, 0,
-  // "InfoListModel");
+
   StopWatch oSW("Start pike application %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);
 
@@ -60,9 +53,9 @@ int main(int argc, char* argv[])
   g_pTheTrackModel = pTM;
   auto pTMF = new TrackModelFiltered;
   pTMF->setSourceModel(pTM);
-  pContext->setContextProperty("idTrackModel", g_pTheTrackModel);
+  pContext->setContextProperty("idTrackModel", pTM);
   pContext->setContextProperty("idTrackModelFiltered", pTMF);
-  MssListModel* pSearchResultModel = new MssListModel("name", "lat", "lo", "type");
+  MssListModel* pSearchResultModel = new MssListModel("fullName", "lat", "lo", "type","ref");
   oSW.Stop();
   pSearchResultModel->Init(1);
   pContext->setContextProperty("pikeFightDocFolder", StorageDir());
@@ -76,7 +69,7 @@ int main(int argc, char* argv[])
 
   qmlRegisterType<QQuickFolderListModel>("harbour.tripometer", 1, 0, "FolderListModel");
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
-  // qmlRegisterType<Maep::GeonamesPlace>("harbour.tripometer", 1, 0, "GeonamesPlace");
+
   pU->engine()->addImageProvider("capturedImage", new ScreenCapturedImg());
   // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
   // &QGuiApplication::quit,Qt::DirectConnection);

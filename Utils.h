@@ -43,7 +43,11 @@ QString operator^(const QString& s, const QString& s2);
 
 QString CacheDir();
 QString StorageDir();
-QString GpxNewName(const QString& sTrackName, int nCount = -1);
+
+// nCount >= 0 gives uniique name for files filename(N+1)
+// if nN == 0 start count dierctly with (01) if 1 start with sTrackName
+// and next will be (01)
+QString GpxNewName(const QString& sTrackName, int nN = -1);
 QString GpxDatFullName(const QString& sTrackName);
 QString GpxFullName(const QString& sTrackName);
 

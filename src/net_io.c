@@ -23,7 +23,6 @@
 #include "net_io.h"
 
 #include <curl/curl.h>
-/*#include <curl/types.h>*/ /* new for v7 */
 #include <curl/easy.h>      /* new for v7 */
 #include <string.h>
 #include <unistd.h>
@@ -60,13 +59,10 @@ static struct http_message_s
 /* structure shared between worker and master thread */
 typedef struct
 {
-  //  gint refcount; /* reference counter for master and worker thread */
   struct curl_slist* chunk;
   struct proxy_config* proxy;
   char* url;
   char* user;
-  // gboolean cancel;
-  // float progress;
 
   /* curl/http related stuff: */
   CURLcode res;
@@ -81,25 +77,11 @@ typedef struct
 } net_io_request_t;
 
 
-/*
-static char* http_message(int id)
-{
-  struct http_message_s* msg = http_messages;
-
-  while (msg->msg)
-  {
-    if (msg->id == id)
-      return _(msg->msg);
-    msg++;
-  }
-
-  return NULL;
-}
-*/
 void net_io_init()
 {
   curl_global_init(CURL_GLOBAL_NOTHING);
 }
+
 void net_io_finalize()
 {
   curl_global_cleanup();
