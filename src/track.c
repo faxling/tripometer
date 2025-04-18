@@ -560,13 +560,6 @@ static MaepGeodata *track_parse_doc(xmlDocPtr doc) {
   /*free the document */
   xmlFreeDoc(doc);
 
-  /*
-   * Free the global variables that may
-   * have been allocated by the parser.
-   * This should not be called if parsing is to be used again.
-   */
-  /* xmlCleanupParser(); */
-
   return track_state;
 }
 

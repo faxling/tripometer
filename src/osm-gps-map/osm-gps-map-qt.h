@@ -43,97 +43,6 @@
 namespace Maep
 {
 
-  /*
-    class GeonamesPlace : public QObject
-    {
-      Q_OBJECT
-      Q_PROPERTY(QString name READ getName NOTIFY nameChanged)
-      Q_PROPERTY(QString country READ getCountry NOTIFY countryChanged)
-      Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
-
-    public:
-      inline GeonamesPlace(const MaepGeonamesPlace* place = NULL, QObject* parent = NULL)
-          : QObject(parent)
-      {
-        if (place)
-        {
-          this->name = QString(place->name);
-          this->country = QString(place->country);
-          this->m_coordinate = QGeoCoordinate(rad2deg(place->pos.rlat), rad2deg(place->pos.rlon));
-        }
-      }
-      inline QString getName() const { return this->name; }
-      inline QString getCountry() const { return this->country; }
-
-      inline double lat() const { return m_coordinate.latitude(); }
-
-      inline double lo() const { return m_coordinate.longitude(); }
-
-      inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
-
-    signals:
-      void nameChanged();
-      void countryChanged();
-      void coordinateChanged();
-
-    public slots:
-      QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
-                                     QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
-
-    private:
-      QString name, country;
-      QGeoCoordinate m_coordinate;
-    };
-
-
-
-    class GeonamesEntry : public QObject
-    {
-      Q_OBJECT
-      Q_PROPERTY(QString title READ getTitle NOTIFY titleChanged)
-      Q_PROPERTY(QString summary READ getSummary NOTIFY summaryChanged)
-      Q_PROPERTY(QString thumbnail READ getThumbnail NOTIFY thumbnailChanged)
-      Q_PROPERTY(QString url READ getURL NOTIFY urlChanged)
-      Q_PROPERTY(QGeoCoordinate coordinate READ coordinate NOTIFY coordinateChanged)
-
-    public:
-
-      inline GeonamesEntry(const MaepGeonamesEntry* entry = NULL, QObject* parent = NULL)
-          : QObject(parent)
-      {
-        if (entry)
-        {
-          this->title = QString(entry->title);
-          this->summary = QString(entry->summary);
-          this->thumbnail = QString(entry->thumbnail_url);
-          this->url = QString(entry->url);
-          this->m_coordinate = QGeoCoordinate(rad2deg(entry->pos.rlat), rad2deg(entry->pos.rlon));
-        }
-      }
-
-      inline void set(const Maep::GeonamesEntry* entry) { title = QString(entry->getTitle()); }
-      inline QString getTitle() const { return this->title; }
-      inline QString getSummary() const { return this->summary; }
-      inline QString getThumbnail() const { return this->thumbnail; }
-      inline QString getURL() const { return this->url; }
-      inline QGeoCoordinate coordinate() const { return this->m_coordinate; }
-
-    signals:
-      void titleChanged();
-      void summaryChanged();
-      void thumbnailChanged();
-      void urlChanged();
-      void coordinateChanged();
-
-    public slots:
-      QString coordinateToString(QGeoCoordinate::CoordinateFormat format =
-                                     QGeoCoordinate::DegreesMinutesSecondsWithHemisphere) const;
-
-    private:
-      QString title, summary, thumbnail, url;
-      QGeoCoordinate m_coordinate;
-    };
-  */
 
   class Track : public QObject
   {
@@ -245,8 +154,8 @@ namespace Maep
 
     Q_PROPERTY(int numberPendingReq READ numberPendingReq NOTIFY numberPendingReqChanged)
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(
-        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
+ //   Q_PROPERTY(
+ //        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
 
     Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
@@ -324,9 +233,10 @@ namespace Maep
       g_object_get(map, "map-source", &source, NULL);
       return (Source)source;
     }
-
+      /*
     inline Source overlaySource()
     {
+
       OsmGpsMapSource_t source;
       if (overlay)
       {
@@ -337,8 +247,9 @@ namespace Maep
       {
         return SOURCE_NULL;
       }
-    }
 
+    }
+    */
     Q_INVOKABLE void addDbPoint();
     Q_INVOKABLE void noDbPoint();
     Q_INVOKABLE QGeoCoordinate currentPos();
@@ -378,15 +289,7 @@ namespace Maep
       osm_gps_map_source_get_repo_copyright((OsmGpsMapSource_t)id, &notice, &url);
       return QString(url);
     }
-    /*
-    inline bool doublePixel()
-    {
-      gboolean status;
-      g_object_get(map, "double-pixel", &status, NULL);
-      return status;
-    }
-    */
-    // Q_INVOKABLE QString getCenteredTile(Maep::GpsMap::Source source) const;
+
     inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
     bool compassEnabled();
     bool crossHairEnabled();
@@ -403,7 +306,7 @@ namespace Maep
     void mapChanged();
     void numberPendingReqChanged();
     void sourceChanged(Source source);
-    void overlaySourceChanged(Source source);
+    // void overlaySourceChanged(Source source);
     void doublePixelChanged(bool status);
     void coordinateChanged();
     void gpsCoordinateChanged();
@@ -421,7 +324,7 @@ namespace Maep
 
   public slots:
     void setSource(Source source);
-    void setOverlaySource(Source source);
+    // void setOverlaySource(Source source);
     // void setDoublePixel(bool status);
     void setAutoCenter(bool status);
     void setScreenRotation(bool status);
@@ -451,32 +354,14 @@ namespace Maep
     int START_LINE = 0;
     void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize, QImage& sImg,
                            QPainter* p, double fQuote);
-    /*
-    static int countSearchResults(QQmlListProperty<GeonamesPlace>* prop)
-    {
-      GpsMap* self = qobject_cast<GpsMap*>(prop->object);
-      g_message("#### Hey I've got %d results!", self->searchRes.length());
-      return self->searchRes.length();
-    }
 
-    static GeonamesPlace* atSearchResults(QQmlListProperty<GeonamesPlace>* prop, int index)
-    {
-      GpsMap* self = qobject_cast<GpsMap*>(prop->object);
-      g_message("#### Hey I've got name %s (%fx%f) for result %d!",
-                self->searchRes[index]->getName().toLocal8Bit().data(),
-                self->searchRes[index]->coordinate().latitude(),
-                self->searchRes[index]->coordinate().longitude(), index);
-      return self->searchRes[index];
-    }
-
-    */
-    void ensureOverlay(Source source);
+   //  void ensureOverlay(Source source);
     bool mapSized();
     void gpsToTrack();
     void unsetGps();
 
     bool screenRotation;
-    OsmGpsMap *map, *overlay;
+    OsmGpsMap *map;
     QGeoCoordinate coordinate;
     QCompass compass;
     osm_gps_map_osd_t* osd;

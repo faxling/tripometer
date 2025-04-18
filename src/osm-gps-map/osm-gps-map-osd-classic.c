@@ -698,7 +698,6 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
 void osm_gps_map_osd_classic_free(osm_gps_map_osd_t* osd)
 {
   osd_free(osd);
-  //  osd->free(osd);
   g_object_unref(osd->map);
   g_free(osd);
 }
@@ -707,5 +706,4 @@ void osm_gps_map_set_azimuth(osm_gps_map_osd_t* osd, double azimuth)
 {
   osd_priv_t* priv = (osd_priv_t*)osd->priv;
   priv->scale.compass_azimuth = deg2rad((float)azimuth);
-  //  g_message("azimuth %f",azimuth );
 }

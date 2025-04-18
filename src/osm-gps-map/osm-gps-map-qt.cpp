@@ -36,7 +36,6 @@
 #include <sstream>
 #define GCONF_KEY_ZOOM "zoom"
 #define GCONF_KEY_SOURCE "source"
-#define GCONF_KEY_OVERLAY_SOURCE "overlay-source"
 #define GCONF_KEY_LATITUDE "latitude"
 #define GCONF_KEY_LONGITUDE "longitude"
 #define GCONF_KEY_TRACK_PATH "track_path"
@@ -95,7 +94,7 @@ static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map);
 static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
-static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
+// static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_places(Maep::GpsMap* widget, GSList* places);
 
 static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, GError* error);
@@ -141,7 +140,7 @@ void Maep::GpsMap::Init()
 
   m_pReqCountTimer->Start(200);
 
-  gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
+  // gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
 
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
@@ -174,10 +173,11 @@ void Maep::GpsMap::Init()
   g_signal_connect_swapped(G_OBJECT(map), "notify::map-source", G_CALLBACK(osm_gps_map_qt_source),
                            this);
 
-  overlay = NULL;
-  if (overlaySource != OSM_GPS_MAP_SOURCE_NULL)
-    ensureOverlay((Maep::GpsMap::Source)overlaySource);
+ // overlay = NULL;
+//  if (overlaySource != OSM_GPS_MAP_SOURCE_NULL)
+ //   ensureOverlay((Maep::GpsMap::Source)overlaySource);
 
+  g_message("nsureOverlay");
   net_io_init();
 
   osd = osm_gps_map_osd_classic_init(map);
@@ -308,20 +308,21 @@ Maep::GpsMap::~GpsMap()
   qDebug() << "Destruct Qmap";
   m_pReqCountTimer->Stop();
   delete m_pReqCountTimer;
-  gint zoom, source, overlaySource;
+  gint zoom, source;
   gfloat lat, lon;
   //  gboolean dpix;
 
   /* get state information from map ... */
-  overlaySource = OSM_GPS_MAP_SOURCE_NULL;
+  // overlaySource = OSM_GPS_MAP_SOURCE_NULL;
+  /*
   if (overlay)
   {
-    /* Retrieve it to store it in gconf later. */
+
     g_object_get(overlay, "map-source", &overlaySource, NULL);
     g_object_unref(overlay);
   }
   overlay = NULL;
-
+*/
   compass.stop();
 
   g_object_get(map, "zoom", &zoom, "map-source", &source, "latitude", &lat, "longitude", &lon,
@@ -347,7 +348,7 @@ Maep::GpsMap::~GpsMap()
   g_message("Storing configuration.");
   gconf_set_int(GCONF_KEY_ZOOM, zoom);
   gconf_set_int(GCONF_KEY_SOURCE, source);
-  gconf_set_int(GCONF_KEY_OVERLAY_SOURCE, overlaySource);
+ //  gconf_set_int(GCONF_KEY_OVERLAY_SOURCE, overlaySource);
   gconf_set_float(GCONF_KEY_LATITUDE, lat);
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
   //  gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
@@ -361,13 +362,20 @@ Maep::GpsMap::~GpsMap()
 
   g_object_unref(map);
 }
-
+/*
 void Maep::GpsMap::ensureOverlay(Source source)
 {
   gchar* path;
 
+
+
+
+  g_message("ensureOverlay");
+
   if (overlay)
     return;
+
+  g_message("Creating overlay");
 
   g_message("Creating overlay %d", (guint)source);
   path = g_build_filename(g_get_user_data_dir(), "maep", NULL);
@@ -395,7 +403,11 @@ void Maep::GpsMap::ensureOverlay(Source source)
 
   g_signal_connect_swapped(G_OBJECT(overlay), "notify::map-source",
                            G_CALLBACK(osm_gps_map_qt_overlay_source), this);
+
+
 }
+*/
+
 
 static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map)
 {
@@ -448,8 +460,8 @@ void Maep::GpsMap::mapUpdate()
   // g_message("update at drag %dx%d %g", drag_mouse_dx, drag_mouse_dy, 1.f /
   // factor);
   osm_gps_map_blit(map, cr, CAIRO_OPERATOR_SOURCE);
-  if (overlay && overlaySource() != Maep::GpsMap::SOURCE_NULL)
-    osm_gps_map_blit(overlay, cr, CAIRO_OPERATOR_OVER);
+  //if (overlay && overlaySource() != Maep::GpsMap::SOURCE_NULL)
+  //  osm_gps_map_blit(overlay, cr, CAIRO_OPERATOR_OVER);
 
   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(lgps), cr, map);
 
@@ -705,7 +717,7 @@ void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 
   g_object_set(map, "map-source", (OsmGpsMapSource_t)value, NULL);
 }
-
+/*
 static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {
   Q_UNUSED(pspec);
@@ -713,7 +725,7 @@ static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspe
 
   widget->overlaySourceChanged(widget->overlaySource());
 }
-
+*/
 void Maep::GpsMap::clearTrack()
 {
   osm_gps_map_clear_tracks(map);
@@ -1234,7 +1246,7 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
 
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
 }
-
+/*
 void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
 {
   Source orig;
@@ -1244,7 +1256,7 @@ void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
     return;
 
   ensureOverlay(value);
-  g_object_set(overlay, "map-source", (OsmGpsMapSource_t)value, NULL);
+ //  g_object_set(overlay, "map-source", (OsmGpsMapSource_t)value, NULL);
 
   // Overlay becoming NULL will never emit dirty, thus we redraw by hand
   if (value == Maep::GpsMap::SOURCE_NULL)
@@ -1253,6 +1265,8 @@ void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
     update();
   }
 }
+*/
+
 
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {

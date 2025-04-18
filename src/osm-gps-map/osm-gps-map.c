@@ -668,7 +668,7 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
   rect.y = min_y + EXTRA_BORDER;
   rect.width = max_x - min_x;
   rect.height = max_y - min_y;
-  // g_debug("dirty is %p", priv->dirty);
+
   cairo_region_union_rectangle(priv->dirty, &rect);
 }
 
@@ -1375,9 +1375,8 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   cairo_restore(priv->cr);
 
   osm_gps_map_fill_tiles_pixel(map);
-
-  // g_debug("dirty is %p.", (gpointer)priv->dirty);
   osm_gps_map_print_tracks(map);
+
   // draw in gps layer
   // osm_gps_map_draw_gps_point(map);
   osm_gps_map_print_images(map);
@@ -1439,7 +1438,6 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->viewport_height = 0;
   priv->dirty = cairo_region_create();
   priv->uri_format = 0;
-  // priv->the_navionics = FALSE;
   priv->map_source = -1;
   priv->idle_map_redraw = 0;
   priv->tile_queue = g_hash_table_new(g_str_hash, g_str_equal);
