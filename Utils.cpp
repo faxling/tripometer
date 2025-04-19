@@ -86,6 +86,280 @@ void mssutils::MkCache()
   }
 }
 
+QString FormatAisShipType(int nShipType)
+{
+  QString sRet;
+
+  if (nShipType == 0)
+  {
+    sRet += "Unknown";
+    return sRet;
+  }
+
+  if (nShipType < 10 || nShipType > 99)
+  {
+    char szRet[30];
+    sprintf(szRet, "Not Available: %d", nShipType);
+    return szRet;
+  }
+
+  switch (nShipType / 10)
+  {
+  case 1:
+  {
+    sRet += "Reserved";
+  }
+  break;
+  case 2:
+  {
+    sRet += "WIG";
+  }
+  break;
+  case 3:
+  {
+    switch (nShipType % 10)
+    {
+    case 0:
+    {
+      sRet += "Fishing vessel";
+    }
+    break;
+    case 1:
+    {
+      // TUG
+      sRet += "Towing vessel";
+    }
+    break;
+    case 2:
+    {
+      // TUG
+      sRet += "Towing vessel > 200m";
+    }
+    break;
+    case 3:
+    {
+      sRet += "Underwater operation, e.g. Dredger";
+    }
+    break;
+    case 4:
+    {
+      sRet += "Diving operation";
+    }
+    break;
+    case 5:
+    {
+      sRet += "Military operation";
+    }
+    break;
+    case 6:
+    {
+      sRet += "Sailing vessel";
+    }
+    break;
+    case 7:
+    {
+      sRet += "Pleasure craft";
+    }
+    break;
+    default:
+    {
+      sRet += "Reserved";
+    }
+    break;
+    }
+  }
+  break;
+  case 4:
+  {
+    sRet += "HSC";
+  }
+  break;
+  case 5:
+  {
+    switch (nShipType % 10)
+    {
+    case 0:
+    {
+      sRet += "Pilot vessel";
+    }
+    break;
+    case 1:
+    {
+      sRet += "SAR vessel";
+    }
+    break;
+    case 2:
+    {
+      sRet += "Tug";
+    }
+    break;
+    case 3:
+    {
+      sRet += "Port tender";
+    }
+    break;
+    case 4:
+    {
+      sRet += "Anti pollution";
+    }
+    break;
+    case 5:
+    {
+      sRet += "Law enforcement";
+    }
+    break;
+    case 8:
+    {
+      sRet += "Medical transport";
+    }
+    break;
+    case 9:
+    {
+      sRet += "Resolution no. 18 (MOB-83)";
+    }
+    break;
+    default:
+    {
+      sRet += "Local vessel";
+    }
+    break;
+    }
+  }
+  break;
+  case 6:
+  {
+    sRet += "Passenger ship";
+  }
+  break;
+  case 7:
+  {
+    sRet += "Cargo ship";
+  }
+  break;
+  case 8:
+  {
+    sRet += "Tanker";
+  }
+  break;
+  default:
+  {
+    sRet += "Other";
+  }
+  break;
+  }
+
+  // Cargo
+  if ((nShipType / 10 != 3) && (nShipType / 10 != 5))
+  {
+    switch (nShipType % 10)
+    {
+    case 0:
+    {
+      // Do nothing!
+    }
+    break;
+    case 1:
+    {
+      sRet += "/IMO Hazard A";
+    }
+    break;
+    case 2:
+    {
+      sRet += "/IMO Hazard B";
+    }
+    break;
+    case 3:
+    {
+      sRet += "/IMO Hazard C";
+    }
+    break;
+    case 4:
+    {
+      sRet += "/IMO Hazard D";
+    }
+    break;
+    case 9:
+    {
+      sRet += "/No Additional Info";
+    }
+    break;
+    default:
+    {
+      sRet += "/Reserved";
+    }
+    break;
+    }
+  }
+  return sRet;
+}
+
+
+
+unsigned int ColorAisShipType(int nShipType)
+{
+  const unsigned int UNK = 0xFF1493;
+
+  if (nShipType == -1)
+    return 0;
+
+  if (nShipType < 10 || nShipType > 99)
+    return UNK;
+
+
+  switch (nShipType / 10)
+  {
+  case 1:
+    // Reserved
+    return 0xd2d5da;
+  case 2:
+    // WIG = highspeed
+    return 0xffe55c;
+  case 3:
+  {
+    switch (nShipType % 10)
+    {
+    case 0:
+      // fishing
+      return 0xa0af64;
+      //Towing TUG
+    case 1:
+    case 2:
+      // Millitary diving
+    case 3:
+    case 5:
+      return 0xFF6347;
+    case 6: // Sailing Pleasure
+       return 0x7FFF00;
+    case 7:
+      return 0xe367f8;
+    }
+    return 0xd2d5da;
+  }
+  case 4: // High speeed
+    return 0xffe55c;
+  case 5:
+    // Tugs and special 51 = SAR
+    if ((nShipType % 10) == 1)
+      return 0xff1010;
+
+    return 0xFF6347;
+  case 6:
+    // Passenger ship
+    return 0x136fd5;
+  case 7:
+    // Cargo
+    return 0x708090;
+  case 8:
+    // Tanker
+    return 0x8B4513;
+  case 9:
+    // other
+    return 0xaa5349;
+  }
+
+  return 0;
+}
+
 QString mssutils::Hash(const QString& s)
 {
   unsigned long long h = 0, g;
@@ -617,7 +891,6 @@ int GatMaxNr(const QString& sName)
   if (QFile::exists(StorageDir() ^ sName + ".dat") == false)
     return 0;
 
-
   QDir oDir(StorageDir(), sName + "(*).dat");
 
   auto oc = oDir.entryList();
@@ -640,7 +913,7 @@ QString GpxNewName(const QString& _sTrackName, int nN)
   {
     if (nM == 1)
       nM = 0;
-    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nM+1);
+    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nM + 1);
   }
   else
   {

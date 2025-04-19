@@ -27,6 +27,9 @@ QString FormatLatitude(double fLatitude);
 QString FormatLongitude(double fLongitude);
 QString FormatKm(double f);
 QString FormatNrBytes(int nBytes);
+QString FormatAisShipType(int nShipType);
+unsigned int ColorAisShipType(int nShipType);
+
 // C:/user/foo.txt
 // C:/user
 QString DirName(const QString& sFileName);

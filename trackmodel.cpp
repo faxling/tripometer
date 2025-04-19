@@ -1,6 +1,6 @@
 #include "trackmodel.h"
 #include "Utils.h"
-#include "infolistmodel.h"
+// #include "infolistmodel.h"
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
@@ -19,7 +19,7 @@ enum TRACK_ROLES_t
   DISKSIZE_t,
   TYPE_t
 };
-
+extern QObject* g_pRootObject;
 // extern QObject* g_pTheMap;
 
 TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded)
@@ -369,7 +369,7 @@ void TrackModel::UpdateSelected()
   for (auto& oJ : m_oc)
     nCount += oJ.bSelected ? 1 : 0;
 
-  InfoListModel::m_pRoot->setProperty("nSelectCount", nCount);
+  g_pRootObject->setProperty("nSelectCount", nCount);
 }
 
 bool TrackModel::setData(const QModelIndex& index, const QVariant& value, int nRole)

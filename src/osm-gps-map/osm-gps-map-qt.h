@@ -33,16 +33,104 @@
 #include <QGeoCoordinate>
 #include <QGeoPositionInfoSource>
 #include <QImage>
+#include <QJsonArray>
 #include <QQmlListProperty>
 #include <QQuickPaintedItem>
 #include <QString>
+#include <QWebSocket>
 #include <Utils.h>
 #include <cairo.h>
 #include <memory>
 #include <values.h>
+
+struct Point
+{
+  float x;
+  float y;
+};
+
+struct AisData
+{
+  QString sName;
+  Point tPos;
+  int nType = -1;
+  double fSpeed = 0;
+  int nHeading = 0;
+  int nNavStatus = 0; // 0 engine 7 fishing
+  int nTimeStamp = 0;
+};
+
+// mmsi
+
+class AisPainter
+{
+public:
+  AisPainter(OsmGpsMap* _map);
+  ~AisPainter();
+  void DrawAis(Point& tPos, int nType, double vHeading, double fSpeed, const QString& sName);
+  void DrawAisMoored(Point& tPos, int nType, const QString& sName);
+
+  // void SetAisStyle(unsigned int nRGB, double fWidth);
+  // void Update();
+
+private:
+  OsmGpsMap* map;
+  struct C
+  {
+    double R;
+    double G;
+    double B;
+  };
+  // Type
+  static QMap<int, C> m_ocColorTable;
+};
+
+class IdlePainter
+{
+public:
+  IdlePainter(OsmGpsMap* _map);
+  void Pause(bool b);
+  void RequestPaint();
+
+private:
+  MssTimer* m_pIdlePaintTimer;
+  OsmGpsMap* m_map;
+  bool m_bPaused = false;
+  bool m_bPaint = false;
+};
+
+class AisStreamClient : public QObject
+{
+  Q_OBJECT
+public:
+  // Client owns
+  AisStreamClient(OsmGpsMap* _map, IdlePainter* pIdlePainter);
+  ~AisStreamClient();
+  // slots
+  void onConnected();
+  void onTextMessageReceived(const QString& message);
+  void onBinaryMessageReceived(const QByteArray& message);
+  void onSslErrors(const QList<QSslError>& errors);
+  void onError(QAbstractSocket::SocketError error);
+  void SetBoundingBox(Point& ul, Point& lR);
+  void DrawAllAis();
+  QJsonArray GetBoundingBoxJson();
+  QJsonObject GetApiKey();
+
+private:
+  QJsonArray m_ocBoxLast;
+  QJsonArray m_ocBoxLastSent;
+  IdlePainter* m_pIdlePainter;
+  MssTimer* m_pBoundaryTimer;
+  Point m_ul;
+  Point m_lr;
+  QWebSocket m_webSocket;
+  OsmGpsMap* m_map;
+  QMap<int, AisData> m_ocAis;
+};
+
 namespace Maep
 {
-
 
   class Track : public QObject
   {
@@ -154,11 +242,12 @@ namespace Maep
 
     Q_PROPERTY(int numberPendingReq READ numberPendingReq NOTIFY numberPendingReqChanged)
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
- //   Q_PROPERTY(
- //        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY overlaySourceChanged)
+    //   Q_PROPERTY(
+    //        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY
+    //        overlaySourceChanged)
 
-    Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
-    Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
+    //  Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
+    //   Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
     Q_PROPERTY(
         bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
@@ -169,9 +258,12 @@ namespace Maep
         bool enable_compass READ compassEnabled WRITE enableCompass NOTIFY enableCompassChanged)
     Q_PROPERTY(
         bool enable_weather READ weatherEnabled WRITE enableWeather NOTIFY enableWeatherChanged)
+
     Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY
                    enableCrossHairChanged)
+    Q_PROPERTY(bool enable_ais READ aisEnabled WRITE enableAis NOTIFY enableAisChanged)
 
+    Q_PROPERTY(bool skipDraw READ skipDraw WRITE putSkipDraw NOTIFY skipDrawChanged)
   public:
     enum Source
     {
@@ -206,7 +298,8 @@ namespace Maep
     void Init();
     ~GpsMap();
 
-    inline QGeoCoordinate getCoord() const { return coordinate; }
+    // inline QGeoCoordinate getCoord() const { return coordinate; }
+    /*
     inline QGeoCoordinate getGpsCoord() const
     {
       if (lastGps.isValid())
@@ -215,6 +308,7 @@ namespace Maep
         return QGeoCoordinate();
     }
 
+    */
     void mapUpdate();
     void paintTo(QPainter* painter, int width, int height);
     inline bool trackCapture() { return track_capture; }
@@ -233,23 +327,23 @@ namespace Maep
       g_object_get(map, "map-source", &source, NULL);
       return (Source)source;
     }
-      /*
-    inline Source overlaySource()
+    /*
+  inline Source overlaySource()
+  {
+
+    OsmGpsMapSource_t source;
+    if (overlay)
     {
-
-      OsmGpsMapSource_t source;
-      if (overlay)
-      {
-        g_object_get(overlay, "map-source", &source, NULL);
-        return (Source)source;
-      }
-      else
-      {
-        return SOURCE_NULL;
-      }
-
+      g_object_get(overlay, "map-source", &source, NULL);
+      return (Source)source;
     }
-    */
+    else
+    {
+      return SOURCE_NULL;
+    }
+
+  }
+  */
     Q_INVOKABLE void addDbPoint();
     Q_INVOKABLE void noDbPoint();
     Q_INVOKABLE QGeoCoordinate currentPos();
@@ -257,7 +351,7 @@ namespace Maep
     Q_INVOKABLE void markPikeInMap(int nId);
     Q_INVOKABLE void removePikeInMap(int nId);
     Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
-    Q_INVOKABLE void saveSearchMark(int nId, QString sName,float fLo, float fLa);
+    Q_INVOKABLE void saveSearchMark(int nId, QString sName, float fLo, float fLa);
     Q_INVOKABLE void saveMark(int nId);
     Q_INVOKABLE void saveTrack(int nId);
     Q_INVOKABLE QString savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
@@ -269,7 +363,7 @@ namespace Maep
     Q_INVOKABLE void clearTrack();
     Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
     Q_INVOKABLE void unloadTrack(int nId);
-    Q_INVOKABLE void centerTrack(float fLo,float fLa);
+    Q_INVOKABLE void centerTrack(float fLo, float fLa);
     Q_INVOKABLE void renameTrack(const QString& sTrackName, int nId);
 
     Q_INVOKABLE void centerCurrentGps();
@@ -294,6 +388,8 @@ namespace Maep
     bool compassEnabled();
     bool crossHairEnabled();
     bool weatherEnabled();
+    bool aisEnabled();
+
     void setSearchResults(GSList* places);
 
   protected:
@@ -321,7 +417,8 @@ namespace Maep
     void trippleDrag();
     void enableWeatherChanged();
     void enableCrossHairChanged();
-
+    void enableAisChanged();
+    void skipDrawChanged();
   public slots:
     void setSource(Source source);
     // void setOverlaySource(Source source);
@@ -347,21 +444,24 @@ namespace Maep
     void enableCompass(bool enable);
     void enableWeather(bool enable);
     void enableCrossHair(bool enable);
+    void enableAis(bool b);
 
   private:
+    bool skipDraw();
+    void putSkipDraw(bool b);
     void getWeatherCurrentPos();
     void initBoatMarkers();
     int START_LINE = 0;
     void DrawResultForTeam(QVariant pListTeam1, QString sTeamNameAndSum, int nMinSize, QImage& sImg,
                            QPainter* p, double fQuote);
 
-   //  void ensureOverlay(Source source);
+    //  void ensureOverlay(Source source);
     bool mapSized();
     void gpsToTrack();
     void unsetGps();
 
     bool screenRotation;
-    OsmGpsMap *map;
+    OsmGpsMap* map;
     QGeoCoordinate coordinate;
     QCompass compass;
     osm_gps_map_osd_t* osd;
@@ -374,6 +474,7 @@ namespace Maep
     int numberPendingReq() { return numberPendingReq_; };
     int numberPendingReq_ = 0;
     MssTimer* m_pReqCountTimer = 0;
+
     // float factor0;
 
     /* Screen display. */
@@ -398,6 +499,9 @@ namespace Maep
     QHash<int, cairo_surface_t*> m_ocMarkers;
     QHash<int, cairo_surface_t*> m_ocPikeMarkers;
     QElapsedTimer m_oElapsed;
+    bool m_bAisEnabled = false;
+    IdlePainter* m_pIdlePainter;
+    std::unique_ptr<AisStreamClient> m_AisStreamClient;
   };
 
 } // namespace Maep

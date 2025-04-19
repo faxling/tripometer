@@ -6,6 +6,7 @@ import harbour.tripometer 1.0
 //import QtQml 2.2
 SilicaListView {
 
+  //   transitions.running
   id: idObjectList
   // cacheBuffer: 2000
   property int nLastCount

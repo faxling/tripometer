@@ -52,6 +52,7 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t *osd) ;
 
 
 
+
 G_END_DECLS
 
 #endif

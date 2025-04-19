@@ -9,11 +9,14 @@ import ".."
 
 Item {
   id: idPikePage
+  property alias bTransitionRunning: idMap.skipDraw
 
   //// property bool bShowBtns: true
   GpsMap {
     id: idMap
+
     property bool bIsRotated: idApp.bIsRotated
+    enable_ais: idApp.bEnableAis
     track_capture: !idApp.bIsPause
     function reCalc() {
       Lib.reCalcSizeAndDisplay()
@@ -534,6 +537,10 @@ Item {
     nOwner: 3
   }
   DockedPanel {
+
+    onOpenChanged: {
+      idMap.skipDraw = open
+    }
     id: idTrackPanel
     width: parent.width
     height: Theme.itemSizeLarge * 6

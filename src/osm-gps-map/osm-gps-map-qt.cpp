@@ -22,6 +22,7 @@
 #include "osm-gps-map.h"
 #include "src/misc.h"
 #include <QDebug>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPainter>
@@ -33,7 +34,9 @@
 #include <glib/gstdio.h>
 #include <limits>
 #include <math.h>
+#include <ranges>
 #include <sstream>
+
 #define GCONF_KEY_ZOOM "zoom"
 #define GCONF_KEY_SOURCE "source"
 #define GCONF_KEY_LATITUDE "latitude"
@@ -41,6 +44,35 @@
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
 #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
+
+extern QObject* g_pRootObject;
+extern int g_nOutstaningCurls;
+extern int g_nSkipDraw;
+
+IdlePainter::IdlePainter(OsmGpsMap* _map)
+{
+  m_map = _map;
+  m_pIdlePaintTimer = new MssTimer([this]() {
+    if (g_nSkipDraw != 0)
+      return;
+
+    if (m_bPaused == false && m_bPaint == true)
+      osm_gps_map_idle_redraw(m_map);
+
+    m_bPaint = false;
+  });
+  m_pIdlePaintTimer->Start(100);
+};
+
+void IdlePainter::Pause(bool b)
+{
+  m_bPaused = b;
+};
+
+void IdlePainter::RequestPaint()
+{
+  m_bPaint = true;
+};
 
 void Maep::Track::addPoint(QGeoPositionInfo& info)
 {
@@ -94,7 +126,8 @@ static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map);
 static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
-// static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
+// static void osm_gps_map_qt_overlay_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap*
+// map);
 static void osm_gps_map_qt_places(Maep::GpsMap* widget, GSList* places);
 
 static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, GError* error);
@@ -102,7 +135,6 @@ static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, GError* error);
 extern QObject* g_pTheTrackModel;
 // Maep::GpsMap* g_pTheMap;
 
-extern int g_nOutstaningCurls;
 Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
 {
   // g_pTheMap = this;
@@ -123,7 +155,7 @@ void Maep::GpsMap::Init()
 {
   // char *path, *oldPath;
 
-  m_pReqCountTimer = new MssTimer([=] {
+  m_pReqCountTimer = new MssTimer([this] {
     if (g_nOutstaningCurls != numberPendingReq_)
     {
       numberPendingReq_ = g_nOutstaningCurls;
@@ -137,6 +169,8 @@ void Maep::GpsMap::Init()
     if (crossHairEnabled() && weatherEnabled())
       getWeatherCurrentPos();
   });
+
+  m_pIdlePainter = new IdlePainter(map);
 
   m_pReqCountTimer->Start(200);
 
@@ -173,9 +207,9 @@ void Maep::GpsMap::Init()
   g_signal_connect_swapped(G_OBJECT(map), "notify::map-source", G_CALLBACK(osm_gps_map_qt_source),
                            this);
 
- // overlay = NULL;
-//  if (overlaySource != OSM_GPS_MAP_SOURCE_NULL)
- //   ensureOverlay((Maep::GpsMap::Source)overlaySource);
+  // overlay = NULL;
+  //  if (overlaySource != OSM_GPS_MAP_SOURCE_NULL)
+  //   ensureOverlay((Maep::GpsMap::Source)overlaySource);
 
   g_message("nsureOverlay");
   net_io_init();
@@ -248,6 +282,28 @@ void Maep::GpsMap::Init()
   enableCompass(compassEnabled());
 }
 
+bool Maep::GpsMap::aisEnabled()
+{
+  return m_bAisEnabled;
+}
+
+void Maep::GpsMap::enableAis(bool b)
+{
+  //  g_signal_emit_by_name(G_OBJECT(map), "dirty");
+  m_bAisEnabled = b;
+
+  if (b == true)
+  {
+    // p->SetAisStyle(0x136fd5, 2);
+    m_AisStreamClient.reset(new AisStreamClient(map, m_pIdlePainter));
+  }
+  else
+    m_AisStreamClient.reset(nullptr);
+
+  osm_gps_map_idle_redraw(map);
+  // emit enableAisChanged();
+}
+
 bool Maep::GpsMap::crossHairEnabled()
 {
   bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
@@ -287,7 +343,6 @@ void Maep::GpsMap::enableCompass(bool enable)
   }
 
   g_signal_emit_by_name(G_OBJECT(map), "dirty");
-
 }
 
 void Maep::GpsMap::enableWeather(bool b)
@@ -348,7 +403,7 @@ Maep::GpsMap::~GpsMap()
   g_message("Storing configuration.");
   gconf_set_int(GCONF_KEY_ZOOM, zoom);
   gconf_set_int(GCONF_KEY_SOURCE, source);
- //  gconf_set_int(GCONF_KEY_OVERLAY_SOURCE, overlaySource);
+  //  gconf_set_int(GCONF_KEY_OVERLAY_SOURCE, overlaySource);
   gconf_set_float(GCONF_KEY_LATITUDE, lat);
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
   //  gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
@@ -408,7 +463,7 @@ void Maep::GpsMap::ensureOverlay(Source source)
 }
 */
 
-
+// Called from signal "dirty"
 static void osm_gps_map_qt_repaint(Maep::GpsMap* widget, OsmGpsMap* map)
 {
   Q_UNUSED(map);
@@ -434,7 +489,6 @@ bool Maep::GpsMap::mapSized()
   {
     screensurf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width(), height());
     cr = cairo_create(screensurf);
-
     img.reset(new QImage(cairo_image_surface_get_data(screensurf),
                          cairo_image_surface_get_width(screensurf),
                          cairo_image_surface_get_height(screensurf), QImage::Format_ARGB32));
@@ -447,20 +501,47 @@ bool Maep::GpsMap::mapSized()
 
 void Maep::GpsMap::mapUpdate()
 {
+  if (g_nSkipDraw != 0)
+    return;
+
   if (!cr)
     return;
 
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(cr);
-
   cairo_save(cr);
+  if (m_bAisEnabled == true || m_AisStreamClient)
+  {
+
+    // cairo_set_dash(cr, 0, 0, 0);
+    /*
+    Point ul, lr;
+    ::osm_gps_map_screen_to_geographic(map, 0, 0, &ul.y, &ul.x);
+    ::osm_gps_map_screen_to_geographic(map, width(), height(), &lr.y, &lr.x);
+
+    m_AisStreamClient->SetBoundingBox(ul, lr);
+
+    */
+    //  AisPainter oAis(map);
+
+    //  m_p
+    m_AisStreamClient->DrawAllAis();
+
+    //
+
+    // oAis.DrawAis(18, 59, 30, "sirius");
+    //  oAis.DrawAis(18.2, 59, 40, "cindirella");
+    // oAis.DrawAis(18.1, 59, 50, "viking");
+    //  oAis.DrawAis(18.3, 59, 60, "triton");
+  }
+
   int drag_mouse_dx, drag_mouse_dy;
   osm_gps_map_get_offset(map, &drag_mouse_dx, &drag_mouse_dy);
   cairo_translate(cr, drag_mouse_dx, drag_mouse_dy);
   // g_message("update at drag %dx%d %g", drag_mouse_dx, drag_mouse_dy, 1.f /
   // factor);
   osm_gps_map_blit(map, cr, CAIRO_OPERATOR_SOURCE);
-  //if (overlay && overlaySource() != Maep::GpsMap::SOURCE_NULL)
+  // if (overlay && overlaySource() != Maep::GpsMap::SOURCE_NULL)
   //  osm_gps_map_blit(overlay, cr, CAIRO_OPERATOR_OVER);
 
   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(lgps), cr, map);
@@ -523,7 +604,8 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
     {
       if (oColorFile.isOpen() == false)
       {
-        oColorFile.setFileName(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
+        oColorFile.setFileName(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+    +
                                "/pikeFight/colors.txt");
         oColorFile.open(QIODevice::WriteOnly);
       }
@@ -613,16 +695,18 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
   static QTouchEvent::TouchPoint tBeginPoint;
   static QTouchEvent::TouchPoint tEndPoint;
 
+  if (g_nSkipDraw != 0)
+    return;
+
   switch (touchEvent->type())
   {
   case QEvent::TouchBegin:
   {
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
-    // Drag/zoom if one or two finger and no wiki layer.
+
     dragging = touchPoints.count() == 1;
 
     zooming = touchPoints.count() == 2;
-    ;
     nLastDeltaX = 0;
     nLastDeltaY = 0;
     if (dragging)
@@ -636,8 +720,6 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
       const QTouchEvent::TouchPoint& touchPoint1 = touchPoints.last();
       nTDistLast = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
     }
-
-    // g_message("touch begin %d", dragging);
     return;
   }
   case QEvent::TouchUpdate:
@@ -665,7 +747,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
       nLastDeltaY = delta.y();
       osm_gps_map_scroll(map);
       osm_gps_map_uppdate_offset(map, 0, 0);
-      osm_gps_map_idle_redraw(map);
+      // osm_gps_map_idle_redraw(map);
     }
     else if (zooming)
     {
@@ -836,7 +918,6 @@ void Maep::GpsMap::unloadTrack(int nId)
 
   osm_gps_map_clear_track(map, nId);
 }
-extern double g_fMaxSpeed;
 
 void Maep::GpsMap::noDbPoint()
 {
@@ -1079,6 +1160,16 @@ QString Maep::GpsMap::saveMap(int w, int h)
   return "map" + sTrackName;
 }
 
+void Maep::GpsMap::putSkipDraw(bool b)
+{
+  g_nSkipDraw = b ? 1 : 0;
+}
+
+bool Maep::GpsMap::skipDraw()
+{
+  return g_nSkipDraw != 0;
+}
+
 void Maep::GpsMap::initBoatMarkers()
 {
   int DEG = 360;
@@ -1142,7 +1233,7 @@ QString Maep::GpsMap::savePikeReport(QVariant pListTeam1, QString sTeamNameAndSu
 
 void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
 {
-  QString sTrackName = GpxNewName(sName,1);
+  QString sTrackName = GpxNewName(sName, 1);
 
   g_message("saveSearchMark %s %f", sTrackName.toUtf8().data(), fLo);
   char* szSymName = find_file("qml/symFia.png");
@@ -1239,7 +1330,7 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
 
   t.la = currentPos().latitude();
   t.lo = currentPos().longitude();
-  t.speed = g_fMaxSpeed;
+  t.speed = InfoListModel::MaxSpeed;
   t.nTime = time(0);
 
   WriteMarkData(sTrackName, t);
@@ -1266,7 +1357,6 @@ void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
   }
 }
 */
-
 
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map)
 {
@@ -1298,12 +1388,11 @@ void Maep::GpsMap::setScreenRotation(bool status)
   emit screenRotationChanged(status);
 }
 
-
 void Maep::GpsMap::setSearchResults(GSList* places)
 {
   if (places == nullptr)
   {
-    InfoListModel::m_pRoot->setProperty("nSearchBusy", false);
+    g_pRootObject->setProperty("nSearchBusy", false);
     return;
   }
   g_message("Search got %d places", g_slist_length(places));
@@ -1347,7 +1436,7 @@ void Maep::GpsMap::setSearchResults(GSList* places)
     ++nRow;
   }
 
-  InfoListModel::m_pRoot->setProperty("nSearchBusy", false);
+  g_pRootObject->setProperty("nSearchBusy", false);
 }
 
 // This is called trough g_obj signaling
@@ -1417,7 +1506,7 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo& info)
   osm_gps_map_auto_center_at(map, info.coordinate().latitude(), info.coordinate().longitude());
 
   lastGps = info;
-  emit gpsCoordinateChanged();
+  // emit gpsCoordinateChanged();
   // Add track capture, if any.
   if (track_capture)
     gpsToTrack();
@@ -1425,7 +1514,7 @@ void Maep::GpsMap::positionUpdate(const QGeoPositionInfo& info)
 void Maep::GpsMap::unsetGps()
 {
   lastGps = QGeoPositionInfo();
-  emit gpsCoordinateChanged();
+  //  emit gpsCoordinateChanged();
 
   maep_layer_gps_set_active(lgps, FALSE);
 }
@@ -1433,7 +1522,7 @@ void Maep::GpsMap::unsetGps()
 void Maep::GpsMap::compassReadingChanged()
 {
 
-  bool bFlip = property("bIsRotated").toBool();
+  bool bFlip = property("bFlipped").toBool();
 
   if (!bFlip)
     return;
@@ -1488,7 +1577,7 @@ void Maep::GpsMap::setTrackCapture(bool status)
   track_capture = status;
   emit trackCaptureChanged(track_capture);
   if (status == true)
-    g_fMaxSpeed = 0;
+    InfoListModel::MaxSpeed = 0;
 
   if (status && lastGps.isValid())
   {
@@ -1547,4 +1636,266 @@ void Maep::GpsMap::gpsToTrack()
   }
   else
     track_current->addPoint(lastGps);
+}
+
+QMap<int, AisPainter::C> AisPainter::m_ocColorTable;
+
+AisPainter::AisPainter(OsmGpsMap* _map)
+{
+  map = _map;
+
+  using namespace std;
+
+  if (m_ocColorTable.size() == 0)
+  {
+    C tC;
+
+    for (int i : views::iota(-1, 99))
+    {
+      rgbToCario(ColorAisShipType(i), (double*)&tC);
+      m_ocColorTable[i] = tC;
+    }
+  }
+  saveDraw(map);
+}
+
+AisPainter::~AisPainter()
+{
+  restoreDraw(map);
+}
+
+void AisPainter::DrawAis(Point& tPos, int nType, double fHeading, double fSpeed,
+                         const QString& sName)
+{
+  int xPx, yPx;
+  if (loLaToPx(map, tPos.x, tPos.y, &xPx, &yPx) == 0)
+    return;
+
+  if (nType == -1)
+    setAisStyle2(map, (double*)&m_ocColorTable[nType], 1);
+  else
+    setAisStyle2(map, (double*)&m_ocColorTable[nType], 2);
+
+  drawAis(map, fHeading, fSpeed, xPx, yPx, sName.toUtf8());
+}
+
+void AisPainter::DrawAisMoored(Point& tPos, int nType, const QString& sName)
+{
+  int xPx, yPx;
+  if (loLaToPx(map, tPos.x, tPos.y, &xPx, &yPx) == 0)
+    return;
+
+  setAisStyle2(map, (double*)&m_ocColorTable[nType], 2);
+
+  drawAisMoored(map, xPx, yPx, sName.toUtf8());
+}
+/*
+void AisPainter::Update()
+{
+  g_pIdlePainter->RequestPaint();
+}
+
+void AisPainter::SetAisStyle(unsigned int nRGB, double fWidth)
+{
+  setAisStyle(map, nRGB, fWidth);
+}
+*/
+void AisStreamClient::onError(QAbstractSocket::SocketError error)
+{
+  qDebug() << "Error " << error;
+  g_pRootObject->setProperty("bAisError", true);
+  m_webSocket.close();
+}
+
+AisStreamClient::~AisStreamClient()
+{
+  m_pBoundaryTimer->Stop();
+  delete m_pBoundaryTimer;
+}
+
+QJsonObject AisStreamClient::GetApiKey()
+{
+  QJsonObject oBase;
+
+  oBase["Apikey"] = "83dfbaf8d31a0efb443bda51635bddd25a78c9c8";
+
+  return oBase;
+}
+
+AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)
+{
+  m_map = p;
+  m_pIdlePainter = pIdlePainter;
+  connect(&m_webSocket, &QWebSocket::connected, this, &AisStreamClient::onConnected);
+  connect(&m_webSocket, &QWebSocket::sslErrors, this, &AisStreamClient::onSslErrors);
+  connect(&m_webSocket,
+          static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this,
+          &AisStreamClient::onError);
+
+  QSslConfiguration sslConfiguration;
+  m_webSocket.setSslConfiguration(sslConfiguration);
+
+  m_webSocket.ignoreSslErrors();
+  m_webSocket.open(QUrl("wss://stream.aisstream.io/v0/stream"));
+
+  m_pBoundaryTimer = new MssTimer([this] {
+    auto ocBox1 = GetBoundingBoxJson();
+    if (ocBox1 != m_ocBoxLast)
+    {
+      m_ocBoxLast = ocBox1;
+      return;
+    }
+    if (ocBox1 == m_ocBoxLastSent)
+      return;
+
+    m_ocBoxLastSent = ocBox1;
+    QJsonDocument oJD;
+    QJsonObject oBase = GetApiKey();
+
+    QJsonArray ocBox;
+    ocBox.append(ocBox1);
+    oBase["BoundingBoxes"] = ocBox;
+    oJD.setObject(oBase);
+    qDebug() << "New Bounding box";
+    qDebug() << oJD.toJson();
+    m_webSocket.sendBinaryMessage(oJD.toJson());
+  });
+  m_pBoundaryTimer->Start(5000);
+}
+
+QJsonArray AisStreamClient::GetBoundingBoxJson()
+{
+  guint nwidth;
+  guint nheight;
+  gfloat lo, la;
+  gfloat lo2, la2;
+  g_object_get(G_OBJECT(m_map), "viewport-width", &nwidth, "viewport-height", &nheight, NULL);
+  osm_gps_map_screen_to_geographic(m_map, 0, 0, &la, &lo);
+  osm_gps_map_screen_to_geographic(m_map, nwidth, nheight, &la2, &lo2);
+  QJsonArray ocBox1;
+  QJsonArray ocUL{la, lo};
+  QJsonArray ocLR{la2, lo2};
+  ocBox1 = {ocUL, ocLR};
+  return ocBox1;
+}
+
+void AisStreamClient::onConnected()
+{
+  g_pRootObject->setProperty("bAisError", false);
+
+  qDebug() << "WebSocket connected";
+
+  connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
+          &AisStreamClient::onTextMessageReceived);
+  connect(&m_webSocket, &QWebSocket::binaryMessageReceived, this,
+          &AisStreamClient::onBinaryMessageReceived);
+
+  QJsonDocument oJD;
+  QJsonObject oBase = GetApiKey();
+  QJsonArray ocBox1;
+  ocBox1 = GetBoundingBoxJson();
+  QJsonArray ocBox;
+  ocBox.append(ocBox1);
+  oBase["BoundingBoxes"] = ocBox;
+  m_ocBoxLastSent = ocBox1;
+  QJsonArray ocFilters;
+  ocFilters.append("PositionReport");
+  ocFilters.append("ShipStaticData");
+  oBase["FilterMessageTypes"] = ocFilters;
+
+  oJD.setObject(oBase);
+  m_webSocket.sendBinaryMessage(oJD.toJson());
+
+  qDebug() << oJD.toJson();
+}
+
+void AisStreamClient::onTextMessageReceived(const QString& message)
+{
+  qDebug() << "text message";
+  onBinaryMessageReceived(message.toUtf8());
+}
+
+void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
+{
+  QJsonDocument oJD = QJsonDocument::fromJson(message);
+  QString sType = oJD.object()["MessageType"].toString();
+  auto oMeta = oJD.object()["MetaData"].toObject();
+  int nMMSI = oMeta["MMSI"].toInt();
+  auto oI = m_ocAis.find(nMMSI);
+  if (sType == "PositionReport")
+  {
+
+    auto oJ = oJD.object()["Message"].toObject()["PositionReport"].toObject();
+
+    if (oI == m_ocAis.end())
+    {
+      AisData t = {oMeta["ShipName"].toString(),
+                   {(float)oMeta["longitude"].toDouble(), (float)oMeta["latitude"].toDouble()},
+                   -1,
+                   oJ["Sog"].toDouble(),
+                   oJ["TrueHeading"].toInt() + 180,
+                   oJ["NavigationalStatus"].toInt()};
+      t.nTimeStamp = time(0);
+      // qDebug() << "MMSI " << nMMSI;
+      m_ocAis[oMeta["MMSI"].toInt()] = t;
+    }
+    else
+    {
+      AisData& t = oI.value();
+      t.sName = oMeta["ShipName"].toString();
+      t.tPos = {(float)oMeta["longitude"].toDouble(), (float)oMeta["latitude"].toDouble()};
+      t.nHeading = oJ["TrueHeading"].toInt() + 180;
+      t.fSpeed = oJ["Sog"].toDouble();
+      t.nNavStatus = oJ["NavigationalStatus"].toInt();
+      t.nTimeStamp = time(0);
+    }
+  }
+  else
+  {
+    if (oI != m_ocAis.end())
+    {
+      auto oJ = oJD.object()["Message"].toObject()["ShipStaticData"].toObject();
+      oI.value().nType = oJ["Type"].toInt();
+      qDebug() << FormatAisShipType(oI.value().nType) << " " << oI.value().nType << " "
+               << oI.value().sName;
+    }
+  }
+  m_pIdlePainter->RequestPaint();
+  // onTextMessageReceived(message);
+}
+
+void AisStreamClient::SetBoundingBox(Point& ul, Point& lr)
+{
+  m_ul = ul;
+  m_lr = lr;
+}
+
+void AisStreamClient::DrawAllAis()
+{
+  // m_pAisPainter->SetAisStyle(0x136fd5, 2);
+
+  AisPainter oAisPainter(m_map);
+  for (auto& oI : m_ocAis)
+  {
+    //    unsigned int n = 0x1300d5;
+
+    //   unsigned int n2 = oI.nType << 8;
+
+    //   m_pAisPainter->SetAisStyle(n | n2, 2);
+    // qDebug() << "Navstat " << oI.nNavStatus << " " << oI.sName;
+    if (oI.fSpeed > 0.5)
+      oAisPainter.DrawAis(oI.tPos, oI.nType, oI.nHeading, oI.fSpeed, oI.sName);
+    else
+      oAisPainter.DrawAisMoored(oI.tPos, oI.nType, oI.sName);
+    //   oI
+    // pPainter->
+  }
+}
+
+void AisStreamClient::onSslErrors(const QList<QSslError>& errors)
+{
+  qWarning() << "SSL errors:" << errors;
+  g_pRootObject->setProperty("bAisError", true);
+  m_webSocket.close();
+  //   qApp->quit();
 }

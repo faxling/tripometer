@@ -40,12 +40,14 @@
 #include <glib/gtypes.h>
 // Include generated file to avoid ide warnings
 #include "src/misc.h"
-// #include <../lib/glib-2.0/include/glibconfig.h>
+// #include <../lib/glib-2.0/include/tglibconfig.h>
 
 #include "osm-gps-map-types.h"
 #include "osm-gps-map.h"
 
 #define ENABLE_DEBUG (0)
+
+extern int g_nSkipDraw;
 
 struct _OsmGpsMapPrivate
 {
@@ -121,7 +123,7 @@ struct _OsmGpsMapPrivate
   cairo_surface_t* null_tile;
 
   // A list of OsmGpsMapLayer* layers, such as the OSD
-  GSList* layers;
+  //  GSList* layers;
 
   // for customizing the redering of the gps track
   int ui_gps_track_width;
@@ -533,18 +535,27 @@ static void osm_gps_map_free_images(OsmGpsMap* map)
     priv->images = NULL;
   }
 }
-
+/*
 static void osm_gps_map_free_layers(OsmGpsMap* map)
 {
   OsmGpsMapPrivate* priv = map->priv;
+   g_message("g_object_list unref enter");
   if (priv->layers)
   {
-    g_slist_foreach(priv->layers, (GFunc)g_object_unref, NULL);
+    //   g_slist_foreach(priv->layers, (GFunc)g_object_unref, NULL);
+    GSList* list;
+    for (list = priv->layers; list; list = list->next)
+    {
+      g_message("g_object_unref");
+      g_object_unref(list);
+    }
+ g_message("g_object_list unref");
     g_slist_free(priv->layers);
     priv->layers = NULL;
   }
 }
-
+*/
+/*
 void osm_gps_map_add_layer(OsmGpsMap* map, OsmGpsMapLayer* layer)
 {
   OsmGpsMapPrivate* priv;
@@ -559,6 +570,7 @@ void osm_gps_map_add_layer(OsmGpsMap* map, OsmGpsMapLayer* layer)
   g_object_ref(layer);
   priv->layers = g_slist_prepend(priv->layers, layer);
 }
+
 void osm_gps_map_layer_changed(OsmGpsMap* map, G_GNUC_UNUSED OsmGpsMapLayer* layer)
 {
   OsmGpsMapPrivate* priv;
@@ -588,6 +600,162 @@ void osm_gps_map_remove_layer(OsmGpsMap* map, OsmGpsMapLayer* layer)
   if (!priv->idle_map_redraw)
     priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
 }
+*/
+
+void move_to(cairo_t* cr, cairo_matrix_t* m, double x, double y)
+{
+  double x_new = m->xx * x + m->xy * y + m->x0;
+  double y_new = m->yx * x + m->yy * y + m->y0;
+  cairo_move_to(cr, x_new, y_new);
+}
+
+void line_to(cairo_t* cr, cairo_matrix_t* m, double x, double y)
+{
+  double x_new = m->xx * x + m->xy * y + m->x0;
+  double y_new = m->yx * x + m->yy * y + m->y0;
+  cairo_line_to(cr, x_new, y_new);
+}
+
+void setAisStyle(OsmGpsMap* map, unsigned int nRGB, double fWidth)
+{
+  cairo_t* cr = map->priv->cr;
+  if (cr == 0)
+    return;
+  cairo_set_line_width(cr, fWidth);
+  static double rgb[3];
+  rgbToCario(nRGB, rgb);
+  cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+}
+
+void setAisStyle2(OsmGpsMap* map, double* rgb, double fWidth)
+{
+  cairo_t* cr = map->priv->cr;
+  if (cr == 0)
+    return;
+  cairo_set_line_width(cr, fWidth);
+  cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+}
+
+void saveDraw(OsmGpsMap* map)
+{
+  cairo_t* cr = map->priv->cr;
+  cairo_save(cr);
+  cairo_set_dash(cr, 0, 0, 0);
+}
+
+void restoreDraw(OsmGpsMap* map)
+{
+  cairo_t* cr = map->priv->cr;
+  cairo_restore(cr);
+}
+
+void drawAisMoored(OsmGpsMap* map, double x0, double y0, const char* szName)
+{
+  cairo_t* cr = map->priv->cr;
+  cairo_matrix_t mat;
+  cairo_matrix_init_translate(&mat, x0, y0);
+  move_to(cr, &mat, 0, 7);
+  line_to(cr, &mat, 7, 0);
+  line_to(cr, &mat, 0, -7);
+  line_to(cr, &mat, -7, 0);
+  line_to(cr, &mat, 0, 7);
+  cairo_stroke(cr);
+  cairo_move_to(cr, x0, y0);
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_show_text(cr, szName);
+}
+
+void drawAis(OsmGpsMap* map, float v, double speed, double x0, double y0, const char* szName)
+{
+  //  cairo_save(cr);
+  cairo_t* cr = map->priv->cr;
+  cairo_matrix_t mat;
+  cairo_matrix_init_translate(&mat, x0, y0);
+  cairo_matrix_rotate(&mat, deg2rad(v));
+
+  move_to(cr, &mat, 0, 10);
+  line_to(cr, &mat, 0, 10 + speed);
+  move_to(cr, &mat, 0, 10);
+  line_to(cr, &mat, 5, 0);
+  line_to(cr, &mat, 5, -20);
+  line_to(cr, &mat, 0, -10);
+  line_to(cr, &mat, -5, -20);
+  line_to(cr, &mat, -5, 0);
+  line_to(cr, &mat, 0, 10);
+
+  //  cairo_rotate(cr,v);
+  //   cairo_translate(cr, 40, 40);
+  // g_message("_translate %f %f", x0, y0);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, x0, y0);
+
+  cairo_set_source_rgb(cr, 0, 0, 0);
+  cairo_show_text(cr, szName);
+
+  /*
+
+    cairo_line_to(map->cr, x, y);
+
+
+
+    double y = -cos(v) * nR + y0;
+    double x = sin(v) * nR + x0;
+
+     g_message("pixel_x y %f %d", x, y);
+    cairo_stroke(map->cr);
+    // cairo_move_to(map->cr, x, y);
+    drawLineFromTo(map->cr, x, y, v + M_PI + 0.5, 10);
+    cairo_move_to(map->cr, x, y);
+    drawLineFromTo(map->cr, x, y, v + M_PI - 0.5, 10);
+    cairo_stroke(map->cr);
+
+
+    */
+}
+
+int loLaToPx(OsmGpsMap* map, float lo, float la, int* x, int* y)
+{
+
+  OsmGpsMapPrivate* priv = map->priv;
+  // int x, y;
+
+  int pixel_x, pixel_y;
+  pixel_x = lon2pixel(priv->map_zoom, deg2rad(lo));
+  pixel_y = lat2pixel(priv->map_zoom, deg2rad(la));
+  int map_x0, map_y0;
+  map_x0 = priv->map_x - 0.25 * priv->viewport_width - EXTRA_BORDER;
+  map_y0 = priv->map_y - 0.25 * priv->viewport_height - EXTRA_BORDER;
+  *x = pixel_x - map_x0;
+  *y = pixel_y - map_y0;
+  if (*x < 0 || (*x > (priv->viewport_width * 1.5)))
+    return 0;
+
+  if (*y < 0 || (*y > (priv->viewport_height * 1.5)))
+    return 0;
+
+  return 1;
+}
+
+/*
+void osm_gps_map_draw_ais(OsmGpsMap* map, float lo, float la, float fHeading, const char* szName)
+{
+  OsmGpsMapPrivate* priv = map->priv;
+  int x, y;
+
+  loLaToPx(map, lo, la, &x, &y);
+
+  if (x < 0 || (x > (priv->viewport_width * 1.5)))
+    return;
+
+  if (y < 0 || (y > (priv->viewport_height * 1.5)))
+    return;
+
+  drawAis(priv->cr, deg2rad(fHeading), x, y, szName);
+}
+
+
+*/
 
 static void osm_gps_map_print_images(OsmGpsMap* map)
 {
@@ -671,7 +839,6 @@ static void osm_gps_map_print_images(OsmGpsMap* map)
 
   cairo_region_union_rectangle(priv->dirty, &rect);
 }
-
 
 static void osm_gps_map_blit_surface(cairo_t* cr, cairo_surface_t* cr_surf, int offset_x,
                                      int offset_y, int modulo, int area_x, int area_y)
@@ -1081,7 +1248,6 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
   int offset_y;
   int tilesize, zoom;
 
-  g_debug("Fill tiles: %d,%d z:%d", priv->map_x, priv->map_y, priv->map_zoom);
   tilesize = TILESIZE;
   zoom = priv->map_zoom;
   fmap_x = priv->map_x + 0.5 * priv->viewport_width * (1. - 1. / priv->map_factor);
@@ -1333,8 +1499,13 @@ void osm_gps_map_blit(OsmGpsMap* map, cairo_t* cr, cairo_operator_t op)
 
 static gboolean osm_gps_map_redraw(OsmGpsMap* map)
 {
+  if (g_nSkipDraw != 0)
+  {
+    return FALSE;
+  }
+
   OsmGpsMapPrivate* priv = map->priv;
-  GSList* list;
+  // GSList* list;
 
   /* on diablo the map comes up at 1x1 pixel size and */
   /* isn't really usable. we'll just ignore this ... */
@@ -1353,6 +1524,7 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   /* don't redraw the entire map while the OSD is doing */
   /* some animation or the like. This is to keep the animation */
   /* fluid */
+  /*
   if (priv->layers)
   {
     for (list = priv->layers; list != NULL; list = list->next)
@@ -1365,6 +1537,8 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
       }
     }
   }
+
+  */
 
   priv->redraw_cycle++;
 
@@ -1380,8 +1554,8 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   // draw in gps layer
   // osm_gps_map_draw_gps_point(map);
   osm_gps_map_print_images(map);
-  for (list = priv->layers; list != NULL; list = list->next)
-    osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(list->data), priv->cr, map);
+  // for (list = priv->layers; list != NULL; list = list->next)
+  //   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(list->data), priv->cr, map);
 
   osm_gps_map_purge_cache(map);
 
@@ -1433,7 +1607,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->osm_gps_heading = OSM_GPS_MAP_INVALID;
   priv->tracks = NULL;
   priv->images = NULL;
-  priv->layers = NULL;
+  // priv->layers = NULL;
   priv->viewport_width = 0;
   priv->viewport_height = 0;
   priv->dirty = cairo_region_create();
@@ -1571,7 +1745,7 @@ static void osm_gps_map_dispose(GObject* object)
 
   /* images and layers contain GObjects which need unreffing, so free here */
   osm_gps_map_free_images(map);
-  osm_gps_map_free_layers(map);
+  // osm_gps_map_free_layers(map);
 
   cairo_region_destroy(priv->dirty);
 
@@ -1866,11 +2040,11 @@ void osm_gps_map_set_viewport(OsmGpsMap* map, guint width, guint height)
 
   g_object_notify_by_pspec(G_OBJECT(map), properties[PROP_VIEWPORT_WIDTH]);
   g_object_notify_by_pspec(G_OBJECT(map), properties[PROP_VIEWPORT_HEIGHT]);
+
   osm_gps_map_redraw(map);
 
   g_signal_emit_by_name(map, "changed");
 }
-
 
 // This is called through some macro magic on g_object_new
 static void osm_gps_map_class_init(OsmGpsMapClass* klass)
@@ -1891,8 +2065,6 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
   g_object_class_install_property(object_class, PROP_DOUBLE_PIXEL, properties[PROP_DOUBLE_PIXEL]);
 */
-
-
 
   properties[PROP_AUTO_CENTER] =
       g_param_spec_boolean("auto-center", "auto center", "map auto center", TRUE,

@@ -3,6 +3,7 @@
 #include <QtQuick>
 #endif
 
+#include "libsailfishsilica/silicatheme.h"
 #include "osm-gps-map/osm-gps-map-qt.h"
 #include <QGuiApplication>
 #include <QQmlContext>
@@ -12,17 +13,17 @@
 #include <QSettings>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/QtPositioning>
-#include <sailfishapp.h>
-#include "libsailfishsilica/silicatheme.h"
+#include <sailfishapp/sailfishapp.h>
 
 #include "Utils.h"
 #include "infolistmodel.h"
 #include "trackmodel.h"
 
-QObject* g_pTheTrackModel;
-
+QObject* g_pTheTrackModel = nullptr;
+QObject* g_pRootObject = nullptr;
 // To be shared with the c implementation
 int g_nFontSizePx = 0;
+int g_nSkipDraw = 0;
 
 int main(int argc, char* argv[])
 {
@@ -37,8 +38,6 @@ int main(int argc, char* argv[])
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
   // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
-
-
 
   StopWatch oSW("Start pike application %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);
@@ -55,7 +54,7 @@ int main(int argc, char* argv[])
   pTMF->setSourceModel(pTM);
   pContext->setContextProperty("idTrackModel", pTM);
   pContext->setContextProperty("idTrackModelFiltered", pTMF);
-  MssListModel* pSearchResultModel = new MssListModel("fullName", "lat", "lo", "type","ref");
+  MssListModel* pSearchResultModel = new MssListModel("fullName", "lat", "lo", "type", "ref");
   oSW.Stop();
   pSearchResultModel->Init(1);
   pContext->setContextProperty("pikeFightDocFolder", StorageDir());
@@ -79,12 +78,10 @@ int main(int argc, char* argv[])
 
   qDebug() << "fontsize =" << g_nFontSizePx;
 
-
-
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
   oSW.Stop();
-  InfoListModel::m_pRoot = pU->rootObject();
+  g_pRootObject = pU->rootObject();
 
   QSettings oSettings("harbour-pikefight", "PikeFight");
   qDebug() << "settings file " << oSettings.fileName();
@@ -97,20 +94,20 @@ int main(int argc, char* argv[])
   pInfoListModel->klicked2(5);
   oSW.Stop();
 
+  pU->rootObject()->setProperty("bEnableAis", oSettings.value("bEnableAis", false));
   pU->rootObject()->setProperty("nMinSize", oSettings.value("nMinSize", 60));
   pU->rootObject()->setProperty("nNrTeams", oSettings.value("nNrTeams", 2));
   pU->rootObject()->setProperty("nPikesCounted", oSettings.value("nPikesCounted", 6));
   pU->rootObject()->setProperty("nExportMapW", oSettings.value("nExportMapW", 2480));
   pU->rootObject()->setProperty("nExportMapH", oSettings.value("nExportMapH", 3508));
 
-
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName", QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));
   MssTimer oTimer([] {
-    if (InfoListModel::m_pRoot == 0)
+    if (g_pRootObject == nullptr)
       return;
-    if (InfoListModel::m_pRoot->property("bScreenallwaysOn").toBool() == true)
+    if (g_pRootObject->property("bScreenallwaysOn").toBool() == true)
       ScreenOn(true);
   });
   oTimer.Start(1000 * 30);
@@ -128,6 +125,7 @@ int main(int argc, char* argv[])
   oSettings.setValue("nNrTeams", pU->rootObject()->property("nNrTeams"));
   oSettings.setValue("nExportMapW", pU->rootObject()->property("nExportMapW"));
   oSettings.setValue("nExportMapH", pU->rootObject()->property("nExportMapH"));
+  oSettings.setValue("bEnableAis", pU->rootObject()->property("bEnableAis"));
 
   oSettings.sync();
 

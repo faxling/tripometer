@@ -20,7 +20,8 @@ class InfoListModel : public QAbstractListModel {
   Q_INVOKABLE void klicked1(int row);
   InfoListModel(QObject* parent = 0);
   ~InfoListModel();
-  static QObject* m_pRoot;
+
+  static double MaxSpeed;
   enum {
     ValueRole = Qt::UserRole + 1,
     LabelRole = Qt::UserRole + 2,

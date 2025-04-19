@@ -36,10 +36,15 @@ GType osm_gps_map_layer_get_type()
   return object_type;
 }
 
+
+/*
 void osm_gps_map_layer_render(OsmGpsMapLayer* self, OsmGpsMap* map)
 {
+  g_message("render");
   OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->render(self, map);
 }
+
+*/
 
 void osm_gps_map_layer_draw(OsmGpsMapLayer* self, cairo_t* cr, OsmGpsMap* map)
 {
@@ -51,7 +56,11 @@ gboolean osm_gps_map_layer_busy(OsmGpsMapLayer* self)
   return OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->busy(self);
 }
 
+
+/*
 gboolean osm_gps_map_layer_button(OsmGpsMapLayer* self, int x, int y, gboolean press)
 {
   return OSM_GPS_MAP_LAYER_GET_INTERFACE(self)->button(self, x, y, press);
 }
+
+*/

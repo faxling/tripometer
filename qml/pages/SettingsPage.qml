@@ -242,5 +242,33 @@ Page {
         }
       }
     }
+
+    Row {
+      x: Theme.horizontalPageMargin
+      spacing: column.spacing / 2
+      Label {
+        id: idBtnAAis
+        font.pixelSize: Theme.fontSizeMedium
+        text: "Ais"
+      }
+
+      Button {
+        id: idAis
+        backgroundColor: idApp.bAisError ? "red" : Theme.rgba(
+                                             color, Theme.opacityFaint)
+        property bool checked: idApp.bEnableAis
+        Image {
+          visible: parent.checked
+          anchors.centerIn: parent
+          source: "image://theme/icon-m-accept"
+        }
+        height: Theme.itemSizeExtraSmall
+        width: Theme.itemSizeExtraSmall
+        onClicked: {
+          checked = !checked
+          idApp.bEnableAis = checked
+        }
+      }
+    }
   }
 }

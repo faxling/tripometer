@@ -98,7 +98,7 @@ static void maep_layer_gps_class_init(MaepLayerGpsClass* klass)
 
 static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface)
 {
-  iface->render = NULL;
+ //  iface->render = NULL;
   iface->draw = maep_layer_gps_draw;
   iface->busy = NULL;
   iface->button = NULL;
@@ -132,6 +132,7 @@ static void maep_layer_gps_finalize(GObject* obj)
 
   G_OBJECT_CLASS(maep_layer_gps_parent_class)->finalize(obj);
 }
+
 static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GValue* value,
                                         GParamSpec* pspec)
 {
@@ -235,29 +236,6 @@ static void _draw(MaepLayerGpsPrivate* priv, cairo_t* cr, OsmGpsMap* map)
   }
 
   return;
-
-  // draw ball gradient
-  if (r > 0)
-  {
-    // draw direction arrow
-    if (!isnan(priv->gps_heading))
-    {
-      cairo_move_to(cr, -r * cos(priv->gps_heading), -r * sin(priv->gps_heading));
-      cairo_line_to(cr, 3 * r * sin(priv->gps_heading), -3 * r * cos(priv->gps_heading));
-      cairo_line_to(cr, r * cos(priv->gps_heading), r * sin(priv->gps_heading));
-      cairo_close_path(cr);
-
-      cairo_set_source_rgba(cr, 0.3, 0.3, 1.0, 0.5);
-      cairo_fill_preserve(cr);
-
-      cairo_set_line_width(cr, 1.0);
-      cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-      cairo_stroke(cr);
-    }
-
-    cairo_set_source_surface(cr, priv->surf, -r - 1, -r - 1);
-    cairo_paint(cr);
-  }
 }
 
 static void maep_layer_gps_draw(OsmGpsMapLayer* self, cairo_t* cr, OsmGpsMap* map)

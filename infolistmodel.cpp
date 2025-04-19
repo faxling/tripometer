@@ -15,6 +15,8 @@
 #include "math.h"
 #include "time.h"
 
+extern QObject* g_pRootObject;
+
 QString FormatBearing(double direction)
 {
   const char* dirStr;
@@ -156,8 +158,6 @@ QString FormatM(double f)
   return szStr;
 }
 
-QObject* InfoListModel::m_pRoot;
-
 enum TRIP_FIELDS
 {
   GPS_SPEED,
@@ -180,21 +180,23 @@ enum TRIP_FIELDS
   LAST_VAL
 };
 
+double InfoListModel::MaxSpeed = 0;
+
 void InfoListModel::UpdateOnTimer()
 {
   double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-  if (m_pRoot == 0)
+  if (g_pRootObject == 0)
     return;
 
-  int nUnit = m_pRoot->property("nUnit").toInt();
-  bool bIsPause = m_pRoot->property("bIsPause").toBool();
+  int nUnit = g_pRootObject->property("nUnit").toInt();
+  bool bIsPause = g_pRootObject->property("bIsPause").toBool();
   if (bIsPause == false)
   {
     if (m_fLastTimeSec != 0.0)
       p.m_fDurationSec += (fCurTime - m_fLastTimeSec);
   }
   m_fLastTimeSec = fCurTime;
-  bool bFlip = m_pRoot->property("bFlipped").toBool();
+  bool bFlip = g_pRootObject->property("bFlipped").toBool();
   // var tioned
 
   if ((((int)(p.m_fDurationSec)) % 10) == 0)
@@ -212,10 +214,9 @@ void InfoListModel::UpdateOnTimer()
   m_nData[nUnit][CURRENTTIME].f = FormatCurrentTime();
   m_nData[nUnit][CURRENTDATE].f = FormatCurrentDate();
 
-
   m_nData[nUnit][DURATION].f = FormatDurationSec(p.m_fDurationSec);
   m_nData[nUnit][DURATION_MID].f = FormatDurationSec(fCurTime - m_fLastMidTimeSec);
-  m_pRoot->setProperty("sDur", FormatDurationSec(p.m_fDurationSec));
+  g_pRootObject->setProperty("sDur", FormatDurationSec(p.m_fDurationSec));
 
   // oc.push_back(ValueRole);
 
@@ -253,7 +254,6 @@ InfoListModel::InfoListModel(QObject* parent) : QAbstractListModel(parent)
   connect(&m_oCompass, SIGNAL(readingChanged()), this, SLOT(CompassReadingChanged()));
   m_oCompass.setDataRate(4);
   m_oCompass.start();
-
 
   if (source != nullptr)
   {
@@ -349,7 +349,7 @@ void InfoListModel::CompassReadingChanged()
 }
 
 // Share for maep
-double g_fMaxSpeed = 0;
+// double g_fMaxSpeed = 0;
 
 void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
 {
@@ -399,9 +399,9 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   {
     fSpeed = o.attribute(QGeoPositionInfo::Attribute::GroundSpeed);
 
-    if (g_fMaxSpeed < fSpeed)
+    if (MaxSpeed < fSpeed)
     {
-      g_fMaxSpeed = fSpeed;
+      MaxSpeed = fSpeed;
     }
 
     if (p.m_fMaxSpeed < fSpeed)
@@ -413,7 +413,7 @@ void InfoListModel::PositionUpdated(const QGeoPositionInfo& o)
   double fStep = m_oLastPos.distanceTo(o.coordinate());
   m_fMidDist += fStep;
 
-  if (m_pRoot->property("bIsPause").toBool() == false)
+  if (g_pRootObject->property("bIsPause").toBool() == false)
   {
 
     p.m_fDist += fStep;
@@ -485,10 +485,10 @@ QVariant InfoListModel::data(const QModelIndex& index, int role) const
 
   int nR = index.row();
   int nUnit = 0;
-  if (m_pRoot == 0)
+  if (g_pRootObject == 0)
     return QVariant("-");
 
-  nUnit = m_pRoot->property("nUnit").toInt();
+  nUnit = g_pRootObject->property("nUnit").toInt();
 
   if (nR < 0 || nR >= m_nData[0].size())
     return QVariant("-");
@@ -517,14 +517,14 @@ void InfoListModel::klicked2(int nCmd)
   {
     if (m_pTimer->IsActive() == true)
     {
-      m_pRoot->setProperty("bIsPause", true);
+      g_pRootObject->setProperty("bIsPause", true);
       m_pTimer->Stop();
     }
     else
     {
       double fCurTime = QDateTime::currentMSecsSinceEpoch() / 1000.0;
       m_fLastTimeSec = fCurTime;
-      m_pRoot->setProperty("bIsPause", false);
+      g_pRootObject->setProperty("bIsPause", false);
       m_pTimer->Start(100);
     }
     return;
@@ -533,7 +533,7 @@ void InfoListModel::klicked2(int nCmd)
   oc.push_back(ValueRole);
   if (nCmd == 2)
   {
-    int nUnit = m_pRoot->property("nUnit").toInt();
+    int nUnit = g_pRootObject->property("nUnit").toInt();
     m_nData[nUnit][MAXSPEED].f = "-";
     emit dataChanged(index(MAXSPEED), index(MAXSPEED), oc);
     p.m_fMaxSpeed = 0;

@@ -293,16 +293,16 @@ void drawLineTo(cairo_t* cr, double v, int nR)
   double x = sin(v);
   cairo_line_to(cr, x * nR + OSD_CROSSHAIR_WH / 2, y * nR + OSD_CROSSHAIR_WH / 2);
 }
-
-void drawLineFromTo(cairo_t* cr, double nx, double ny, double v, int nR)
+static void drawLineFromTo(cairo_t* cr, double nx, double ny, double v, int nR)
 {
   double y = -cos(v);
   double x = sin(v);
   cairo_line_to(cr, x * nR + nx, y * nR + ny);
 }
 
+
 // #define MAXARR (OSD_CROSSHAIR_H / 2 - 5)
-void drawArrowTo(cairo_t* cr, double v, int nR)
+static void drawArrowTo(cairo_t* cr, double v, int nR)
 {
 
   if (nR > MAXARR)

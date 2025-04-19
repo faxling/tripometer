@@ -13,6 +13,7 @@ ApplicationWindow {
   property var db
   property bool bFlipped: false
   property bool bAppStarted: false
+
   Component.onDestruction: {
     mainMap.saveTrack(0)
   }
@@ -28,6 +29,8 @@ ApplicationWindow {
   property int nSelectCount
   property bool nSearchBusy
   property bool bScreenallwaysOn: false
+  property bool bEnableAis: false
+  property bool bAisError: false
   // 0 = km/h 1 kts
   property int nUnit: 1
   property bool bShowLenSlider
@@ -100,6 +103,7 @@ ApplicationWindow {
   initialPage: Component {
     Page {
       Flipable {
+
         id: flipable
         anchors.fill: parent
 
@@ -191,18 +195,22 @@ ApplicationWindow {
 
         transform: Rotation {
           id: rotation
+
           origin.x: flipable.width / 2
           origin.y: flipable.height / 2
           axis.x: 0
           axis.y: 1
           axis.z: 0 // set axis.y to 1 to rotate around y-axis
           angle: 0 // the default angle
+
+
+          /*
           onAngleChanged: {
             if (angle === 180)
               idApp.bIsRotated = true
             else
               idApp.bIsRotated = false
-          }
+          }*/
         }
 
         states: State {
@@ -215,6 +223,9 @@ ApplicationWindow {
         }
 
         transitions: Transition {
+          onRunningChanged: {
+            idMapPage.bTransitionRunning = (running || !idApp.bFlipped)
+          }
           NumberAnimation {
             target: rotation
             property: "angle"
