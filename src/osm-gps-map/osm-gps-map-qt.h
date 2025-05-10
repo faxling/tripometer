@@ -41,6 +41,7 @@
 #include <Utils.h>
 #include <cairo.h>
 #include <memory>
+#include <map>
 #include <values.h>
 
 struct Point
@@ -99,6 +100,12 @@ private:
   bool m_bPaint = false;
 };
 
+struct TimedWS : public QWebSocket
+{
+  void timerEvent(QTimerEvent *event) override;
+  // void onPong(quint64 elapsedTime, const QByteArray &payload);
+};
+
 class AisStreamClient : public QObject
 {
   Q_OBJECT
@@ -114,19 +121,22 @@ public:
   void onError(QAbstractSocket::SocketError error);
   void SetBoundingBox(Point& ul, Point& lR);
   void DrawAllAis();
+
+private:
+  void AddBBToJsonObj(QJsonObject& oBase, QJsonArray ocBox1);
   QJsonArray GetBoundingBoxJson();
   QJsonObject GetApiKey();
 
-private:
   QJsonArray m_ocBoxLast;
   QJsonArray m_ocBoxLastSent;
   IdlePainter* m_pIdlePainter;
   MssTimer* m_pBoundaryTimer;
+  MssTimer* m_pVesselTimeoutTimer;
   Point m_ul;
   Point m_lr;
-  QWebSocket m_webSocket;
+  TimedWS m_webSocket;
   OsmGpsMap* m_map;
-  QMap<int, AisData> m_ocAis;
+  std::map<int, AisData> m_ocAis;
 };
 
 namespace Maep

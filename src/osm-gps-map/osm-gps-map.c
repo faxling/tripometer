@@ -879,10 +879,14 @@ static cairo_surface_t* osm_gps_map_from_file(const char* filename, const char* 
 #define UNUSED(x) (void)(x)
 #define MAXTOKEN 1024
 
-char g_szNAVTOKEN[MAXTOKEN] = {0};
-char g_szNAVURL1[2048] = {0};
-char g_szNAVURL2[2048] = {0};
+char g_szNAVTOKEN_A[MAXTOKEN] = {0};
+char g_szNAVTOKEN_C[MAXTOKEN] = {0};
+char g_szNAVURL1[MAXTOKEN * 2] = {0};
+char g_szNAVURL2[MAXTOKEN * 2] = {0};
+char g_szAUTH[MAXTOKEN * 2] = {0};
 
+/*
+ *
 #define NAVURL1                                                                                    \
   "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
   "#Y?LAYERS=config_1_20.00_0&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
@@ -891,23 +895,48 @@ char g_szNAVURL2[2048] = {0};
   "https://tile3.navionics.com/tile/#Z/#X/"                                                        \
   "#Y?LAYERS=config_1_20.00_1&TRANSPARENT=FALSE&UGC=TRUE&theme=0&navtoken=%s"
 
+
+*/
+
+#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=2&sa=false"
+
+#define NAVURL2 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=2&sa=false"
+
+extern void parse_navionics_key(const char* pResponce, int nLen, char* a_pToken, char* c_pToken);
+
 static void navionics_request_cb(net_result_t* result, gpointer p)
 {
   UNUSED(p);
+
+  g_message("navionics_request_cb %d", result->code);
+
   if (result->code != 0)
     return;
 
+  if (result->data.len > MAXTOKEN)
+    return;
+
+  g_message("res %s", (char*)result->data.ptr);
+
+  parse_navionics_key(result->data.ptr, result->data.len, g_szNAVTOKEN_A, g_szNAVTOKEN_C);
+
+  /*
   memcpy(g_szNAVTOKEN, result->data.ptr,
          (result->data.len > MAXTOKEN) ? MAXTOKEN : result->data.len);
+*/
 
-  sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN);
-  sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN);
+  sprintf(g_szAUTH, "authorization: Bearer %s", g_szNAVTOKEN_A);
+
+  sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN_C);
+  sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN_C);
+  g_message("NAVURL %s", g_szNAVURL1);
+  g_message("g_szAUTH %s", g_szAUTH);
 }
 
-const char* get_navionics_key2()
+void get_navionics_key2()
 {
   if (g_szNAVURL1[0] != 0)
-    return g_szNAVTOKEN;
+    return;
 
   //   strcpy(g_szNAVTOKEN,
   //   "eyJrZXkiOiJOYXZpb25pY3Nfd2ViYXBpXzA0MDQxIiwia2V5RG9tYWluIjoibWFwcy5nYXJtaW4uY29tIiwicmVmZXJlciI6Im1hcHMuZ2FybWluLmNvbSIsInJhbmRvbSI6MTcyMzAwOTE4Mzg4N30");
@@ -916,11 +945,20 @@ const char* get_navionics_key2()
 
   net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
 
+  net_io_append_header(&chunk,
+                       "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0");
+
+
+
+  net_io_download_async("https://maps.garmin.com/marine/api/getNavionicsTokens",
+                        navionics_request_cb, 0, chunk);
+
+  /*
   net_io_download_async("https://tile3.navionics.com/tile/get_key/Navionics_webapi_04041/"
                         "maps.garmin.com?_=1690792122212",
                         navionics_request_cb, 0, chunk);
-
-  return g_szNAVTOKEN;
+*/
 }
 
 struct curl_slist* chunk = 0;
@@ -1018,7 +1056,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
   if (priv->the_navionics)
   {
     net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
-    net_io_append_header(&chunk, "authority: backend.navionics.com");
+    net_io_append_header(&chunk, g_szAUTH);
     net_io_append_header(
         &chunk, "authority: accept: image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
     net_io_append_header(&chunk, "accept-language: en-GB,en;q=0.9,en-US;q=0.8,sv;q=0.7");

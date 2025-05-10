@@ -17,7 +17,7 @@ QT += qml quick positioning sensors dbus svg websockets
 LIBS += -ljpeg
 LIBS += -lpng# LIBS += -lsailfishsilica
 QMAKE_CXXFLAGS += -std=c++20
-
+QMAKE_CXXFLAGS -= -fvisibility-inlines-hidden
 SOURCES += src/harbour-tripometer.cpp \
     infolistmodel.cpp \
     src/osm-gps-map/osm-gps-map-osd-classic.c \
