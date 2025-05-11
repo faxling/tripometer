@@ -64,7 +64,7 @@ extern "C" void parse_navionics_key(const char* pResponce, int nLen, char* a_pTo
 
   auto oJson = QJsonDocument::fromJson(QByteArray(pResponce, nLen));
   auto oObj = oJson.object();
-  qDebug()  << "json" << oJson.toJson();
+  qDebug() << "json" << oJson.toJson();
   QByteArray ocAT = oObj["access_token"].toString().toLatin1();
   QByteArray ocCT = oObj["configuration_token"].toString().toLatin1();
 
@@ -1619,11 +1619,15 @@ void AisStreamClient::onError(QAbstractSocket::SocketError error)
   g_pRootObject->setProperty("bAisError", true);
   if (QAbstractSocket::SocketError::ConnectionRefusedError == error)
     m_webSocket.abort();
+  else
+    m_webSocket.close();
+
   g_message("onError");
 }
 
 AisStreamClient::~AisStreamClient()
 {
+
   m_pVesselTimeoutTimer->Stop();
   m_pBoundaryTimer->Stop();
   delete m_pBoundaryTimer;
@@ -1649,8 +1653,40 @@ void AisStreamClient::AddBBToJsonObj(QJsonObject& oBase, QJsonArray ocBox1)
 
 void TimedWS::timerEvent(QTimerEvent*)
 {
-  qDebug("ping");
+
+  if (state() == QAbstractSocket::SocketState::UnconnectedState)
+  {
+    qDebug() << "connect ";
+    m_nLastPing = 0;
+    open(QUrl("wss://stream.aisstream.io/v0/stream"));
+    return;
+  }
+  if (m_nLastPing != 0)
+  {
+    if ((abs(m_nLastPong - m_nLastPing)) > 5)
+    {
+      g_pRootObject->setProperty("bAisError", true);
+      qDebug() << "abort " << requestUrl();
+      abort();
+    }
+    else
+      g_pRootObject->setProperty("bAisError", false);
+  }
+
+  qDebug() << "ping";
+  m_nLastPing = time(0);
   ping();
+}
+
+void TimedWS::onPong(quint64, const QByteArray&)
+{
+  qDebug() << "pong";
+  m_nLastPong = time(0);
+}
+
+void AisStreamClient::onStateChanged(QAbstractSocket::SocketState state)
+{
+  qDebug() << "state changed" << state;
 }
 
 AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)
@@ -1658,14 +1694,17 @@ AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)
   m_map = p;
   m_pIdlePainter = pIdlePainter;
   connect(&m_webSocket, &QWebSocket::connected, this, &AisStreamClient::onConnected);
+  connect(&m_webSocket, &QWebSocket::disconnected, this, &AisStreamClient::onDisconnected);
   connect(&m_webSocket, &QWebSocket::sslErrors, this, &AisStreamClient::onSslErrors);
+  connect(&m_webSocket, &QWebSocket::pong, &m_webSocket, &TimedWS::onPong);
+
+  connect(&m_webSocket, &QWebSocket::stateChanged, this, &AisStreamClient::onStateChanged);
   connect(&m_webSocket,
           static_cast<void (QWebSocket::*)(QAbstractSocket::SocketError)>(&QWebSocket::error), this,
           &AisStreamClient::onError);
 
   QSslConfiguration sslConfiguration;
   m_webSocket.setSslConfiguration(sslConfiguration);
-
   m_webSocket.ignoreSslErrors();
   m_webSocket.open(QUrl("wss://stream.aisstream.io/v0/stream"));
 
@@ -1686,17 +1725,24 @@ AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)
     AddBBToJsonObj(oBase, ocBox1);
     oJD.setObject(oBase);
     qDebug() << "New Bounding box";
-    qDebug() << oJD.toJson();
+    // qDebug() << oJD.toJson();
     m_webSocket.sendBinaryMessage(oJD.toJson());
   });
 
   m_pVesselTimeoutTimer = new MssTimer([this] {
     int nT = time(0);
-    std::erase_if(m_ocAis, [&](auto& o) { return (nT - o.second.nTimeStamp) > 300; });
+    std::erase_if(m_ocAis, [&](auto& o) {
+      if (nT - o.second.nTimeStamp > 60)
+        o.second.fSpeed = 0;
+
+      return (nT - o.second.nTimeStamp) > 300;
+    });
+    m_pIdlePainter->RequestPaint();
   });
 
   m_pVesselTimeoutTimer->Start(10000);
   m_pBoundaryTimer->Start(5000);
+  m_webSocket.startTimer(1000 * 10);
 }
 
 QJsonArray AisStreamClient::GetBoundingBoxJson()
@@ -1715,11 +1761,16 @@ QJsonArray AisStreamClient::GetBoundingBoxJson()
   return ocBox1;
 }
 
+void AisStreamClient::onDisconnected()
+{
+  qDebug() << "onDisconnected";
+}
+
 void AisStreamClient::onConnected()
 {
   g_pRootObject->setProperty("bAisError", false);
 
-  qDebug() << "WebSocket connected";
+  qDebug() << "Aisstream connected";
 
   connect(&m_webSocket, &QWebSocket::textMessageReceived, this,
           &AisStreamClient::onTextMessageReceived);
@@ -1737,8 +1788,6 @@ void AisStreamClient::onConnected()
   oBase["FilterMessageTypes"] = ocFilters;
   oJD.setObject(oBase);
   m_webSocket.sendBinaryMessage(oJD.toJson());
-  m_webSocket.startTimer(1000 * 60);
-  qDebug() << oJD.toJson();
 }
 
 void AisStreamClient::onTextMessageReceived(const QString& message)
@@ -1782,16 +1831,24 @@ void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
       t.nTimeStamp = time(0);
     }
   }
-  else
+  else if (sType == "ShipStaticData")
   {
     if (oI != m_ocAis.end())
     {
       AisData& t = oI->second;
+      t.nTimeStamp = time(0);
       auto oJ = oJD.object()["Message"].toObject()["ShipStaticData"].toObject();
-      t.nType = oJ["Type"].toInt();
-      qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sName;
+      if (t.nType == -1)
+      {
+        t.nType = oJ["Type"].toInt();
+        qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sName;
+      }else
+      {
+        t.nType = oJ["Type"].toInt();
+      }
     }
   }
+
   m_pIdlePainter->RequestPaint();
 }
 

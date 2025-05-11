@@ -40,8 +40,8 @@
 #include <QWebSocket>
 #include <Utils.h>
 #include <cairo.h>
-#include <memory>
 #include <map>
+#include <memory>
 #include <values.h>
 
 struct Point
@@ -102,8 +102,10 @@ private:
 
 struct TimedWS : public QWebSocket
 {
-  void timerEvent(QTimerEvent *event) override;
-  // void onPong(quint64 elapsedTime, const QByteArray &payload);
+  void timerEvent(QTimerEvent* event) override;
+  void onPong(quint64 elapsedTime, const QByteArray& payload);
+  int m_nLastPong = 0;
+  int m_nLastPing = 0;
 };
 
 class AisStreamClient : public QObject
@@ -114,7 +116,11 @@ public:
   AisStreamClient(OsmGpsMap* _map, IdlePainter* pIdlePainter);
   ~AisStreamClient();
   // slots
+  void onDisconnected();
   void onConnected();
+  void onStateChanged(QAbstractSocket::SocketState state);
+
+  // void onPong(const QByteArray& message);
   void onTextMessageReceived(const QString& message);
   void onBinaryMessageReceived(const QByteArray& message);
   void onSslErrors(const QList<QSslError>& errors);

@@ -898,9 +898,9 @@ char g_szAUTH[MAXTOKEN * 2] = {0};
 
 */
 
-#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=2&sa=false"
+#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=20&sa=false"
 
-#define NAVURL2 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=2&sa=false"
+#define NAVURL2 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=20&sa=false"
 
 extern void parse_navionics_key(const char* pResponce, int nLen, char* a_pToken, char* c_pToken);
 

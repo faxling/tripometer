@@ -320,19 +320,6 @@ Item {
   }
 
   LargeBtn {
-    id: idCenterBtn
-    visible: !idMap.auto_center
-    src: "btnLrgCenter.png"
-    anchors.right: parent.right
-    anchors.rightMargin: 20
-    anchors.bottom: idLeftBtn.top
-    anchors.bottomMargin: 20
-    onClicked: {
-      idMap.centerCurrentGps()
-    }
-  }
-
-  LargeBtn {
     id: idRotateBtn
     src: idMap.state
          === "" ? "image://theme/icon-m-rotate-right" : "image://theme/icon-m-rotate-left"
@@ -345,6 +332,28 @@ Item {
         idMap.state = "mapRotate"
       else
         idMap.state = ""
+    }
+  }
+
+  LargeBtn {
+    id: idCenterBtn
+    visible: !idMap.auto_center
+    src: "btnLrgCenter.png"
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: idLeftBtn.top
+    anchors.bottomMargin: 20
+    onClicked: {
+      idMap.centerCurrentGps()
+    }
+
+    Rectangle {
+      radius: 10
+      visible: idApp.bAisError
+      anchors.centerIn: parent
+      width: 20
+      height: 20
+      color: "red"
     }
   }
 
@@ -594,7 +603,11 @@ Item {
         color: "black"
         width: Theme.itemSizeLarge
         text: "Load"
-        onClicked: idTrackModel.loadSelected(mainMap)
+
+        onClicked: {
+          idMap.skipDraw = false
+          idTrackModel.loadSelected(mainMap)
+        }
       }
 
       Button {

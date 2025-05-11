@@ -234,6 +234,7 @@ SilicaListView {
           text: "Center"
           height: Theme.itemSizeExtraSmall
           onClicked: {
+            mainMap.skipDraw = false
             mainMap.loadTrack(aValue, nId)
             idTrackModel.trackCenter(nId, mainMap)
           }
