@@ -1586,7 +1586,7 @@ AisPainter::~AisPainter()
 }
 
 void AisPainter::DrawAis(Point& tPos, int nType, double fHeading, double fSpeed,
-                         const QString& sName)
+                         const QByteArray& sName)
 {
   int xPx, yPx;
   if (loLaToPx(map, tPos.x, tPos.y, &xPx, &yPx) == 0)
@@ -1597,18 +1597,18 @@ void AisPainter::DrawAis(Point& tPos, int nType, double fHeading, double fSpeed,
   else
     setAisStyle2(map, (double*)&m_ocColorTable[nType], 2);
 
-  drawAis(map, fHeading, fSpeed, xPx, yPx, sName.toUtf8());
+  drawAis(map, fHeading, fSpeed, xPx, yPx, sName);
 }
 
-void AisPainter::DrawAisMoored(Point& tPos, int nType, const QString& sName)
+void AisPainter::DrawAisMoored(Point& tPos, int nType, const QByteArray& sName)
 {
   int xPx, yPx;
   if (loLaToPx(map, tPos.x, tPos.y, &xPx, &yPx) == 0)
     return;
 
-  setAisStyle2(map, (double*)&m_ocColorTable[nType], 2);
+  setAisStyle2(map, (double*)&m_ocColorTable[nType], 1);
 
-  drawAisMoored(map, xPx, yPx, sName.toUtf8());
+  drawAisMoored(map, xPx, yPx, sName);
 }
 /*
 void AisPainter::Update()
@@ -1676,14 +1676,12 @@ void TimedWS::timerEvent(QTimerEvent*)
       g_pRootObject->setProperty("bAisError", false);
   }
 
-  qDebug() << "ping";
   m_nLastPing = time(0);
   ping();
 }
 
 void TimedWS::onPong(quint64, const QByteArray&)
 {
-  qDebug() << "pong";
   m_nLastPong = time(0);
 }
 
@@ -1813,22 +1811,23 @@ void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
 
     if (oI == m_ocAis.end())
     {
-      AisData t = {oMeta["ShipName"].toString(),
+      AisData t = {oMeta["ShipName"].toString().toUtf8(),
                    {(float)oMeta["longitude"].toDouble(), (float)oMeta["latitude"].toDouble()},
                    -1,
                    oJ["Sog"].toDouble(),
-                   oJ["TrueHeading"].toInt() + 180,
+                   oJ["Cog"].toDouble() + 180,
                    oJ["NavigationalStatus"].toInt()};
       t.nTimeStamp = time(0);
       // qDebug() << "MMSI " << nMMSI;
-      m_ocAis[oMeta["MMSI"].toInt()] = t;
+      m_ocAis[nMMSI] = t;
     }
     else
     {
       AisData& t = oI->second;
-      t.sName = oMeta["ShipName"].toString();
+      t.sNameUtf8 = oMeta["ShipName"].toString().toUtf8();
       t.tPos = {(float)oMeta["longitude"].toDouble(), (float)oMeta["latitude"].toDouble()};
-      t.nHeading = oJ["TrueHeading"].toInt() + 180;
+      t.fCog = oJ["Cog"].toDouble() + 180;
+
       t.fSpeed = oJ["Sog"].toDouble();
       t.nNavStatus = oJ["NavigationalStatus"].toInt();
       t.nTimeStamp = time(0);
@@ -1844,7 +1843,7 @@ void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
       if (t.nType == -1)
       {
         t.nType = oJ["Type"].toInt();
-        qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sName;
+        qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sNameUtf8;
       }
       else
       {
@@ -1868,9 +1867,9 @@ void AisStreamClient::DrawAllAis()
   for (auto& [oJ, oI] : m_ocAis)
   {
     if (oI.fSpeed > 0.5)
-      oAisPainter.DrawAis(oI.tPos, oI.nType, oI.nHeading, oI.fSpeed, oI.sName);
+      oAisPainter.DrawAis(oI.tPos, oI.nType, oI.fCog, oI.fSpeed, oI.sNameUtf8);
     else
-      oAisPainter.DrawAisMoored(oI.tPos, oI.nType, oI.sName);
+      oAisPainter.DrawAisMoored(oI.tPos, oI.nType, oI.sNameUtf8);
   }
 }
 

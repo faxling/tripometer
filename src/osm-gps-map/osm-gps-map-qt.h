@@ -52,11 +52,11 @@ struct Point
 
 struct AisData
 {
-  QString sName;
+  QByteArray sNameUtf8;
   Point tPos;
   int nType = -1;
   double fSpeed = 0;
-  int nHeading = 0;
+  double fCog = 0;
   int nNavStatus = 0; // 0 engine 7 fishing
   int nTimeStamp = 0;
 };
@@ -68,8 +68,8 @@ class AisPainter
 public:
   AisPainter(OsmGpsMap* _map);
   ~AisPainter();
-  void DrawAis(Point& tPos, int nType, double vHeading, double fSpeed, const QString& sName);
-  void DrawAisMoored(Point& tPos, int nType, const QString& sName);
+  void DrawAis(Point& tPos, int nType, double vHeading, double fSpeed, const QByteArray& sName);
+  void DrawAisMoored(Point& tPos, int nType, const QByteArray& sName);
 
   // void SetAisStyle(unsigned int nRGB, double fWidth);
   // void Update();
