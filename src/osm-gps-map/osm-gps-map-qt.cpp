@@ -64,14 +64,14 @@ extern "C" void parse_navionics_key(const char* pResponce, int nLen, char* a_pTo
 
   auto oJson = QJsonDocument::fromJson(QByteArray(pResponce, nLen));
   auto oObj = oJson.object();
-  qDebug() << "json" << oJson.toJson();
+  // qDebug() << "json" << oJson.toJson();
   QByteArray ocAT = oObj["access_token"].toString().toLatin1();
   QByteArray ocCT = oObj["configuration_token"].toString().toLatin1();
 
   strncpy(a_pToken, ocAT.constData(), ocAT.length());
   strncpy(c_pToken, ocCT.constData(), ocAT.length());
 
-  qDebug() << ocAT;
+ // qDebug() << ocAT;
 }
 
 IdlePainter::IdlePainter(OsmGpsMap* _map)
@@ -1153,7 +1153,6 @@ void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
 {
   QString sTrackName = GpxNewName(sName, 1);
 
-  g_message("saveSearchMark %s %f", sTrackName.toUtf8().data(), fLo);
   char* szSymName = find_file("qml/symFia.png");
   cairo_surface_t* pSurface = cairo_image_surface_create_from_png(szSymName);
 
@@ -1212,6 +1211,8 @@ void Maep::GpsMap::saveMark(int nId)
 
 void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
 {
+  QString sTrackName = GpxNewName("Track", 0);
+
   if (track_current == 0)
     return;
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
@@ -1219,10 +1220,11 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
   if (fLen < 10)
     return;
 
-  QString sTrackName;
+
   // Auto saved
   if (nId == 0)
   {
+    // 0 Start number (01)
     sTrackName = GpxNewName("Track", 0);
   }
   else
@@ -1254,6 +1256,7 @@ void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
   WriteMarkData(sTrackName, t);
 
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
+  QMetaObject::invokeMethod(this, "scrollToBottom");
 }
 /*
 void Maep::GpsMap::setOverlaySource(Maep::GpsMap::Source value)
@@ -1842,7 +1845,8 @@ void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
       {
         t.nType = oJ["Type"].toInt();
         qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sName;
-      }else
+      }
+      else
       {
         t.nType = oJ["Type"].toInt();
       }

@@ -35,6 +35,8 @@ public:
   Q_INVOKABLE void trackImport(const QString& sPath);
   Q_INVOKABLE void trackCenter(int nId, QObject* mapObj);
   Q_INVOKABLE void trackLoaded(int nId);
+  Q_INVOKABLE void trackToggleSelect(int nId);
+  Q_INVOKABLE void trackUnselectAll();
   Q_INVOKABLE void trackUnloaded(int nId);
   Q_INVOKABLE void deleteSelected();
   Q_INVOKABLE void loadSelected(QObject* mapObj);

@@ -127,6 +127,14 @@ SilicaListView {
     contentHeight: Theme.iconSizeSmall + Theme.paddingMedium
     width: ListView.view.width
     menu: contextMenu
+
+    // if the menu opens we like to reset the selection marker
+    onPressed: idTrackModel.trackToggleSelect(nId)
+    onMenuOpenChanged: {
+      if (menuOpen)
+        idTrackModel.trackToggleSelect(nId)
+    }
+
     Rectangle {
 
       color: "chartreuse"
@@ -146,26 +154,24 @@ SilicaListView {
       TextField {
         id: idEditText
         width: Theme.itemSizeLarge * 3
-
         color: "black"
-        onClicked: {
-          bSelected = !bSelected
-        }
 
         RemorseItem {
           id: idRemorse
         }
 
+
+        /*
         onTextChanged: {
 
           if (readOnly === true)
             return
 
-          // @disable-check M325
+
           if (text === aValue)
             return
         }
-
+*/
         Keys.onPressed: {
           if (event.key === Qt.Key_Return) {
             idTrackModel.trackRename(text, nId)
@@ -190,6 +196,7 @@ SilicaListView {
         id: idDur
         color: "black"
         font.pixelSize: Theme.fontSizeMedium
+        // @disable-check M325
         text: sDuration === "x" ? "" : sDuration
       }
     }
@@ -200,20 +207,14 @@ SilicaListView {
 
         MenuItem {
           height: Theme.itemSizeExtraSmall
-          text: "Toggle Select"
-          onClicked: {
-            bSelected = !bSelected
-          }
-        }
-
-        MenuItem {
-          height: Theme.itemSizeExtraSmall
           text: "Delete"
           onClicked: {
             var idx = nId
             var oT = idTrackModel
             var oM = mainMap
             idRemorse.execute(idRow, "Deleting", function () {
+              oM.skipDraw = false
+              console.log("del " + idx)
               oT.trackDelete(idx)
               oM.unloadTrack(idx)
             })

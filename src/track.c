@@ -1109,8 +1109,6 @@ static track_t* _get_last_track(MaepGeodata *track_state)
   /* get last track, create one if none present */
   track_t *track = track_state->priv->track;
   if(!track) {
-    g_message("track: no track so far, creating new track");
-
     track = track_state->priv->track = track_new();
 
     time_t tval = time(NULL);

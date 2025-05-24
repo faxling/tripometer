@@ -548,6 +548,7 @@ Item {
   DockedPanel {
 
     onOpenChanged: {
+      idTrackModel.trackUnselectAll()
       idMap.skipDraw = open
     }
     id: idTrackPanel
@@ -567,7 +568,19 @@ Item {
       clip: true
     }
 
+    Text {
+      visible: nSelectCount > 0
+      anchors.verticalCenter: idButtonRow.verticalCenter
+      anchors.right: idButtonRow.left
+      anchors.rightMargin: 10
+      font.bold: true
+      id: idSelectCount
+      text: nSelectCount
+    }
+
     Row {
+
+      id: idButtonRow
 
 
       /*
@@ -576,7 +589,7 @@ Item {
       }
 */
       x: (Screen.width - width) / 2
-      id: idButtonRow
+
       y: 10
       spacing: 10
 

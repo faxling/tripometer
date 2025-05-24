@@ -293,8 +293,6 @@ QString FormatAisShipType(int nShipType)
   return sRet;
 }
 
-
-
 unsigned int ColorAisShipType(int nShipType)
 {
   const unsigned int UNK = 0xFF1493;
@@ -304,7 +302,6 @@ unsigned int ColorAisShipType(int nShipType)
 
   if (nShipType < 10 || nShipType > 99)
     return UNK;
-
 
   switch (nShipType / 10)
   {
@@ -321,7 +318,7 @@ unsigned int ColorAisShipType(int nShipType)
     case 0:
       // fishing
       return 0xa0af64;
-      //Towing TUG
+      // Towing TUG
     case 1:
     case 2:
       // Millitary diving
@@ -329,7 +326,7 @@ unsigned int ColorAisShipType(int nShipType)
     case 5:
       return 0xFF6347;
     case 6: // Sailing Pleasure
-       return 0x7FFF00;
+      return 0x7FFF00;
     case 7:
       return 0xe367f8;
     }
@@ -885,17 +882,22 @@ QString StrInPar(const QString& s)
   return SubStr(s, s.indexOf('('), s.indexOf(')'));
 }
 
-int GatMaxNr(const QString& sName)
+// xxxx.dat xxxx(1).dat xxxx(2).dat
+int GetMaxNr(const QString& sName)
 {
+  int nCount = -1;
+  QString sTracks = StorageDir() ^( sName  + "(*).dat");
 
-  if (QFile::exists(StorageDir() ^ sName + ".dat") == false)
-    return 0;
+  qDebug() << sTracks;
+
+  if (QFile::exists(StorageDir() ^ (sName + ".dat")) == true)
+    nCount = 0;
 
   QDir oDir(StorageDir(), sName + "(*).dat");
 
   auto oc = oDir.entryList();
   if (oc.isEmpty())
-    return 1;
+    return nCount;
 
   auto maxStr = *std::max_element(oc.begin(), oc.end());
 
@@ -904,23 +906,25 @@ int GatMaxNr(const QString& sName)
   return nRet;
 }
 
+// nN -1    nN 0
 QString GpxNewName(const QString& _sTrackName, int nN)
 {
   QString sTrackName;
-  int nM = GatMaxNr(_sTrackName);
+  int nMax = GetMaxNr(_sTrackName);
 
-  if ((nN != -1 && nM > 0) || nN == 0)
+  if (nN == 0)
   {
-    if (nM == 1)
-      nM = 0;
-    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nM + 1);
+    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nMax + 1);
   }
-  else
+  else // nN == -1 in all current cases
   {
-    sTrackName = _sTrackName;
+    if (nMax == -1)
+      sTrackName = _sTrackName;
+    else
+      sTrackName.sprintf("%ls(%d)", (wchar_t*)_sTrackName.utf16(), nMax + 1);
   }
+
   sTrackName[0] = sTrackName[0].toUpper();
-
   return sTrackName;
 }
 

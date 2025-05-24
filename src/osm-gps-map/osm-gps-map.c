@@ -898,7 +898,7 @@ char g_szAUTH[MAXTOKEN * 2] = {0};
 
 */
 
-#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=20&sa=false"
+#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=2&sa=false"
 
 #define NAVURL2 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=20&sa=false"
 
@@ -916,7 +916,7 @@ static void navionics_request_cb(net_result_t* result, gpointer p)
   if (result->data.len > MAXTOKEN)
     return;
 
-  g_message("res %s", (char*)result->data.ptr);
+  // g_message("res %s", (char*)result->data.ptr);
 
   parse_navionics_key(result->data.ptr, result->data.len, g_szNAVTOKEN_A, g_szNAVTOKEN_C);
 
@@ -929,8 +929,8 @@ static void navionics_request_cb(net_result_t* result, gpointer p)
 
   sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN_C);
   sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN_C);
-  g_message("NAVURL %s", g_szNAVURL1);
-  g_message("g_szAUTH %s", g_szAUTH);
+ // g_message("NAVURL %s", g_szNAVURL1);
+ // g_message("g_szAUTH %s", g_szAUTH);
 }
 
 void get_navionics_key2()

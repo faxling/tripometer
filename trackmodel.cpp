@@ -4,8 +4,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
+#include <ranges>
 #include <time.h>
-
 enum TRACK_ROLES_t
 {
   NAME_t = Qt::UserRole,
@@ -193,8 +193,7 @@ void TrackModel::loadSelected(QObject* mapObj)
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = true;
-      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName),
-                                Q_ARG(int, oJ.nId));
+      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
     }
@@ -253,10 +252,11 @@ void TrackModel::deleteSelected()
     });
 
     if (oI == m_oc.end())
+    {
+      UpdateSelected();
       return;
+    }
   }
-
-  UpdateSelected();
 }
 QModelIndex TrackModel::IndexFromId(int nId) const
 {
@@ -269,6 +269,42 @@ QModelIndex TrackModel::IndexFromId(int nId) const
     }
   }
   return QModelIndex();
+}
+
+void TrackModel::trackToggleSelect(int nId)
+{
+  QVector<int> oc;
+  oc.push_back(SELECTED_t);
+  auto oJ = std::ranges::find_if(m_oc, [&](auto o) {
+    if (o.nId == nId)
+      return true;
+    else
+      return false;
+  });
+
+  oJ->bSelected = !oJ->bSelected;
+  QModelIndex oMI = index(IndexOf(*oJ, m_oc), 0, QModelIndex());
+  emit dataChanged(oMI, oMI, oc);
+  UpdateSelected();
+}
+
+void TrackModel::trackUnselectAll()
+{
+  QVector<int> oc;
+  oc.push_back(SELECTED_t);
+
+  for ( int nRow = 0 ; auto& oI : m_oc)
+  {
+    if (oI.bSelected)
+    {
+      oI.bSelected = false;
+      QModelIndex oMI = index(nRow, 0, QModelIndex());
+      emit dataChanged(oMI, oMI, oc);
+    }
+    ++nRow;
+  }
+
+  UpdateSelected();
 }
 
 void TrackModel::trackDelete(int nId)

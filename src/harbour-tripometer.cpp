@@ -25,6 +25,12 @@ QObject* g_pRootObject = nullptr;
 int g_nFontSizePx = 0;
 int g_nSkipDraw = 0;
 
+void MssMessageOutput(QtMsgType , const QMessageLogContext& , const QString& msg)
+{
+  g_message("%s", msg.toLatin1().constData());
+}
+
+
 int main(int argc, char* argv[])
 {
 
@@ -38,20 +44,22 @@ int main(int argc, char* argv[])
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
   // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
-
+  qInstallMessageHandler(MssMessageOutput);
   StopWatch oSW("Start pike application %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);
-
+  oSW.Stop();
   QGuiApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
   QQuickView* pU = SailfishApp::createView();
+  oSW.Stop();
   QQmlContext* pContext = pU->rootContext();
   InfoListModel* pInfoListModel = new InfoListModel;
   pContext->setContextProperty("idListModel", pInfoListModel);
-
+  oSW.Stop();
   auto pTM = new TrackModel;
   g_pTheTrackModel = pTM;
   auto pTMF = new TrackModelFiltered;
   pTMF->setSourceModel(pTM);
+  oSW.Stop();
   pContext->setContextProperty("idTrackModel", pTM);
   pContext->setContextProperty("idTrackModelFiltered", pTMF);
   MssListModel* pSearchResultModel = new MssListModel("fullName", "lat", "lo", "type", "ref");
@@ -76,7 +84,7 @@ int main(int argc, char* argv[])
   auto pTheme = Silica::Theme::instance();
   g_nFontSizePx = pTheme->fontSizeTiny();
 
-  qDebug() << "fontsize =" << g_nFontSizePx;
+  qDebug() << "Tiny fontsize px =" << g_nFontSizePx;
 
   pU->setSource(SailfishApp::pathTo("qml/harbour-tripometer.qml"));
   pU->showFullScreen();
