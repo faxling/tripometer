@@ -4,6 +4,12 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+      h1 {
+        text-align: center;
+        color: rgb(0, 0, 0);
+        font-size: 40pt;
+      }
+
       .square {
         height: 50px;
         width: 50px;
@@ -12,6 +18,11 @@
         top: -30px;
         background-color: #655;
       }
+
+      .undefined {
+        background-color: #000000;
+      }
+
 
       .tug {
         background-color: #FF6347;
@@ -65,11 +76,22 @@
       .reserved {
         background-color: #d2d5da;
       }
+
+      body {
+        background-image: url("vessels.jpg");
+        background-color: rgba(255, 255, 255, 0.6);
+        background-blend-mode: lighten;
+      }
     </style>
   </head>
 
   <body>
-
+    <h1><a href="pikeFight.html">&larr;</a>
+      Vessel type colors
+    </h1>
+    <h2>Undefined<div class="square undefined"></div>
+    </h2>
+    <p>Waiting for a ship static data report</p>
     <h2>TUG<div class="square tug"></div>
     </h2>
     <h2>CARGO<div class="square cargo"></div>
