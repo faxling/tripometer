@@ -601,11 +601,13 @@ Item {
         onClicked: {
 
           var oM = idTrackModel
+          var oMap = idMap
           idDeleteRemorse._labels.children[1].font.pixelSize = Theme.fontSizeHuge
           idDeleteRemorse._labels.children[1].palette.primaryColor = Theme.highlightColor
           idDeleteRemorse.execute(idTrackPanel,
                                   "Deleting  " + nSelectCount + " Item(s)",
                                   function () {
+                                    oMap.skipDraw = false
                                     oM.unloadSelected(mainMap)
                                     oM.deleteSelected()
                                   })
@@ -627,7 +629,10 @@ Item {
         color: "black"
         width: Theme.itemSizeLarge
         text: "Unload"
-        onClicked: idTrackModel.unloadSelected(mainMap)
+        onClicked: {
+          idMap.skipDraw = false
+          idTrackModel.unloadSelected(mainMap)
+        }
       }
 
       Button {

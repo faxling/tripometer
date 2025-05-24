@@ -128,10 +128,19 @@ bool TrackModelFiltered::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 
 void TrackModel::trackCenter(int nId, QObject* mapObj)
 {
-  std::find_if(m_oc.begin(), m_oc.end(), [&](const ModelDataNode& t) {
+  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode& t) {
     if (t.nId == nId)
     {
-      trackLoaded(nId);
+      if (t.bIsLoaded == false)
+      {
+        t.bIsLoaded = true;
+        int nRow = IndexOf(t, m_oc);
+        QModelIndex oMI = index(nRow, 0, QModelIndex());
+        QVector<int> oc;
+        oc.push_back(ISLOADED_t);
+        emit dataChanged(oMI, oMI, oc);
+        QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, t.sName), Q_ARG(int, t.nId));
+      }
       QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
       return true;
     }
@@ -160,7 +169,7 @@ void TrackModel::trackUnloaded(int nId)
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
 }
-
+/*
 void TrackModel::trackLoaded(int nId)
 {
   int nRow = -1;
@@ -181,7 +190,7 @@ void TrackModel::trackLoaded(int nId)
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
 }
-
+*/
 // extern QObject* g_pTheMap;
 
 void TrackModel::loadSelected(QObject* mapObj)
@@ -190,7 +199,7 @@ void TrackModel::loadSelected(QObject* mapObj)
   oc.push_back(ISLOADED_t);
   for (auto& oJ : m_oc)
   {
-    if (oJ.bSelected == true)
+    if (oJ.bSelected == true && oJ.bIsLoaded == false)
     {
       oJ.bIsLoaded = true;
       QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
@@ -293,7 +302,7 @@ void TrackModel::trackUnselectAll()
   QVector<int> oc;
   oc.push_back(SELECTED_t);
 
-  for ( int nRow = 0 ; auto& oI : m_oc)
+  for (int nRow = 0; auto& oI : m_oc)
   {
     if (oI.bSelected)
     {

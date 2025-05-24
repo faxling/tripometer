@@ -129,36 +129,45 @@ SilicaListView {
     menu: contextMenu
 
     // if the menu opens we like to reset the selection marker
-    onPressed: idTrackModel.trackToggleSelect(nId)
-    onMenuOpenChanged: {
-      if (menuOpen)
-        idTrackModel.trackToggleSelect(nId)
-    }
 
-    Rectangle {
-
-      color: "chartreuse"
-      // x:2
-      y: Theme.paddingMedium
-      width: Theme.iconSizeSmall
-      height: Theme.iconSizeSmall
-      radius: 3
-      visible: bSelected
+    RemorseItem {
+      id: idRemorse
     }
     Row {
       id: idRow
 
-      spacing: 20
+      Rectangle {
+        color: bSelected ? "chartreuse" : "transparent"
+        // x:2
+        y: Theme.paddingMedium
+        width: Theme.iconSizeSmall
+        height: Theme.iconSizeSmall
+        radius: 3
+      }
 
-      // x:20
+      Text {
+        id: idReadText
+        font.bold: bLoaded
+        text: aValue
+        width: Theme.itemSizeLarge * 3
+
+        // font.italic: bSelected
+        MouseArea {
+          anchors.fill: parent
+          onPressed: idTrackModel.trackToggleSelect(nId)
+        }
+      }
+
       TextField {
         id: idEditText
         width: Theme.itemSizeLarge * 3
         color: "black"
-
-        RemorseItem {
-          id: idRemorse
+        readOnly: true
+        onReadOnlyChanged: {
+          visible = !readOnly
+          idReadText.visible = readOnly
         }
+        text: aValue
 
 
         /*
@@ -180,17 +189,18 @@ SilicaListView {
           }
         }
 
-        readOnly: true
-
         //font.italic: bSelected
-        font.bold: bLoaded
-        text: aValue
       }
       Text {
         id: idText
         color: "black"
         font.pixelSize: Theme.fontSizeMedium
         text: sLength
+      }
+      Rectangle {
+        color: "transparent"
+        height: 10
+        width: 10
       }
       Text {
         id: idDur
@@ -214,7 +224,6 @@ SilicaListView {
             var oM = mainMap
             idRemorse.execute(idRow, "Deleting", function () {
               oM.skipDraw = false
-              console.log("del " + idx)
               oT.trackDelete(idx)
               oM.unloadTrack(idx)
             })
@@ -225,7 +234,7 @@ SilicaListView {
           text: "Rename"
           height: Theme.itemSizeExtraSmall
           onClicked: {
-            idEditText.readOnly = !idEditText.readOnly
+            idEditText.readOnly = false
             idEditText.selectAll()
             idEditText.forceActiveFocus()
           }
@@ -236,7 +245,6 @@ SilicaListView {
           height: Theme.itemSizeExtraSmall
           onClicked: {
             mainMap.skipDraw = false
-            mainMap.loadTrack(aValue, nId)
             idTrackModel.trackCenter(nId, mainMap)
           }
         }

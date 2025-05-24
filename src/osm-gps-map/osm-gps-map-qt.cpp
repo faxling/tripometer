@@ -1173,9 +1173,10 @@ void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
 
   m_ocMarkers[nId] = pSurface;
 
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
-  QMetaObject::invokeMethod(this, "scrollToBottom");
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName)); 
   QMetaObject::invokeMethod(this, "loadTrack", Q_ARG(QString, sTrackName), Q_ARG(int, nId));
+  qApp->processEvents();
+  QMetaObject::invokeMethod(this, "scrollToBottom");
 }
 
 void Maep::GpsMap::saveMark(int nId)
