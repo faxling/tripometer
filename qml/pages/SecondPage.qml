@@ -129,7 +129,6 @@ SilicaListView {
     menu: contextMenu
 
     // if the menu opens we like to reset the selection marker
-
     RemorseItem {
       id: idRemorse
     }
@@ -160,9 +159,12 @@ SilicaListView {
 
       TextField {
         id: idEditText
+        textLeftMargin: 0
+        // textLeftPadding: 0
         width: Theme.itemSizeLarge * 3
         color: "black"
         readOnly: true
+
         onReadOnlyChanged: {
           visible = !readOnly
           idReadText.visible = readOnly

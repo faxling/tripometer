@@ -886,14 +886,14 @@ QString StrInPar(const QString& s)
 int GetMaxNr(const QString& sName)
 {
   int nCount = -1;
-  QString sTracks = StorageDir() ^( sName  + "(*).dat");
+  QString sTracks = StorageDir() ^( sName  + "(*)*.dat");
 
   qDebug() << sTracks;
 
   if (QFile::exists(StorageDir() ^ (sName + ".dat")) == true)
     nCount = 0;
 
-  QDir oDir(StorageDir(), sName + "(*).dat");
+  QDir oDir(StorageDir(), sName + "(*)*.dat");
 
   auto oc = oDir.entryList();
   if (oc.isEmpty())
@@ -911,17 +911,22 @@ QString GpxNewName(const QString& _sTrackName, int nN)
 {
   QString sTrackName;
   int nMax = GetMaxNr(_sTrackName);
+  QDateTime oNow(QDateTime::currentDateTime());
+  QString sDate = oNow.toString("YYMMdd");
 
+  wchar_t szStr[20];
+  time_t now = time(0);
+  wcsftime(szStr, 20, L"%y%m%d", localtime(&now));
   if (nN == 0)
   {
-    sTrackName.sprintf("%ls(%02d)", (wchar_t*)_sTrackName.utf16(), nMax + 1);
+    sTrackName.sprintf("%ls(%02d)%ls", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
   }
   else // nN == -1 in all current cases
   {
     if (nMax == -1)
       sTrackName = _sTrackName;
     else
-      sTrackName.sprintf("%ls(%d)", (wchar_t*)_sTrackName.utf16(), nMax + 1);
+      sTrackName.sprintf("%ls(%d)%ls", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
   }
 
   sTrackName[0] = sTrackName[0].toUpper();
