@@ -550,7 +550,6 @@ void ScreenCapture::capture()
   QEventLoop oLoop;
   oLoop.processEvents();
   m_oImage = g_currentView->grabWindow();
-  qDebug() << "w " << m_oImage.width() << " h " << m_oImage.height();
 
   m_oImagePreview = m_oImage.scaledToHeight(height());
   if (g_oOrientationSensor == nullptr)
@@ -883,12 +882,13 @@ QString StrInPar(const QString& s)
 }
 
 // xxxx.dat xxxx(1).dat xxxx(2).dat
+// -1 if not exist
+// 0 if xxxx.dat       exists
+// 1 if xxxx(00).dat   exists
 int GetMaxNr(const QString& sName)
 {
   int nCount = -1;
   QString sTracks = StorageDir() ^( sName  + "(*)*.dat");
-
-  qDebug() << sTracks;
 
   if (QFile::exists(StorageDir() ^ (sName + ".dat")) == true)
     nCount = 0;
@@ -911,22 +911,21 @@ QString GpxNewName(const QString& _sTrackName, int nN)
 {
   QString sTrackName;
   int nMax = GetMaxNr(_sTrackName);
-  QDateTime oNow(QDateTime::currentDateTime());
-  QString sDate = oNow.toString("YYMMdd");
-
-  wchar_t szStr[20];
-  time_t now = time(0);
-  wcsftime(szStr, 20, L"%y%m%d", localtime(&now));
+  char szStr[20];
+  std::time_t t = std::time(nullptr);
+  std::strftime(szStr, 20, "%y%m%d", std::localtime(&t));
   if (nN == 0)
   {
-    sTrackName.sprintf("%ls(%02d)%ls", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
+    if (nMax == -1)
+      nMax = 0;
+    sTrackName.sprintf("%ls(%02d)%s", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
   }
   else // nN == -1 in all current cases
   {
     if (nMax == -1)
       sTrackName = _sTrackName;
     else
-      sTrackName.sprintf("%ls(%d)%ls", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
+      sTrackName.sprintf("%ls(%d)%s", (wchar_t*)_sTrackName.utf16(), nMax + 1,szStr);
   }
 
   sTrackName[0] = sTrackName[0].toUpper();

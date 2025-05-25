@@ -8,13 +8,8 @@ SilicaListView {
 
   //   transitions.running
   id: idObjectList
+
   // cacheBuffer: 2000
-  property int nLastCount
-
-  onCountChanged: {
-    nLastCount = count
-  }
-
   Component {
     id: idDetailsFactory
     Rectangle {
@@ -146,7 +141,9 @@ SilicaListView {
 
       Text {
         id: idReadText
+        font.pixelSize: Theme.fontSizeMedium
         font.bold: bLoaded
+        font.italic: nId === nSavedTrackId
         text: aValue
         width: Theme.itemSizeLarge * 3
 
@@ -169,20 +166,9 @@ SilicaListView {
           visible = !readOnly
           idReadText.visible = readOnly
         }
+
         text: aValue
 
-
-        /*
-        onTextChanged: {
-
-          if (readOnly === true)
-            return
-
-
-          if (text === aValue)
-            return
-        }
-*/
         Keys.onPressed: {
           if (event.key === Qt.Key_Return) {
             idTrackModel.trackRename(text, nId)
@@ -200,6 +186,7 @@ SilicaListView {
         text: sLength
       }
       Rectangle {
+        // filler space
         color: "transparent"
         height: 10
         width: 10

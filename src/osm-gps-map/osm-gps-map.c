@@ -150,7 +150,9 @@ typedef struct
   MaepGeodata* track;
   gulong dirty_sig, nwp_prop, iwp_prop;
   int m_nId;
-  int m_nType;
+
+  // -1 Distance Tool, 0 current recorded tarck, 1 trip history , 2 Loaded track
+  int m_nTrackType;
 } OsmTrackRef;
 
 enum
@@ -445,23 +447,6 @@ static void osm_gps_map_free_trip(OsmGpsMap* map)
   }
 }
 
-/* clears the tracks and all resources */
-static void osm_gps_map_free_tracks(OsmGpsMap* map)
-{
-  OsmGpsMapPrivate* priv = map->priv;
-  if (priv->tracks)
-  {
-    GSList* tmp = priv->tracks;
-    while (tmp != NULL)
-    {
-      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
-      track_ref_free(pNode);
-      tmp = g_slist_next(tmp);
-    }
-    g_slist_free(priv->tracks);
-    priv->tracks = NULL;
-  }
-}
 
 static float get_distance(float lat1, float lon1, float lat2, float lon2)
 {
@@ -495,6 +480,43 @@ float osm_db_last_dist(OsmGpsMap* map, float la, float lo)
     }
   }
   return 0;
+}
+
+/* clears the tracks and all resources */
+static void osm_gps_map_free_tracks(OsmGpsMap* map)
+{
+  /*
+  OsmGpsMapPrivate* priv = map->priv;
+  if (priv->tracks)
+  {
+    GSList* tmp = priv->tracks;
+    while (tmp != NULL)
+    {
+      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
+      track_ref_free(pNode);
+      tmp = g_slist_next(tmp);
+    }
+    g_slist_free(priv->tracks);
+    priv->tracks = NULL;
+  }
+  */
+
+  OsmGpsMapPrivate* priv = map->priv;
+  if (priv->tracks)
+  {
+    GSList* tmp = priv->tracks;
+    while (tmp != NULL)
+    {
+      OsmTrackRef* pNode = (OsmTrackRef*)tmp->data;
+      if (pNode->m_nTrackType == 0)
+      {
+        priv->tracks = g_slist_remove_link(priv->tracks, tmp);
+        track_ref_free((OsmTrackRef*)tmp->data);
+        return;
+      }
+      tmp = g_slist_next(tmp);
+    }
+  }
 }
 
 void osm_gps_map_free_track(OsmGpsMap* map, int nId)
@@ -1379,13 +1401,19 @@ static void osm_gps_map_print_track(OsmGpsMapPrivate* priv, MaepGeodata* track, 
 
   /* Draw all segments. */
 
+  // g_message("track type %d", nType);
+
   // -1 Distance tool
   if (nType == -1)
     cairo_set_source_rgba(priv->cr, 60000.0 / 65535.0, 0.0, 0.0, 0.6);
-  else if (nType == 1)
-    cairo_set_source_rgba(priv->cr, 0, 0.9, 0, 0.6);
+
+  // nType 0 Current track
   else if (nType == 0)
     cairo_set_source_rgba(priv->cr, 60000.0 / 65535.0, 0.0, 0.5, 0.6);
+  // 1 Tripp history
+  else if (nType == 1)
+    cairo_set_source_rgba(priv->cr, 0, 0.9, 0, 0.6);
+  // Loaded track
   else if (nType == 2)
     cairo_set_source_rgba(priv->cr, 1, 0.5, 0.01, 0.6);
 
@@ -1479,7 +1507,7 @@ static void osm_gps_map_print_tracks(OsmGpsMap* map)
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
-      int nT = ((OsmTrackRef*)(tmp->data))->m_nType;
+      int nT = ((OsmTrackRef*)(tmp->data))->m_nTrackType;
       osm_gps_map_print_track(priv, ((OsmTrackRef*)tmp->data)->track, lw, &max_x, &min_x, &max_y,
                               &min_y, nT);
       tmp = g_slist_next(tmp);
@@ -2879,7 +2907,7 @@ MaepGeodata* osm_get_track(OsmGpsMap* map, int nId)
   return 0;
 }
 
-void osm_gps_map_add_track(OsmGpsMap* map, MaepGeodata* track, int nId, int nType)
+void osm_gps_map_add_track(OsmGpsMap* map, MaepGeodata* track, int nId, int nTrackType)
 {
   OsmGpsMapPrivate* priv;
   OsmTrackRef* st;
@@ -2891,7 +2919,7 @@ void osm_gps_map_add_track(OsmGpsMap* map, MaepGeodata* track, int nId, int nTyp
   st = g_slice_new(OsmTrackRef);
   st->track = track;
   st->m_nId = nId;
-  st->m_nType = nType;
+  st->m_nTrackType = nTrackType;
   st->nwp_prop = g_signal_connect(G_OBJECT(track), "notify::n-waypoints",
                                   G_CALLBACK(_on_track_changed), (gpointer)map);
   st->iwp_prop = g_signal_connect(G_OBJECT(track), "notify::waypoint-highlight-index",

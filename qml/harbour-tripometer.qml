@@ -2,6 +2,8 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.tripometer 1.0
 import Sailfish.Pickers 1.0
+import org.freedesktop.contextkit 1.0
+
 import QtQuick.LocalStorage 2.0 as Sql
 import "tripometer-functions.js" as Lib
 // import QtQuick.Controls 1.0
@@ -15,7 +17,7 @@ ApplicationWindow {
   property bool bAppStarted: false
 
   Component.onDestruction: {
-    mainMap.saveTrack(0)
+    mainMap.saveCurrentTrack()
   }
 
   property int nExportMapW: 2480
@@ -48,6 +50,16 @@ ApplicationWindow {
   }
 
   property bool bIsRotated: false
+
+  ContextProperty {
+    key: "Battery.ChargePercentage"
+
+    // Save track
+    onValueChanged: {
+      if (value < 5)
+        Qt.quit()
+    }
+  }
 
   CoverBackground {
     id: blueCover

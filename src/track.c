@@ -118,9 +118,9 @@ struct _MaepGeodataPrivate {
   gint iwpt_highlight; /* Negative for no highlight. */
 
   /* Timer for autosaving. */
-  gchar *path;
-  gboolean dirty;
-  guint timer_handler;
+ //  gchar *path;
+ //  gboolean dirty;
+ //  guint timer_handler;
 
   /* Bounding box of the track. */
   coord_t bb_top_left, bb_bottom_right;
@@ -217,8 +217,8 @@ static void track_finalize(GObject *obj)
   track_state = MAEP_GEODATA(obj);
 
   /* stop running timeout timer if present */
-  maep_geodata_set_autosave_period(track_state, 0);
-  maep_geodata_set_autosave_path(track_state, NULL);
+  // maep_geodata_set_autosave_period(track_state, 0);
+  // maep_geodata_set_autosave_path(track_state, NULL);
 
   track_t *track = track_state->priv->track;
   while(track) {
@@ -287,10 +287,11 @@ static void maep_geodata_init(MaepGeodata *obj)
 }
 
 
-
+/*
 static char *build_path(void) {
   return g_strdup_printf("%s/%s/track.gpx", g_get_user_data_dir(), APP);
 }
+*/
 
 static GQuark error_quark = 0;
 GQuark track_get_quark()
@@ -563,6 +564,9 @@ static MaepGeodata *track_parse_doc(xmlDocPtr doc) {
   return track_state;
 }
 
+
+
+/*
 static gboolean track_autosave(gpointer data) {
   MaepGeodata *track_state = MAEP_GEODATA(data);
   GError *error;
@@ -572,7 +576,7 @@ static gboolean track_autosave(gpointer data) {
 
   g_message("TRACK: autosave to '%s'.", track_state->priv->path);
 
-  /* make sure directory exists */
+
   gchar *dirname = g_path_get_dirname(track_state->priv->path);
   g_mkdir_with_parents(dirname, 0700);
   g_free(dirname);
@@ -589,7 +593,9 @@ static gboolean track_autosave(gpointer data) {
   
   return TRUE;
 }
-
+*/
+/*
+ *
 gboolean maep_geodata_set_autosave_period(MaepGeodata *track_state, guint elaps)
 {
   g_return_val_if_fail(MAEP_IS_GEODATA(track_state), FALSE);
@@ -631,6 +637,9 @@ gboolean maep_geodata_set_autosave_path(MaepGeodata *track_state, const gchar *p
 
   return TRUE;
 }
+*/
+
+
 
 MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error) {
   xmlDoc *doc = NULL;
@@ -787,7 +796,7 @@ gboolean maep_geodata_to_file(MaepGeodata *track_state,
    * This should not be called if parsing is to be used again.
    */
   /* xmlCleanupParser(); */
-  track_state->priv->dirty = FALSE;
+  // track_state->priv->dirty = FALSE;
 
   return TRUE;
 }
@@ -1179,7 +1188,7 @@ void maep_geodata_add_trackpoint(MaepGeodata *track_state,
   if (!seg)
     seg = track_state->priv->current_seg = _get_new_segment(track_state);
   
-  track_state->priv->dirty = TRUE;
+  // track_state->priv->dirty = TRUE;
   track_state->priv->metricLength +=
       _seg_add_point(seg, &new_point, track_state->priv->metricAccuracy);
 
@@ -1214,7 +1223,7 @@ void maep_geodata_add_waypoint(MaepGeodata *track_state,
   g_array_append_val(track_state->priv->way_points, new_point);
   g_object_notify_by_pspec(G_OBJECT(track_state), properties[N_WPT_PROP]);
 
-  track_state->priv->dirty = TRUE;
+  // track_state->priv->dirty = TRUE;
 }
 gboolean maep_geodata_waypoint_set_field(MaepGeodata *track_state,
                                          guint iwpt, way_point_field field,
@@ -1226,7 +1235,7 @@ gboolean maep_geodata_waypoint_set_field(MaepGeodata *track_state,
 
   if (iwpt >= track_state->priv->way_points->len)
     return FALSE;
-  track_state->priv->dirty = TRUE;
+  // track_state->priv->dirty = TRUE;
 
   wpt = &g_array_index(track_state->priv->way_points, way_point_t, iwpt);
   switch (field)

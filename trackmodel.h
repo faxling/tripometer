@@ -40,7 +40,6 @@ public:
   Q_INVOKABLE void trackUnloaded(int nId);
   Q_INVOKABLE void deleteSelected();
   Q_INVOKABLE void loadSelected(QObject* mapObj);
-  Q_INVOKABLE void markAllUnload();
   Q_INVOKABLE void unloadSelected(QObject* mapObj);
   Q_INVOKABLE void trackDelete(int nId);
   Q_INVOKABLE void trackRename(QString sName, int nId);

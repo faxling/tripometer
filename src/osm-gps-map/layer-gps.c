@@ -200,7 +200,7 @@ static void maep_layer_gps_get_property(GObject* object, guint prop_id, GValue* 
 
 static void _draw(MaepLayerGpsPrivate* priv, cairo_t* cr, OsmGpsMap* map)
 {
-  int r = priv->ui_gps_point_inner_radius;
+  // int r = priv->ui_gps_point_inner_radius;
   double r2 = (double)priv->ui_gps_point_outer_radius;
 
   // draw transparent area

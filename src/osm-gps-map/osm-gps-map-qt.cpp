@@ -71,7 +71,7 @@ extern "C" void parse_navionics_key(const char* pResponce, int nLen, char* a_pTo
   strncpy(a_pToken, ocAT.constData(), ocAT.length());
   strncpy(c_pToken, ocCT.constData(), ocAT.length());
 
- // qDebug() << ocAT;
+  // qDebug() << ocAT;
 }
 
 IdlePainter::IdlePainter(OsmGpsMap* _map)
@@ -123,6 +123,7 @@ void Maep::Track::finalizeSegment()
     maep_geodata_track_finalize_segment(track);
 }
 
+/*
 bool Maep::Track::setAutosavePeriod(unsigned int value)
 {
   bool ret;
@@ -134,6 +135,7 @@ bool Maep::Track::setAutosavePeriod(unsigned int value)
 
   return ret;
 }
+*/
 
 void Maep::Track::addWayPoint(const QGeoCoordinate& coord, const QString& name,
                               const QString& comment, const QString& description)
@@ -725,12 +727,13 @@ void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 
   g_object_set(map, "map-source", (OsmGpsMapSource_t)value, NULL);
 }
-
+/*
 void Maep::GpsMap::clearTrack()
 {
   osm_gps_map_clear_tracks(map);
 }
 
+*/
 void Maep::GpsMap::centerCurrentGps()
 {
 
@@ -1173,10 +1176,10 @@ void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
 
   m_ocMarkers[nId] = pSurface;
 
-  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName)); 
+  QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
   QMetaObject::invokeMethod(this, "loadTrack", Q_ARG(QString, sTrackName), Q_ARG(int, nId));
-  qApp->processEvents();
   QMetaObject::invokeMethod(this, "scrollToBottom");
+
 }
 
 void Maep::GpsMap::saveMark(int nId)
@@ -1210,29 +1213,19 @@ void Maep::GpsMap::saveMark(int nId)
   QMetaObject::invokeMethod(this, "scrollToBottom");
 }
 
-void Maep::GpsMap::saveTrack(G_GNUC_UNUSED int nId)
+void Maep::GpsMap::saveCurrentTrack()
 {
-  QString sTrackName = GpxNewName("Track", 0);
 
   if (track_current == 0)
     return;
+
   double fLen = maep_geodata_track_get_metric_length(track_current->get());
 
   if (fLen < 10)
     return;
 
-
-  // Auto saved
-  if (nId == 0)
-  {
-    // 0 Start number (01)
-    sTrackName = GpxNewName("Track", 0);
-  }
-  else
-  {
-    QDateTime oNow(QDateTime::currentDateTime());
-    sTrackName = oNow.toString("yyyy-MM-dd-hh-mm-ss");
-  }
+  // 0 Start number (01)
+  QString sTrackName = GpxNewName("Track", 0);
 
   QString sGpxFileName = GpxFullName(sTrackName);
 
@@ -1317,7 +1310,6 @@ void Maep::GpsMap::setSearchResults(GSList* places)
     g_pRootObject->setProperty("nSearchBusy", false);
     return;
   }
-  g_message("Search got %d places", g_slist_length(places));
 
   // 1 is the id no of the result model
   MssListModel* pResultModel = MssListModel::Instance(1);
@@ -1354,7 +1346,6 @@ void Maep::GpsMap::setSearchResults(GSList* places)
     pResultModel->updateItem(nRow, 2, rad2deg(p->pos.rlon));
     pResultModel->updateItem(nRow, 3, p->type);
     pResultModel->updateItem(nRow, 4, p->ref);
-    g_message("ref  %s", p->ref);
     ++nRow;
   }
 
@@ -1460,7 +1451,6 @@ void Maep::GpsMap::compassReadingChanged()
 
 void Maep::GpsMap::positionLost()
 {
-  g_message("loosing position");
   if (track_capture && track_current)
     track_current->finalizeSegment();
   unsetGps();
@@ -1473,7 +1463,6 @@ void Maep::GpsMap::setGpsRefreshRate(unsigned int rate)
   if (gpsRefreshRate_ == rate)
     return;
 
-  g_message("set GPS refresh rate to %d.", rate);
   restart = (gpsRefreshRate_ == 0);
   gpsRefreshRate_ = rate;
   emit gpsRefreshRateChanged(rate);
@@ -1511,6 +1500,7 @@ void Maep::GpsMap::setTrackCapture(bool status)
 void Maep::GpsMap::setTrack(Maep::Track* track)
 {
 
+  //clear current
   osm_gps_map_clear_tracks(map);
 
   if (track_current && track_current->parent() == this)
@@ -1518,7 +1508,7 @@ void Maep::GpsMap::setTrack(Maep::Track* track)
 
   if (track)
   {
-    g_message("Reparenting.");
+
     track->setParent(this);
 
     if (!track->getPath().isEmpty())
@@ -1527,7 +1517,6 @@ void Maep::GpsMap::setTrack(Maep::Track* track)
   else if (track_capture && lastGps.isValid())
   {
     track = new Maep::Track();
-    g_message("Regenerate a new track.");
     track->setParent(this);
     track->addPoint(lastGps);
   }
@@ -1660,7 +1649,6 @@ void TimedWS::timerEvent(QTimerEvent*)
 
   if (state() == QAbstractSocket::SocketState::UnconnectedState)
   {
-    qDebug() << "connect ";
     m_nLastPing = 0;
     open(QUrl("wss://stream.aisstream.io/v0/stream"));
     return;
@@ -1670,7 +1658,6 @@ void TimedWS::timerEvent(QTimerEvent*)
     if ((abs(m_nLastPong - m_nLastPing)) > 5)
     {
       g_pRootObject->setProperty("bAisError", true);
-      qDebug() << "abort " << requestUrl();
       abort();
     }
     else
@@ -1844,7 +1831,7 @@ void AisStreamClient::onBinaryMessageReceived(const QByteArray& message)
       if (t.nType == -1)
       {
         t.nType = oJ["Type"].toInt();
-        qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sNameUtf8;
+        // qDebug() << FormatAisShipType(t.nType) << " " << t.nType << " " << t.sNameUtf8;
       }
       else
       {

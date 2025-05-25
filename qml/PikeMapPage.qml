@@ -10,7 +10,7 @@ import ".."
 Item {
   id: idPikePage
   property alias bTransitionRunning: idMap.skipDraw
-
+  property int nSavedTrackId: -1
   //// property bool bShowBtns: true
   GpsMap {
     id: idMap
@@ -23,7 +23,7 @@ Item {
     }
 
     function scrollToBottom() {
-      idSecondPage.scrollToBottom()
+      idSecondPage.positionViewAtEnd()
     }
 
     Component.onDestruction: {
@@ -396,20 +396,28 @@ Item {
     TrippBtn {
       id: idTrack
       enabled: true
+
       src: idMap.track_capture ? "btnTrackOff.png" : "btnTrack.png"
       onClicked: {
         idMap.track_capture = !idMap.track_capture
 
         if (idMap.track_capture === true) {
+          idMap.skipDraw = false
           var o = Qt.createQmlObject("import harbour.tripometer 1.0; Track {}",
                                      idMapPage, "track1")
 
-          idTrackModel.markAllUnload()
+          idMap.unloadTrack(nSavedTrackId)
           idMap.setTrack(o)
 
+          idTrackModel.trackUnloaded(nSavedTrackId)
+
+          // Saves current time
           idListModel.klicked2(6)
         } else {
-          idMap.saveTrack(0)
+          nSavedTrackId = idTrackModel.nextId()
+          // Uses trackAdd that sets default to loaded in list ()
+          // stays in map until new track_capture
+          idMap.saveCurrentTrack()
         }
       }
     }

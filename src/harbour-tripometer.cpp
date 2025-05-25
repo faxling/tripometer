@@ -25,11 +25,10 @@ QObject* g_pRootObject = nullptr;
 int g_nFontSizePx = 0;
 int g_nSkipDraw = 0;
 
-void MssMessageOutput(QtMsgType , const QMessageLogContext& , const QString& msg)
+void MssMessageOutput(QtMsgType, const QMessageLogContext&, const QString& msg)
 {
   g_message("%s", msg.toLatin1().constData());
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -78,8 +77,7 @@ int main(int argc, char* argv[])
   qmlRegisterType<Maep::Track>("harbour.tripometer", 1, 0, "Track");
 
   pU->engine()->addImageProvider("capturedImage", new ScreenCapturedImg());
-  // QObject::connect(pU->engine(),&QQmlEngine::quit, app ,
-  // &QGuiApplication::quit,Qt::DirectConnection);
+  QObject::connect(pU->engine(), &QQmlEngine::quit, app, &QGuiApplication::quit);
 
   auto pTheme = Silica::Theme::instance();
   g_nFontSizePx = pTheme->fontSizeTiny();
@@ -112,19 +110,23 @@ int main(int argc, char* argv[])
   pU->rootObject()->setProperty(
       "ocTeamName",
       oSettings.value("ocTeamName", QStringList({"Pike Report", "Team 1", "Team 2", "Team 3"})));
+
   MssTimer oTimer([] {
     if (g_pRootObject == nullptr)
       return;
     if (g_pRootObject->property("bScreenallwaysOn").toBool() == true)
       ScreenOn(true);
   });
+
   oTimer.Start(1000 * 30);
+
   oSW.Stop();
   pInfoListModel->klicked2(5);
   oSW.Stop();
   mssutils::MkCache();
 
   app->exec();
+
   oSettings.setValue("ocTeamName", pU->rootObject()->property("ocTeamName"));
 
   oSettings.setValue("nPikesCounted", pU->rootObject()->property("nPikesCounted"));

@@ -16,7 +16,7 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.5.2
+Version: 1.5.3
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2
@@ -28,6 +28,7 @@ Requires: qt5-qtdeclarative-import-positioning
 Requires: qt5-qtdeclarative-import-folderlistmodel
 Requires: nemo-qml-plugin-notifications-qt5
 Requires: sailfishsilica-qt5 >= 0.10.9
+Requires: nemo-qml-plugin-contextkit-qt5
 BuildRequires: pkgconfig(qdeclarative5-boostable)
 BuildRequires: pkgconfig(sailfishsilica)
 BuildRequires: pkgconfig(sailfishapp) >= 1.0.2

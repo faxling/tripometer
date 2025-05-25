@@ -56,7 +56,7 @@ TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName
     {
       if (t.nType == -1)
         t.nType = 2;
-      qDebug() << sTrackName << " Len " << t.len;
+
       tNode.nType = t.nType;
       QString sGpxFileName = GpxFullName(sTrackName);
       QFileInfo oFI(sGpxFileName);
@@ -204,21 +204,6 @@ void TrackModel::loadSelected(QObject* mapObj)
       oJ.bIsLoaded = true;
       QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
-      emit dataChanged(oMI, oMI, oc);
-    }
-  }
-}
-
-void TrackModel::markAllUnload()
-{
-  QVector<int> oc;
-  oc.push_back(ISLOADED_t);
-  for (auto& oJ : m_oc)
-  {
-    if (oJ.bSelected == true)
-    {
-      oJ.bIsLoaded = false;
-      QModelIndex oMI = index(IndexOf(oJ, m_oc), 1, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
     }
   }
@@ -379,13 +364,11 @@ void TrackModel::trackImport(const QString& sPath)
 void TrackModel::trackAdd(const QString& sTrackName)
 {
   ++m_nLastId;
-
   ModelDataNode tNode = GetNodeFromTrack(sTrackName, true);
   tNode.bSelected = false;
+  beginInsertRows(QModelIndex(), m_oc.size(), m_oc.size());
   m_oc.push_back(tNode);
-  beginInsertRows(QModelIndex(), m_oc.size() - 1, m_oc.size() - 1);
   endInsertRows();
-  UpdateSelected();
 }
 
 QModelIndex TrackModel::index(int row, int column, const QModelIndex&) const

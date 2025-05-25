@@ -154,8 +154,8 @@ namespace Maep
 
     Q_ENUMS(WayPointField)
 
-    Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
-                   autosavePeriodChanged)
+   // Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
+    //                autosavePeriodChanged)
     //  Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
     Q_PROPERTY(unsigned int startDate READ getStartDate NOTIFY startDateSet)
     Q_PROPERTY(qreal length READ getLength NOTIFY characteristicsChanged)
@@ -176,7 +176,7 @@ namespace Maep
       else
         track = maep_geodata_new();
       this->track = track;
-      autosavePeriod = 0;
+    //   autosavePeriod = 0;
     }
     inline ~Track() { g_object_unref(G_OBJECT(track)); }
 
@@ -186,7 +186,7 @@ namespace Maep
 
     Q_INVOKABLE inline bool isEmpty() { return maep_geodata_track_get_length(track) == 0; }
 
-    inline unsigned int getAutosavePeriod() { return autosavePeriod; }
+    // inline unsigned int getAutosavePeriod() { return autosavePeriod; }
 
     inline unsigned int getMetricAccuracy()
     {
@@ -227,9 +227,9 @@ namespace Maep
 
   signals:
     void fileError(const QString& errorMsg);
-    void autosavePeriodChanged(unsigned int value);
-    void metricAccuracyChanged(qreal value);
-    void pathChanged();
+   //  void autosavePeriodChanged(unsigned int value);
+   //  void metricAccuracyChanged(qreal value);
+  //   void pathChanged();
     void characteristicsChanged(qreal length, unsigned int duration);
     void startDateSet(unsigned int value);
 
@@ -242,12 +242,12 @@ namespace Maep
                      const QString& description);
     void highlightWayPoint(int iwpt);
     void finalizeSegment();
-    bool setAutosavePeriod(unsigned int value);
+  //  bool setAutosavePeriod(unsigned int value);
 
   private:
     MaepGeodata* track;
     QString source;
-    unsigned int autosavePeriod;
+    // unsigned int autosavePeriod;
   };
 
   class GpsMap : public QQuickPaintedItem
@@ -369,14 +369,14 @@ namespace Maep
     Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
     Q_INVOKABLE void saveSearchMark(int nId, QString sName, float fLo, float fLa);
     Q_INVOKABLE void saveMark(int nId);
-    Q_INVOKABLE void saveTrack(int nId);
+    Q_INVOKABLE void saveCurrentTrack();
     Q_INVOKABLE QString savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
                                        QVariant pListTeam2, QString sTeamNameAndSum2,
                                        QVariant pListTeam3, QString sTeamNameAndSum3, int nMinSize,
                                        QString sName, int nTeamCount);
 
     Q_INVOKABLE QString saveMap(int w, int h);
-    Q_INVOKABLE void clearTrack();
+   // Q_INVOKABLE void clearTrack();
     Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
     Q_INVOKABLE void unloadTrack(int nId);
     Q_INVOKABLE void centerTrack(float fLo, float fLa);

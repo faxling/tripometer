@@ -8,6 +8,15 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Sun Mar 16 2025 Fredrik Axling <faxling11@gmail.com> 1.5.3
+- Ver 1.5.3
+- Add display of live AIS vessels in map
+- Fix broken seacharts / sonar
+- Exit application when power less 5 % saves track then
+- Save marker with name from searchresult
+- Buggfixing for track loading/ unloading
+
+
 * Sun Mar 16 2025 Fredrik Axling <faxling11@gmail.com> 1.5.2
 - Ver 1.5.2
 - Add wind and temerature (m/s and deg c) indication to crosshair
