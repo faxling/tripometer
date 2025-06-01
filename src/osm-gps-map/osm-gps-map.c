@@ -74,7 +74,7 @@ struct _OsmGpsMapPrivate
   int max_zoom;
   int min_zoom;
   gboolean map_auto_center;
-  gboolean map_auto_download;
+  //gboolean map_auto_download;
   int map_x;
   int map_y;
 
@@ -104,9 +104,9 @@ struct _OsmGpsMapPrivate
   gboolean the_navionics;
 
   // gps tracking state
-  gboolean record_trip_history;
-  gboolean show_trip_history;
-  MaepGeodata* trip_history;
+  //gboolean record_trip_history;
+  //gboolean show_trip_history;
+  //MaepGeodata* trip_history;
   coord_t* osm_gps;
   float osm_gps_heading;
   gboolean osm_gps_valid;
@@ -159,9 +159,9 @@ enum
 {
   PROP_0,
   PROP_AUTO_CENTER,
-  PROP_RECORD_TRIP_HISTORY,
-  PROP_SHOW_TRIP_HISTORY,
-  PROP_AUTO_DOWNLOAD,
+  //PROP_RECORD_TRIP_HISTORY,
+  //PROP_SHOW_TRIP_HISTORY,
+  //PROP_AUTO_DOWNLOAD,
   // PROP_REPO_URI,
   PROP_PROXY_URI,
   PROP_TILE_CACHE_DIR,
@@ -436,6 +436,7 @@ static float osm_gps_map_get_scale_at_lat(int zoom, gfloat factor, float rlat)
 }
 
 /* clears the trip list and all resources */
+/*
 static void osm_gps_map_free_trip(OsmGpsMap* map)
 {
   OsmGpsMapPrivate* priv = map->priv;
@@ -446,7 +447,7 @@ static void osm_gps_map_free_trip(OsmGpsMap* map)
     priv->trip_history = NULL;
   }
 }
-
+*/
 
 static float get_distance(float lat1, float lon1, float lat2, float lon2)
 {
@@ -1498,12 +1499,12 @@ static void osm_gps_map_print_tracks(OsmGpsMap* map)
   int min_x = G_MAXINT, min_y = G_MAXINT, max_x = 0, max_y = 0;
   cairo_rectangle_int_t rect;
 
-  if (priv->tracks || (priv->show_trip_history && priv->trip_history))
+  if (priv->tracks)
   {
     /* g_message("Print a track list!"); */
 
-    if (priv->show_trip_history)
-      osm_gps_map_print_track(priv, priv->trip_history, lw, &max_x, &min_x, &max_y, &min_y, 1);
+   // if (priv->show_trip_history)
+   //   osm_gps_map_print_track(priv, priv->trip_history, lw, &max_x, &min_x, &max_y, &min_y, 1);
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
@@ -1666,7 +1667,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->map_surf = NULL;
   priv->cr = NULL;
   priv->map_factor = 1.;
-  priv->trip_history = NULL;
+  //priv->trip_history = NULL;
   priv->osm_gps = g_new0(coord_t, 1);
   priv->osm_gps_valid = FALSE;
   priv->cr_markedImage = NULL;
@@ -1846,7 +1847,7 @@ static void osm_gps_map_finalize(GObject* object)
   g_free(priv->image_format);
 
   /* trip and tracks contain simple non GObject types, so free them here */
-  osm_gps_map_free_trip(map);
+  //osm_gps_map_free_trip(map);
   osm_gps_map_free_tracks(map);
 
   G_OBJECT_CLASS(osm_gps_map_parent_class)->finalize(object);
@@ -1870,7 +1871,7 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
     if (!priv->idle_map_redraw)
       priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, (gpointer)map);
     break;
-    */
+
   case PROP_RECORD_TRIP_HISTORY:
     priv->record_trip_history = g_value_get_boolean(value);
     break;
@@ -1880,6 +1881,7 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_AUTO_DOWNLOAD:
     priv->map_auto_download = g_value_get_boolean(value);
     break;
+      */
     //  case PROP_REPO_URI:
     //    priv->repo_const_uri = g_value_dup_string(value);
     //    break;
@@ -1993,6 +1995,8 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_AUTO_CENTER:
     g_value_set_boolean(value, priv->map_auto_center);
     break;
+
+    /*
   case PROP_RECORD_TRIP_HISTORY:
     g_value_set_boolean(value, priv->record_trip_history);
     break;
@@ -2002,6 +2006,7 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_AUTO_DOWNLOAD:
     g_value_set_boolean(value, priv->map_auto_download);
     break;
+    */
   // case PROP_REPO_URI:
   //  g_value_set_string(value, priv->repo_uri);
   //  break;
@@ -2138,6 +2143,7 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
 
   g_object_class_install_property(object_class, PROP_AUTO_CENTER, properties[PROP_AUTO_CENTER]);
 
+  /*
   g_object_class_install_property(
       object_class, PROP_RECORD_TRIP_HISTORY,
       g_param_spec_boolean("record-trip-history", "record trip history",
@@ -2155,7 +2161,6 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       g_param_spec_boolean("auto-download", "auto download", "map auto download", TRUE,
                            G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
 
-  /*
   g_object_class_install_property(
       object_class, PROP_REPO_URI,
       g_param_spec_string("repo-uri", "repo uri", "map source tile repository uri", OSM_REPO_URI,
@@ -3071,6 +3076,7 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
   priv->osm_gps_heading = deg2rad(heading);
 
   // If trip marker add to list of gps points.
+  /*
   if (priv->record_trip_history)
   {
     if (!priv->trip_history)
@@ -3078,6 +3084,8 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
     maep_geodata_add_trackpoint(priv->trip_history, latitude, longitude, FLT_MAX, NAN, NAN, NAN,
                                 NAN);
   }
+
+  */
 
   // dont draw anything if we are dragging
   /* g_error("implement here."); */

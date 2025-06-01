@@ -156,8 +156,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
   char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
-                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
-                                 FALSE, "record-trip-history", FALSE, "show-trip-history", FALSE,
+                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center", FALSE,
                                  "gps-track-point-radius", 10, NULL));
 
   g_free(path);
@@ -1675,7 +1674,7 @@ void TimedWS::onPong(quint64, const QByteArray&)
 
 void AisStreamClient::onStateChanged(QAbstractSocket::SocketState state)
 {
-  qDebug() << "state changed" << state;
+ // qDebug() << "state changed" << state;
 }
 
 AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)
@@ -1752,7 +1751,7 @@ QJsonArray AisStreamClient::GetBoundingBoxJson()
 
 void AisStreamClient::onDisconnected()
 {
-  qDebug() << "onDisconnected";
+  qDebug() << "AisStream Disconnected";
 }
 
 void AisStreamClient::onConnected()
