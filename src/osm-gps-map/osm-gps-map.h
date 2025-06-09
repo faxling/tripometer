@@ -122,15 +122,9 @@ void osm_gps_map_source_get_repo_copyright(OsmGpsMapSource_t source, const gchar
 int osm_gps_map_source_get_min_zoom(OsmGpsMapSource_t source);
 int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source);
 
-//void osm_gps_map_draw_ais(OsmGpsMap* map, float loDeg , float laDeg, float fHeading,const  char* szName);
-
-
-
 // False if outside painted map
 
 int loLaToPx(OsmGpsMap* map, float lo, float la, int* x , int* y);
-
-// void setAisStyle(OsmGpsMap* map, unsigned int nRGB, double fWidth);
 
 void setAisStyle2(OsmGpsMap* map, double* pRGB, double fWidth);
 
@@ -145,7 +139,7 @@ void restoreDraw(OsmGpsMap* map);
 
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
                                         const gchar* base);
-// gchar* osm_gps_map_source_get_tile_uri(OsmGpsMapSource_t source, int zoom, int x, int y);
+
 gchar* osm_gps_map_source_get_cached_file(OsmGpsMapSource_t source, const gchar* cache_dir,
                                           int zoom, int x, int y);
 typedef struct
@@ -216,9 +210,7 @@ void osm_gps_map_geographic_to_screen(OsmGpsMap* map, gfloat latitude, gfloat lo
                                       gint* pixel_x, gint* pixel_y);
 void osm_gps_map_scroll(OsmGpsMap* map);
 float osm_gps_map_get_scale(OsmGpsMap* map);
-// void osm_gps_map_add_layer(OsmGpsMap* map, OsmGpsMapLayer* layer);
-//void osm_gps_map_layer_changed(OsmGpsMap* map, OsmGpsMapLayer* layer);
-//void osm_gps_map_remove_layer(OsmGpsMap* map, OsmGpsMapLayer* layer);
+
 cairo_surface_t* osm_gps_map_get_surface(OsmGpsMap* map);
 void osm_gps_map_set_viewport(OsmGpsMap* map, guint width, guint height);
 

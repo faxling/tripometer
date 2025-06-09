@@ -123,20 +123,6 @@ void Maep::Track::finalizeSegment()
     maep_geodata_track_finalize_segment(track);
 }
 
-/*
-bool Maep::Track::setAutosavePeriod(unsigned int value)
-{
-  bool ret;
-
-  autosavePeriod = value;
-  ret = maep_geodata_set_autosave_period(track, (guint)value);
-  if (ret)
-    emit autosavePeriodChanged(value);
-
-  return ret;
-}
-*/
-
 void Maep::Track::addWayPoint(const QGeoCoordinate& coord, const QString& name,
                               const QString& comment, const QString& description)
 {
@@ -151,7 +137,6 @@ void Maep::Track::highlightWayPoint(int iwpt)
 
 Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
 {
-  // g_pTheMap = this;
 
   char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
@@ -166,8 +151,6 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
 
 void Maep::GpsMap::Init()
 {
-  // char *path, *oldPath;
-
   m_pReqCountTimer = new MssTimer([this] {
     if (g_nOutstaningCurls != numberPendingReq_)
     {
@@ -187,19 +170,14 @@ void Maep::GpsMap::Init()
 
   m_pReqCountTimer->Start(200);
 
-  // gint overlaySource = gconf_get_int(GCONF_KEY_OVERLAY_SOURCE, OSM_GPS_MAP_SOURCE_NULL);
   gint zoom = gconf_get_int(GCONF_KEY_ZOOM, 3);
 
   gfloat lat = gconf_get_float(GCONF_KEY_LATITUDE, 50.0);
   gfloat lon = gconf_get_float(GCONF_KEY_LONGITUDE, 21.0);
-  //   gboolean dpix = gconf_get_bool(GCONF_KEY_DOUBLEPIX, FALSE);
 
   bool orientation = gconf_get_bool(GCONF_KEY_SCREEN_ROTATE, TRUE);
 
   screenRotation = orientation;
-
-  // proxy?"proxy-uri":NULL,     proxy,
-  // "double-pixel", dpix, NULL));
 
   g_object_set_data(G_OBJECT(map), GCONF_KEY_WEATHER,
                     new int(gconf_get_bool(GCONF_KEY_WEATHER, TRUE)));
@@ -431,7 +409,6 @@ bool Maep::GpsMap::mapSized()
   {
     cairo_surface_destroy(screensurf);
     cairo_destroy(cr);
-    // cairo_pattern_destroy(pat);
     screensurf = NULL;
   }
 
@@ -1865,5 +1842,4 @@ void AisStreamClient::onSslErrors(const QList<QSslError>& errors)
   qWarning() << "SSL errors:" << errors;
   g_pRootObject->setProperty("bAisError", true);
   m_webSocket.close();
-  //   qApp->quit();
 }

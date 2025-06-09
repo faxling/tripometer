@@ -168,9 +168,6 @@ MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error);
 
 gboolean maep_geodata_to_file(MaepGeodata *track_state,
                               const char *name, GError **error);
-// gboolean maep_geodata_set_autosave_period(MaepGeodata *track_state, guint elaps);
-// const gchar* maep_geodata_get_autosave_path(const MaepGeodata *track_state);
-// gboolean maep_geodata_set_autosave_path(MaepGeodata *track_state, const gchar *path);
 
 gboolean maep_geodata_get_bounding_box(const MaepGeodata *track_state,
                                        coord_t *top_left, coord_t *bottom_right);

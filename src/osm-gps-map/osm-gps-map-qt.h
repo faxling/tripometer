@@ -70,10 +70,6 @@ public:
   ~AisPainter();
   void DrawAis(Point& tPos, int nType, double vHeading, double fSpeed, const QByteArray& sName);
   void DrawAisMoored(Point& tPos, int nType, const QByteArray& sName);
-
-  // void SetAisStyle(unsigned int nRGB, double fWidth);
-  // void Update();
-
 private:
   OsmGpsMap* map;
   struct C
@@ -153,10 +149,6 @@ namespace Maep
     Q_OBJECT
 
     Q_ENUMS(WayPointField)
-
-   // Q_PROPERTY(unsigned int autosavePeriod READ getAutosavePeriod WRITE setAutosavePeriod NOTIFY
-    //                autosavePeriodChanged)
-    //  Q_PROPERTY(QString path READ getPath NOTIFY pathChanged)
     Q_PROPERTY(unsigned int startDate READ getStartDate NOTIFY startDateSet)
     Q_PROPERTY(qreal length READ getLength NOTIFY characteristicsChanged)
     Q_PROPERTY(unsigned int duration READ getDuration NOTIFY characteristicsChanged)
@@ -185,8 +177,6 @@ namespace Maep
     inline QString getPath() const { return source; }
 
     Q_INVOKABLE inline bool isEmpty() { return maep_geodata_track_get_length(track) == 0; }
-
-    // inline unsigned int getAutosavePeriod() { return autosavePeriod; }
 
     inline unsigned int getMetricAccuracy()
     {
@@ -227,27 +217,20 @@ namespace Maep
 
   signals:
     void fileError(const QString& errorMsg);
-   //  void autosavePeriodChanged(unsigned int value);
-   //  void metricAccuracyChanged(qreal value);
-  //   void pathChanged();
     void characteristicsChanged(qreal length, unsigned int duration);
     void startDateSet(unsigned int value);
 
   public slots:
-    // void set(MaepGeodata* track);
-    // bool set(const QString& filename);
-    // bool toFile(const QString& filename);
+
     void addPoint(QGeoPositionInfo& info);
     void addWayPoint(const QGeoCoordinate& coord, const QString& name, const QString& comment,
                      const QString& description);
     void highlightWayPoint(int iwpt);
     void finalizeSegment();
-  //  bool setAutosavePeriod(unsigned int value);
 
   private:
     MaepGeodata* track;
     QString source;
-    // unsigned int autosavePeriod;
   };
 
   class GpsMap : public QQuickPaintedItem
@@ -258,12 +241,6 @@ namespace Maep
 
     Q_PROPERTY(int numberPendingReq READ numberPendingReq NOTIFY numberPendingReqChanged)
     Q_PROPERTY(Source source READ source WRITE setSource NOTIFY sourceChanged)
-    //   Q_PROPERTY(
-    //        Source overlaySource READ overlaySource WRITE setOverlaySource NOTIFY
-    //        overlaySourceChanged)
-
-    //  Q_PROPERTY(QGeoCoordinate coordinate READ getCoord WRITE setLookAt NOTIFY coordinateChanged)
-    //   Q_PROPERTY(QGeoCoordinate gps_coordinate READ getGpsCoord NOTIFY gpsCoordinateChanged)
     Q_PROPERTY(bool auto_center READ autoCenter WRITE setAutoCenter NOTIFY autoCenterChanged)
     Q_PROPERTY(
         bool track_capture READ trackCapture WRITE setTrackCapture NOTIFY trackCaptureChanged)
@@ -313,18 +290,6 @@ namespace Maep
     GpsMap(QQuickItem* parent = 0);
     void Init();
     ~GpsMap();
-
-    // inline QGeoCoordinate getCoord() const { return coordinate; }
-    /*
-    inline QGeoCoordinate getGpsCoord() const
-    {
-      if (lastGps.isValid())
-        return lastGps.coordinate();
-      else
-        return QGeoCoordinate();
-    }
-
-    */
     void mapUpdate();
     void paintTo(QPainter* painter, int width, int height);
     inline bool trackCapture() { return track_capture; }
@@ -343,23 +308,7 @@ namespace Maep
       g_object_get(map, "map-source", &source, NULL);
       return (Source)source;
     }
-    /*
-  inline Source overlaySource()
-  {
 
-    OsmGpsMapSource_t source;
-    if (overlay)
-    {
-      g_object_get(overlay, "map-source", &source, NULL);
-      return (Source)source;
-    }
-    else
-    {
-      return SOURCE_NULL;
-    }
-
-  }
-  */
     Q_INVOKABLE void addDbPoint();
     Q_INVOKABLE void noDbPoint();
     Q_INVOKABLE QGeoCoordinate currentPos();
@@ -376,7 +325,6 @@ namespace Maep
                                        QString sName, int nTeamCount);
 
     Q_INVOKABLE QString saveMap(int w, int h);
-   // Q_INVOKABLE void clearTrack();
     Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
     Q_INVOKABLE void unloadTrack(int nId);
     Q_INVOKABLE void centerTrack(float fLo, float fLa);
@@ -418,7 +366,6 @@ namespace Maep
     void mapChanged();
     void numberPendingReqChanged();
     void sourceChanged(Source source);
-    // void overlaySourceChanged(Source source);
     void doublePixelChanged(bool status);
     void coordinateChanged();
     void gpsCoordinateChanged();
@@ -437,8 +384,6 @@ namespace Maep
     void skipDrawChanged();
   public slots:
     void setSource(Source source);
-    // void setOverlaySource(Source source);
-    // void setDoublePixel(bool status);
     void setAutoCenter(bool status);
     void setScreenRotation(bool status);
     void setCoordinate(float lat, float lon);
@@ -483,15 +428,12 @@ namespace Maep
     osm_gps_map_osd_t* osd;
 
     MaepSearchContext* search;
-    // QList<GeonamesPlace*> searchRes;
 
     gboolean dragging;
     gboolean zooming;
     int numberPendingReq() { return numberPendingReq_; };
     int numberPendingReq_ = 0;
     MssTimer* m_pReqCountTimer = 0;
-
-    // float factor0;
 
     /* Screen display. */
     cairo_surface_t* screensurf;

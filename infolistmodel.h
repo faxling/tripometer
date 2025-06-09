@@ -43,14 +43,7 @@ class InfoListModel : public QAbstractListModel {
     QString sU;
     QString sL;
   };
-  /*
-    struct SpeedStruct
-    {
-        SpeedStruct() {fTimeSec=0;fDistM=0;}
-        SpeedStruct(double _fTimeSec,double _fDistM ) {fTimeSec
-    =_fTimeSec;fDistM =_fDistM;} double fTimeSec; double fDistM;
-    };
-*/
+
 
   struct SaveStruct {
     double m_fMaxSpeed;
@@ -61,10 +54,11 @@ class InfoListModel : public QAbstractListModel {
   };
 
   // From QAbstractListModel
-  int rowCount(const QModelIndex& parent) const;
-  int columnCount(const QModelIndex& parent) const;
-  QVariant data(const QModelIndex& index, int role) const;
-  QHash<int, QByteArray> roleNames() const;
+  int rowCount(const QModelIndex& parent) const override;
+  int columnCount(const QModelIndex& parent) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  QHash<int, QByteArray> roleNames() const override;
+
   QVector<QVector<Data>> m_nData;
   QFile m_pDataFile;
 
@@ -72,9 +66,9 @@ class InfoListModel : public QAbstractListModel {
   MssTimer* m_pTimer;
   void ResetData();
   QGeoCoordinate m_oLastPos;
-  //   QList<SpeedStruct> m_ocSpeedVal;
+
   SaveStruct p;
-  //   double m_fGpsSpeedMs;
+
   double m_fLastTimeSec;
   double m_fLastMidTimeSec;
   double m_fMidDist = 0;
