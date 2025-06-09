@@ -33,6 +33,10 @@ void MssMessageOutput(QtMsgType, const QMessageLogContext&, const QString& msg)
 int main(int argc, char* argv[])
 {
 
+  // Making gpx
+  // https://www.komoot.com/tour/2288497802
+
+
   // https://studio.app-mockup.com
 
   // https://www.appstorescreenshot.com

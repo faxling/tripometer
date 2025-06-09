@@ -126,11 +126,13 @@ bool TrackModelFiltered::filterAcceptsRow(int sourceRow, const QModelIndex& sour
   return s.contains(m_sFilterStr, Qt::CaseSensitivity::CaseInsensitive);
 }
 
-void TrackModel::trackCenter(int nId, QObject* mapObj)
+void TrackModel::trackCenterAndLoad(int nId, QObject* mapObj)
 {
   std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode& t) {
     if (t.nId == nId)
     {
+
+
       if (t.bIsLoaded == false)
       {
         t.bIsLoaded = true;
@@ -141,6 +143,22 @@ void TrackModel::trackCenter(int nId, QObject* mapObj)
         emit dataChanged(oMI, oMI, oc);
         QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, t.sName), Q_ARG(int, t.nId));
       }
+
+
+
+      QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
+      return true;
+    }
+    else
+      return false;
+  });
+}
+
+void TrackModel::trackCenter(int nId, QObject* mapObj)
+{
+  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode& t) {
+    if (t.nId == nId)
+    {
       QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
       return true;
     }

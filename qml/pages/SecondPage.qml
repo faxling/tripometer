@@ -8,7 +8,11 @@ SilicaListView {
 
   //   transitions.running
   id: idObjectList
+  Component.onCompleted: {
+    console.log("maximumFlickVelocity " + maximumFlickVelocity)
+  }
 
+  // maximumFlickVelocity: 2000
   // cacheBuffer: 2000
   Component {
     id: idDetailsFactory
@@ -184,6 +188,13 @@ SilicaListView {
         color: "black"
         font.pixelSize: Theme.fontSizeMedium
         text: sLength
+        MouseArea {
+          anchors.fill: parent
+          onPressed: {
+            mainMap.skipDraw = false
+            idTrackModel.trackCenter(nId, mainMap)
+          }
+        }
       }
       Rectangle {
         // filler space
@@ -203,7 +214,27 @@ SilicaListView {
     Component {
       id: contextMenu
       ContextMenu {
+        MenuItem {
+          text: "Center and Load"
+          height: Theme.itemSizeExtraSmall
+          onClicked: {
+            mainMap.skipDraw = false
+            idTrackModel.trackCenterAndLoad(nId, mainMap)
+          }
+        }
 
+        MenuItem {
+          text: "Rename"
+          height: Theme.itemSizeExtraSmall
+          onClicked: {
+            idEditText.readOnly = false
+            idEditText.selectAll()
+            idEditText.forceActiveFocus()
+          }
+        }
+
+
+        /*
         MenuItem {
           height: Theme.itemSizeExtraSmall
           text: "Delete"
@@ -218,26 +249,7 @@ SilicaListView {
             })
           }
         }
-
-        MenuItem {
-          text: "Rename"
-          height: Theme.itemSizeExtraSmall
-          onClicked: {
-            idEditText.readOnly = false
-            idEditText.selectAll()
-            idEditText.forceActiveFocus()
-          }
-        }
-
-        MenuItem {
-          text: "Center"
-          height: Theme.itemSizeExtraSmall
-          onClicked: {
-            mainMap.skipDraw = false
-            idTrackModel.trackCenter(nId, mainMap)
-          }
-        }
-
+*/
         MenuItem {
           id: idMenue4
           height: Theme.itemSizeExtraSmall
