@@ -1586,13 +1586,7 @@ void AisPainter::DrawAisMoored(Point& tPos, int nType, const QByteArray& sName)
 
   drawAisMoored(map, xPx, yPx, sName);
 }
-/*
-void AisPainter::Update()
-{
-  g_pIdlePainter->RequestPaint();
-}
 
-*/
 void AisStreamClient::onError(QAbstractSocket::SocketError error)
 {
   g_pRootObject->setProperty("bAisError", true);

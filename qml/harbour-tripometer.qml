@@ -88,9 +88,7 @@ ApplicationWindow {
 
   Component.onCompleted: {
 
-    // pageStack.pushAttached(idMapPage)
-    // console.log("int db")
-    // Lib.initDB()
+    // Init of lib done in GpsMap completed
   }
   FontLoader {
     id: webFont
@@ -209,22 +207,12 @@ ApplicationWindow {
 
         transform: Rotation {
           id: rotation
-
           origin.x: flipable.width / 2
           origin.y: flipable.height / 2
           axis.x: 0
           axis.y: 1
           axis.z: 0 // set axis.y to 1 to rotate around y-axis
           angle: 0 // the default angle
-
-
-          /*
-          onAngleChanged: {
-            if (angle === 180)
-              idApp.bIsRotated = true
-            else
-              idApp.bIsRotated = false
-          }*/
         }
 
         states: State {

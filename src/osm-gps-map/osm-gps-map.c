@@ -163,7 +163,7 @@ enum
   //PROP_SHOW_TRIP_HISTORY,
   //PROP_AUTO_DOWNLOAD,
   // PROP_REPO_URI,
-  PROP_PROXY_URI,
+  // PROP_PROXY_URI,
   PROP_TILE_CACHE_DIR,
   PROP_TILE_CACHE_BASE_DIR,
   PROP_TILE_CACHE_DIR_IS_FULL_PATH,
@@ -1514,24 +1514,6 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NULL)
     return FALSE;
 
-  /* don't redraw the entire map while the OSD is doing */
-  /* some animation or the like. This is to keep the animation */
-  /* fluid */
-  /*
-  if (priv->layers)
-  {
-    for (list = priv->layers; list != NULL; list = list->next)
-    {
-      OsmGpsMapLayer* layer = list->data;
-      if (osm_gps_map_layer_busy(layer))
-      {
-        g_message("busy");
-        return FALSE;
-      }
-    }
-  }
-
-  */
 
   priv->redraw_cycle++;
 
@@ -1544,11 +1526,7 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   osm_gps_map_fill_tiles_pixel(map);
   osm_gps_map_print_tracks(map);
 
-  // draw in gps layer
-  // osm_gps_map_draw_gps_point(map);
   osm_gps_map_print_images(map);
-  // for (list = priv->layers; list != NULL; list = list->next)
-  //   osm_gps_map_layer_draw(OSM_GPS_MAP_LAYER(list->data), priv->cr, map);
 
   osm_gps_map_purge_cache(map);
 
@@ -1562,7 +1540,6 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
 gboolean osm_gps_map_idle_redraw(OsmGpsMap* map)
 {
   OsmGpsMapPrivate* priv = map->priv;
-  // g_message("osm_gps_map_idle_redraw");
   priv->idle_map_redraw = 0;
   osm_gps_map_redraw(map);
   return FALSE;
@@ -1791,26 +1768,7 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_AUTO_CENTER:
     priv->map_auto_center = g_value_get_boolean(value);
     break;
-    /*
-  case PROP_DOUBLE_PIXEL:
-    priv->double_pixel = g_value_get_boolean(value);
-    if (!priv->idle_map_redraw)
-      priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, (gpointer)map);
-    break;
-
-  case PROP_RECORD_TRIP_HISTORY:
-    priv->record_trip_history = g_value_get_boolean(value);
-    break;
-  case PROP_SHOW_TRIP_HISTORY:
-    priv->show_trip_history = g_value_get_boolean(value);
-    break;
-  case PROP_AUTO_DOWNLOAD:
-    priv->map_auto_download = g_value_get_boolean(value);
-    break;
-      */
-    //  case PROP_REPO_URI:
-    //    priv->repo_const_uri = g_value_dup_string(value);
-    //    break;
+/*
   case PROP_PROXY_URI:
     if (g_value_get_string(value))
     {
@@ -1821,6 +1779,8 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
       priv->proxy_uri = NULL;
 
     break;
+
+    */
   case PROP_TILE_CACHE_DIR:
     priv->tile_dir = g_value_dup_string(value);
     break;
@@ -1939,9 +1899,9 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   // case PROP_REPO_URI:
   //  g_value_set_string(value, priv->repo_uri);
   //  break;
-  case PROP_PROXY_URI:
-    g_value_set_string(value, priv->proxy_uri);
-    break;
+ // case PROP_PROXY_URI:
+ //   g_value_set_string(value, priv->proxy_uri);
+ //    break;
   case PROP_TILE_CACHE_DIR:
     g_value_set_string(value, priv->cache_dir);
     break;

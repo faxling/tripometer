@@ -40,8 +40,6 @@
 #endif
 
 #define DATE_FORMAT "%FT%T"
-//#define TRACK_CAPTURE_ENABLED "track_capture_enabled"
-// #define TRACK_CAPTURE_LAST    "track_capture_last"
 
 /* --------------------------------------------------------------- */
 
@@ -116,11 +114,6 @@ struct _MaepGeodataPrivate {
   /* Waypoints. */
   GArray *way_points;
   gint iwpt_highlight; /* Negative for no highlight. */
-
-  /* Timer for autosaving. */
- //  gchar *path;
- //  gboolean dirty;
- //  guint timer_handler;
 
   /* Bounding box of the track. */
   coord_t bb_top_left, bb_bottom_right;
@@ -216,10 +209,6 @@ static void track_finalize(GObject *obj)
 
   track_state = MAEP_GEODATA(obj);
 
-  /* stop running timeout timer if present */
-  // maep_geodata_set_autosave_period(track_state, 0);
-  // maep_geodata_set_autosave_path(track_state, NULL);
-
   track_t *track = track_state->priv->track;
   while(track) {
     track_t *next = track->next;
@@ -286,12 +275,6 @@ static void maep_geodata_init(MaepGeodata *obj)
   obj->priv->iwpt_highlight = -1;
 }
 
-
-/*
-static char *build_path(void) {
-  return g_strdup_printf("%s/%s/track.gpx", g_get_user_data_dir(), APP);
-}
-*/
 
 static GQuark error_quark = 0;
 GQuark track_get_quark()
@@ -566,80 +549,6 @@ static MaepGeodata *track_parse_doc(xmlDocPtr doc) {
 
 
 
-/*
-static gboolean track_autosave(gpointer data) {
-  MaepGeodata *track_state = MAEP_GEODATA(data);
-  GError *error;
-
-  if (!track_state->priv->dirty)
-    return TRUE;
-
-  g_message("TRACK: autosave to '%s'.", track_state->priv->path);
-
-
-  gchar *dirname = g_path_get_dirname(track_state->priv->path);
-  g_mkdir_with_parents(dirname, 0700);
-  g_free(dirname);
-
-  error = (GError*)0;
-
-
-  maep_geodata_to_file(track_state, track_state->priv->path, &error);
-  if (error)
-  {
-    g_warning("%s", error->message);
-    g_error_free(error);
-  }
-  
-  return TRUE;
-}
-*/
-/*
- *
-gboolean maep_geodata_set_autosave_period(MaepGeodata *track_state, guint elaps)
-{
-  g_return_val_if_fail(MAEP_IS_GEODATA(track_state), FALSE);
-
-  if (track_state->priv->timer_handler) {
-    g_source_remove(track_state->priv->timer_handler);
-    track_state->priv->timer_handler = 0;
-  }
-
-  if (elaps > 0) {
-    g_message("Track: adding timeout every %ds.", elaps);
-    if (!track_state->priv->path)
-      track_state->priv->path = build_path();
-    track_state->priv->timer_handler = g_timeout_add_seconds(elaps, track_autosave, track_state);
-
-  }
-
-  return TRUE;
-}
-const gchar* maep_geodata_get_autosave_path(const MaepGeodata *track_state)
-{
-  g_return_val_if_fail(MAEP_IS_GEODATA(track_state), NULL);
-
-  return track_state->priv->path;
-}
-gboolean maep_geodata_set_autosave_path(MaepGeodata *track_state, const gchar *path)
-{
-  g_return_val_if_fail(MAEP_IS_GEODATA(track_state), FALSE);
-
-  if (track_state->priv->path)
-    g_free(track_state->priv->path);
-  track_state->priv->path = NULL;
-
-  if (path && path[0])
-    track_state->priv->path = g_strdup(path);
-
-  if (track_state->priv->timer_handler && !track_state->priv->path)
-    track_state->priv->path = build_path();
-
-  return TRUE;
-}
-*/
-
-
 
 MaepGeodata *maep_geodata_new_from_file(const char *filename, GError **error) {
   xmlDoc *doc = NULL;
@@ -898,47 +807,7 @@ gfloat maep_get_dist_iter_metric(MaepGeodataTrackIter *tI1, MaepGeodataTrackIter
 
 }
 
-/*
-gfloat maep_get_dist_in_track_metric(MaepGeodata *track_state, const coord_t* tP1 , const coord_t* tP2 )
-{
-  g_return_val_if_fail(MAEP_IS_GEODATA(track_state), 0);
 
-
-  MaepGeodataTrackIter tI1,tI2;
-  int iIndex1,iIndex2;
-  MaepGeodataTrackIter tICurrent;
-  maep_geodata_track_iter_new(&tICurrent, track_state);
-  gfloat fD1 = FLT_MAX;
-  gfloat fD2 = FLT_MAX;
-  int nStatus = 0;
-  int iIndex = 0;
-  while (maep_geodata_track_iter_next(&tICurrent,&nStatus))
-  {
-
-    float fDist = ABS(get_distance(tICurrent.cur->coord.rlat,tICurrent.cur->coord.rlon, tP1->rlat, tP1->rlon));
-    if (fDist < fD1)
-    {
-      tI1 = tICurrent;
-      fD1 = fDist;
-      iIndex1 = iIndex;
-    }
-    fDist = ABS(get_distance(tICurrent.cur->coord.rlat,tICurrent.cur->coord.rlon, tP2->rlat, tP2->rlon));
-    if (fDist < fD2)
-    {
-      tI2 = tICurrent;
-      fD2 = fDist;
-      iIndex2 = iIndex;
-    }
-    ++iIndex;
-  }
-
-  if (iIndex2 > iIndex1)
-    maep_get_dist_iter_metric(&tI1,&tI2);
-  else
-    maep_get_dist_iter_metric(&tI2,&tI1);
-
-}
-*/
 guint maep_geodata_track_get_duration(const MaepGeodata *track_state) {
   guint duration, i;
   track_t *track;
@@ -1192,8 +1061,6 @@ void maep_geodata_add_trackpoint(MaepGeodata *track_state,
   track_state->priv->metricLength +=
       _seg_add_point(seg, &new_point, track_state->priv->metricAccuracy);
 
-  // g_message("gps: creating new point %g (%g)",
- // track_state->priv->metricLength, h_acc);
 
   /* Updating bounding box. */
   track_state_update_bb0(track_state, &new_point);
