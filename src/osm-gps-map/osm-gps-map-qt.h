@@ -131,7 +131,7 @@ private:
 
   QJsonArray m_ocBoxLast;
   QJsonArray m_ocBoxLastSent;
-  IdlePainter* m_pIdlePainter;
+  IdlePainter* m_pIdlePainter = nullptr;
   MssTimer* m_pBoundaryTimer;
   MssTimer* m_pVesselTimeoutTimer;
   Point m_ul;
@@ -378,10 +378,10 @@ namespace Maep
     void gpsRefreshRateChanged(unsigned int rate);
     void enableCompassChanged(bool enable);
     void trippleDrag();
-    void enableWeatherChanged();
-    void enableCrossHairChanged();
-    void enableAisChanged();
-    void skipDrawChanged();
+    void enableWeatherChanged(bool enable);
+    void enableCrossHairChanged(bool enable);
+    void enableAisChanged(bool enable);
+    void skipDrawChanged(bool enable);
   public slots:
     void setSource(Source source);
     void setAutoCenter(bool status);

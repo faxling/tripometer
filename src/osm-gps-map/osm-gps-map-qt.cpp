@@ -141,8 +141,8 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
   char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
-                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center", FALSE,
-                                 "gps-track-point-radius", 10, NULL));
+                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
+                                 FALSE, "gps-track-point-radius", 10, NULL));
 
   g_free(path);
 
@@ -285,7 +285,10 @@ void Maep::GpsMap::enableAis(bool b)
   else
     m_AisStreamClient.reset(nullptr);
 
-  osm_gps_map_idle_redraw(map);
+
+  emit enableAisChanged(b);
+
+  // osm_gps_map_idle_redraw(map);
   // emit enableAisChanged();
 }
 
@@ -299,7 +302,9 @@ void Maep::GpsMap::enableCrossHair(bool b)
 {
   bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_CROSSHAIR);
   *pb = b;
-  g_signal_emit_by_name(G_OBJECT(map), "dirty");
+  m_pIdlePainter->RequestPaint();
+  emit enableCrossHairChanged(b);
+  // g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
 bool Maep::GpsMap::compassEnabled()
@@ -326,20 +331,26 @@ void Maep::GpsMap::enableCompass(bool enable)
     }
     compass.start();
   }
+  m_pIdlePainter->RequestPaint();
 
-  g_signal_emit_by_name(G_OBJECT(map), "dirty");
+  emit enableCompassChanged(enable);
+  // g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
 void Maep::GpsMap::enableWeather(bool b)
 {
   bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
   *pb = b;
-  g_signal_emit_by_name(G_OBJECT(map), "dirty");
+  m_pIdlePainter->RequestPaint();
+  emit enableWeatherChanged(b);
+
+  //  g_signal_emit_by_name(G_OBJECT(map), "dirty");
 }
 
 bool Maep::GpsMap::weatherEnabled()
 {
   bool* pb = (bool*)g_object_get_data(G_OBJECT(map), GCONF_KEY_WEATHER);
+  m_pIdlePainter->RequestPaint();
   return *pb;
 }
 
@@ -1155,7 +1166,6 @@ void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
   QMetaObject::invokeMethod(this, "loadTrack", Q_ARG(QString, sTrackName), Q_ARG(int, nId));
   QMetaObject::invokeMethod(this, "scrollToBottom");
-
 }
 
 void Maep::GpsMap::saveMark(int nId)
@@ -1411,9 +1421,9 @@ void Maep::GpsMap::unsetGps()
 void Maep::GpsMap::compassReadingChanged()
 {
 
-  bool bFlip = property("bFlipped").toBool();
+  //  bool bFlip = property("bFlipped").toBool();
 
-  if (!bFlip)
+  if (g_nSkipDraw == 1)
     return;
 
   if (compassEnabled() && compass.isActive())
@@ -1476,7 +1486,7 @@ void Maep::GpsMap::setTrackCapture(bool status)
 void Maep::GpsMap::setTrack(Maep::Track* track)
 {
 
-  //clear current
+  // clear current
   osm_gps_map_clear_tracks(map);
 
   if (track_current && track_current->parent() == this)
@@ -1651,7 +1661,7 @@ void TimedWS::onPong(quint64, const QByteArray&)
 
 void AisStreamClient::onStateChanged(QAbstractSocket::SocketState state)
 {
- // qDebug() << "state changed" << state;
+  // qDebug() << "state changed" << state;
 }
 
 AisStreamClient::AisStreamClient(OsmGpsMap* p, IdlePainter* pIdlePainter)

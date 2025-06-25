@@ -194,8 +194,8 @@ Page {
         height: Theme.itemSizeExtraSmall
         width: Theme.itemSizeExtraSmall
         onClicked: {
-          checked = !checked
-          mainMap.enable_compass = checked
+          // checked = !checked
+          mainMap.enable_compass = !checked
         }
       }
 
@@ -216,8 +216,8 @@ Page {
         height: Theme.itemSizeExtraSmall
         width: Theme.itemSizeExtraSmall
         onClicked: {
-          checked = !checked
-          mainMap.enable_crossHair = checked
+          //checked = !checked
+          mainMap.enable_crossHair = !checked
         }
       }
 
@@ -237,8 +237,8 @@ Page {
         height: Theme.itemSizeExtraSmall
         width: Theme.itemSizeExtraSmall
         onClicked: {
-          checked = !checked
-          mainMap.enable_weather = checked
+          //  checked = !checked
+          mainMap.enable_weather = !checked
         }
       }
     }
@@ -265,8 +265,8 @@ Page {
         height: Theme.itemSizeExtraSmall
         width: Theme.itemSizeExtraSmall
         onClicked: {
-          checked = !checked
-          idApp.bEnableAis = checked
+          //checked = !checked
+          idApp.bEnableAis = !checked
         }
       }
     }

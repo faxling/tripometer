@@ -555,9 +555,17 @@ Item {
   }
   DockedPanel {
 
-    onOpenChanged: {
-      idTrackModel.trackUnselectAll()
-      idMap.skipDraw = open
+    onMovingChanged: {
+      if (moving)
+        idMap.skipDraw = true
+      else {
+        if (open)
+          idMap.skipDraw = true
+        else {
+          idTrackModel.trackUnselectAll()
+          idMap.skipDraw = false
+        }
+      }
     }
     id: idTrackPanel
     width: parent.width

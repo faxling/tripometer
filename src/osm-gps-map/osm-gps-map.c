@@ -168,8 +168,8 @@ enum
   PROP_TILE_CACHE_BASE_DIR,
   PROP_TILE_CACHE_DIR_IS_FULL_PATH,
   PROP_ZOOM,
-  PROP_MAX_ZOOM,
-  PROP_MIN_ZOOM,
+ // PROP_MAX_ZOOM,
+ //  PROP_MIN_ZOOM,
   PROP_FACTOR,
   PROP_LATITUDE,
   PROP_LONGITUDE,
@@ -1833,12 +1833,15 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_ZOOM:
     osm_gps_map_set_zoom(map, g_value_get_int(value));
     break;
+    /*
   case PROP_MAX_ZOOM:
     priv->max_zoom = g_value_get_int(value);
     break;
   case PROP_MIN_ZOOM:
     priv->min_zoom = g_value_get_int(value);
     break;
+
+    */
   case PROP_FACTOR:
     osm_gps_map_set_factor(map, g_value_get_float(value));
     break;
@@ -1951,12 +1954,15 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_ZOOM:
     g_value_set_int(value, priv->map_zoom);
     break;
+    /*
   case PROP_MAX_ZOOM:
     g_value_set_int(value, priv->max_zoom);
     break;
   case PROP_MIN_ZOOM:
     g_value_set_int(value, priv->min_zoom);
     break;
+
+    */
   case PROP_FACTOR:
     g_value_set_float(value, priv->map_factor);
     break;
@@ -2087,6 +2093,8 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
                                                2.8, 1., G_PARAM_READWRITE);
   g_object_class_install_property(object_class, PROP_FACTOR, properties[PROP_FACTOR]);
 
+
+  /*
   g_object_class_install_property(
       object_class, PROP_MAX_ZOOM,
       g_param_spec_int("max-zoom", "max zoom", "maximum zoom level", MIN_ZOOM, MAX_ZOOM,
@@ -2096,6 +2104,8 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       object_class, PROP_MIN_ZOOM,
       g_param_spec_int("min-zoom", "min zoom", "minimum zoom level", MIN_ZOOM, MAX_ZOOM,
                        OSM_MIN_ZOOM, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+
+  */
 
   properties[PROP_LATITUDE] = g_param_spec_float("latitude", "latitude", "latitude in degrees",
                                                  -90.0, 90.0, 0, G_PARAM_READABLE);

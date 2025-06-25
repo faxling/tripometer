@@ -28,9 +28,9 @@
 
 /* #include <gdk/gdk.h> */
 #include <cairo.h>
-#if USE_LIBSOUP22
-#include <libsoup/soup.h>
-#endif
+//#if USE_LIBSOUP22
+//#include <libsoup/soup.h>
+//#endif
 #include "osm-gps-map.h"
 
 #define MAX_ZOOM 20
@@ -38,7 +38,7 @@
 
 #define OSM_REPO_URI        "http://tile.openstreetmap.org/#Z/#X/#Y.png"
 #define OSM_MIN_ZOOM        1
-#define OSM_MAX_ZOOM        18
+#define OSM_MAX_ZOOM        20
 #define OSM_IMAGE_FORMAT    "png"
 
 #define URI_MARKER_X    "#X"
