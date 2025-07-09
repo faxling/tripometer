@@ -41,15 +41,15 @@
 #define OSD_COORDINATES
 #undef OSD_NAV
 
-#define MAP_DRAG_LIMIT      (10)
-#define MAP_KEY_FULLSCREEN  GDK_F11
-#define MAP_KEY_ZOOMIN      '+'
-#define MAP_KEY_ZOOMOUT     '-'
+//#define MAP_DRAG_LIMIT      (10)
+// #define MAP_KEY_FULLSCREEN  GDK_F11
+//#define MAP_KEY_ZOOMIN      '+'
+// #define MAP_KEY_ZOOMOUT     '-'
 
-#define MAP_KEY_UP          GDK_Up
-#define MAP_KEY_DOWN        GDK_Down
-#define MAP_KEY_LEFT        GDK_Left
-#define MAP_KEY_RIGHT       GDK_Right
+//#define MAP_KEY_UP          GDK_Up
+//#define MAP_KEY_DOWN        GDK_Down
+// #define MAP_KEY_LEFT        GDK_Left
+// #define MAP_KEY_RIGHT       GDK_Right
 
 
 #ifdef SAILFISH

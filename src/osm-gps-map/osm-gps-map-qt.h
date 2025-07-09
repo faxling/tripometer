@@ -431,8 +431,8 @@ namespace Maep
 
     gboolean dragging;
     gboolean zooming;
-    int numberPendingReq() { return numberPendingReq_; };
-    int numberPendingReq_ = 0;
+    int numberPendingReq() { return m_numberPendingReq; };
+    int m_numberPendingReq = 0;
     MssTimer* m_pReqCountTimer = 0;
 
     /* Screen display. */

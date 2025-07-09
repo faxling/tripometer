@@ -236,7 +236,7 @@ Item {
         y: 20
         height: 20
         color: "white"
-        width: (idMap.numberPendingReq / 300.0) * parent.width
+        width: (idMap.numberPendingReq / 100.0) * parent.width
       }
     }
 

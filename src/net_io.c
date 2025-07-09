@@ -34,7 +34,7 @@ GQuark net_io_get_quark()
     error_quark = g_quark_from_static_string("MAEP_NET_IO");
   return error_quark;
 }
-
+/*
 static struct http_message_s
 {
   int id;
@@ -56,13 +56,14 @@ static struct http_message_s
                      {503, "Service Unavailable"},
                      {0, NULL}};
 
+                     */
 /* structure shared between worker and master thread */
 typedef struct
 {
   struct curl_slist* chunk;
-  struct proxy_config* proxy;
+  // struct proxy_config* proxy;
   char* url;
-  char* user;
+ //  char* user;
 
   /* curl/http related stuff: */
   CURLcode res;
@@ -89,12 +90,12 @@ void net_io_finalize()
 
 static void request_free(net_io_request_t* request)
 {
-  if (request->proxy)
-    proxy_config_free(request->proxy);
+ // if (request->proxy)
+ //   proxy_config_free(request->proxy);
   if (request->url)
     g_free(request->url);
-  if (request->user)
-    g_free(request->user);
+  //if (request->user)
+  //   g_free(request->user);
 
   if (request->result.data.ptr)
   {
@@ -119,7 +120,7 @@ static size_t mem_write(void* ptr, size_t size, size_t nmemb, void* stream)
   }
   return nmemb;
 }
-
+/*
 static void set_proxy(CURL* curl, const struct proxy_config* config)
 {
   if (config->host)
@@ -135,6 +136,7 @@ static void set_proxy(CURL* curl, const struct proxy_config* config)
     }
   }
 }
+*/
 
 // In Main thread
 static gboolean net_io_idle_cb(gpointer data)
@@ -189,13 +191,14 @@ static void* worker_thread(void* ptr)
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &request->result.data);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mem_write);
 
-  set_proxy(curl, request->proxy);
+  // set_proxy(curl, request->proxy);
 
   /* set user name and password for the authentication */
 
+  /*
   if (request->user)
     curl_easy_setopt(curl, CURLOPT_USERPWD, request->user);
-
+*/
   /* play nice and report some user agent */
 
   if (request->chunk)
@@ -240,9 +243,9 @@ static void* worker_thread(void* ptr)
 static gboolean net_io_do_async(net_io_request_t* request)
 {
   GError* error = 0;
-  if (g_nOutstaningCurls > 300)
+  if (g_nOutstaningCurls > 100)
   {
-    g_warning("to many");
+  //   g_message("to many");
     request_free(request);
     return FALSE;
   }
@@ -252,7 +255,7 @@ static gboolean net_io_do_async(net_io_request_t* request)
 
   if (error != 0)
   {
-    g_warning("failed to create the worker thread");
+    g_message("failed to create the worker thread");
     request_free(request);
     g_error_free(error);
     return FALSE;
@@ -266,7 +269,7 @@ void net_io_append_header(struct curl_slist** chunk, const char* szVal)
   *chunk = curl_slist_append(*chunk, szVal);
 }
 
-
+/*
 net_result_t net_io_download_sync(const char* url, struct curl_slist* chunk)
 {
   net_result_t result;
@@ -294,11 +297,11 @@ net_result_t net_io_download_sync(const char* url, struct curl_slist* chunk)
 
   return result;
 }
-
+*/
 net_io_t net_io_download_async(const char* url, net_io_cb cb, gpointer data, struct curl_slist* chunk)
 {
   net_io_request_t* request = g_new0(net_io_request_t, 1);
-  request->proxy = proxy_config_get();
+  // request->proxy = proxy_config_get();
   request->url = g_strdup(url);
   request->cb = cb;
   request->data = data;

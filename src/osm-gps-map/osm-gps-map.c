@@ -70,11 +70,12 @@ struct _OsmGpsMapPrivate
   gfloat windDirectionRad;
   gfloat windSpeedMs;
   gfloat tempDeg;
+  gfloat uvIndex;
   int map_zoom;
   int max_zoom;
   int min_zoom;
   gboolean map_auto_center;
-  //gboolean map_auto_download;
+  // gboolean map_auto_download;
   int map_x;
   int map_y;
 
@@ -104,9 +105,9 @@ struct _OsmGpsMapPrivate
   gboolean the_navionics;
 
   // gps tracking state
-  //gboolean record_trip_history;
-  //gboolean show_trip_history;
-  //MaepGeodata* trip_history;
+  // gboolean record_trip_history;
+  // gboolean show_trip_history;
+  // MaepGeodata* trip_history;
   coord_t* osm_gps;
   float osm_gps_heading;
   gboolean osm_gps_valid;
@@ -130,7 +131,7 @@ struct _OsmGpsMapPrivate
   int ui_gps_point_inner_radius;
   int ui_gps_point_outer_radius;
 
-  guint fullscreen : 1;
+//   guint fullscreen : 1;
   guint is_disposed : 1;
   //   guint double_pixel : 1;
 };
@@ -159,17 +160,17 @@ enum
 {
   PROP_0,
   PROP_AUTO_CENTER,
-  //PROP_RECORD_TRIP_HISTORY,
-  //PROP_SHOW_TRIP_HISTORY,
-  //PROP_AUTO_DOWNLOAD,
+  // PROP_RECORD_TRIP_HISTORY,
+  // PROP_SHOW_TRIP_HISTORY,
+  // PROP_AUTO_DOWNLOAD,
   // PROP_REPO_URI,
   // PROP_PROXY_URI,
   PROP_TILE_CACHE_DIR,
   PROP_TILE_CACHE_BASE_DIR,
   PROP_TILE_CACHE_DIR_IS_FULL_PATH,
   PROP_ZOOM,
- // PROP_MAX_ZOOM,
- //  PROP_MIN_ZOOM,
+  // PROP_MAX_ZOOM,
+  //  PROP_MIN_ZOOM,
   PROP_FACTOR,
   PROP_LATITUDE,
   PROP_LONGITUDE,
@@ -435,8 +436,6 @@ static float osm_gps_map_get_scale_at_lat(int zoom, gfloat factor, float rlat)
   return cos(rlat) * M_PI * OSM_EQ_RADIUS / (1 << (7 + zoom)) / factor;
 }
 
-
-
 static float get_distance(float lat1, float lon1, float lat2, float lon2)
 {
   float aob =
@@ -685,8 +684,6 @@ void drawAis(OsmGpsMap* map, float v, double speed, double x0, double y0, const 
 
   cairo_set_source_rgb(cr, 0, 0, 0);
   cairo_show_text(cr, szName);
-
-
 }
 
 int loLaToPx(OsmGpsMap* map, float lo, float la, int* x, int* y)
@@ -711,7 +708,6 @@ int loLaToPx(OsmGpsMap* map, float lo, float la, int* x, int* y)
 
   return 1;
 }
-
 
 static void osm_gps_map_print_images(OsmGpsMap* map)
 {
@@ -872,14 +868,12 @@ static void navionics_request_cb(net_result_t* result, gpointer p)
   if (result->data.len > MAXTOKEN)
     return;
 
-
   parse_navionics_key(result->data.ptr, result->data.len, g_szNAVTOKEN_A, g_szNAVTOKEN_C);
 
   sprintf(g_szAUTH, "authorization: Bearer %s", g_szNAVTOKEN_A);
 
   sprintf(g_szNAVURL1, NAVURL1, g_szNAVTOKEN_C);
   sprintf(g_szNAVURL2, NAVURL2, g_szNAVTOKEN_C);
-
 }
 
 void get_navionics_key2()
@@ -897,8 +891,6 @@ void get_navionics_key2()
   net_io_append_header(&chunk,
                        "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                        "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0");
-
-
 
   net_io_download_async("https://maps.garmin.com/marine/api/getNavionicsTokens",
                         navionics_request_cb, 0, chunk);
@@ -1429,8 +1421,8 @@ static void osm_gps_map_print_tracks(OsmGpsMap* map)
   {
     /* g_message("Print a track list!"); */
 
-   // if (priv->show_trip_history)
-   //   osm_gps_map_print_track(priv, priv->trip_history, lw, &max_x, &min_x, &max_y, &min_y, 1);
+    // if (priv->show_trip_history)
+    //   osm_gps_map_print_track(priv, priv->trip_history, lw, &max_x, &min_x, &max_y, &min_y, 1);
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
@@ -1514,7 +1506,6 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   if (priv->map_source == OSM_GPS_MAP_SOURCE_NULL)
     return FALSE;
 
-
   priv->redraw_cycle++;
 
   /* draw transparent background to initialise pixmap */
@@ -1570,7 +1561,7 @@ static void osm_gps_map_init(OsmGpsMap* object)
   priv->map_surf = NULL;
   priv->cr = NULL;
   priv->map_factor = 1.;
-  //priv->trip_history = NULL;
+  // priv->trip_history = NULL;
   priv->osm_gps = g_new0(coord_t, 1);
   priv->osm_gps_valid = FALSE;
   priv->cr_markedImage = NULL;
@@ -1750,7 +1741,7 @@ static void osm_gps_map_finalize(GObject* object)
   g_free(priv->image_format);
 
   /* trip and tracks contain simple non GObject types, so free them here */
-  //osm_gps_map_free_trip(map);
+  // osm_gps_map_free_trip(map);
   osm_gps_map_free_tracks(map);
 
   G_OBJECT_CLASS(osm_gps_map_parent_class)->finalize(object);
@@ -1768,19 +1759,19 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_AUTO_CENTER:
     priv->map_auto_center = g_value_get_boolean(value);
     break;
-/*
-  case PROP_PROXY_URI:
-    if (g_value_get_string(value))
-    {
-      priv->proxy_uri = g_value_dup_string(value);
-      g_debug("Setting proxy server: %s", priv->proxy_uri);
-    }
-    else
-      priv->proxy_uri = NULL;
+    /*
+      case PROP_PROXY_URI:
+        if (g_value_get_string(value))
+        {
+          priv->proxy_uri = g_value_dup_string(value);
+          g_debug("Setting proxy server: %s", priv->proxy_uri);
+        }
+        else
+          priv->proxy_uri = NULL;
 
-    break;
+        break;
 
-    */
+        */
   case PROP_TILE_CACHE_DIR:
     priv->tile_dir = g_value_dup_string(value);
     break;
@@ -1896,12 +1887,12 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
     g_value_set_boolean(value, priv->map_auto_download);
     break;
     */
-  // case PROP_REPO_URI:
-  //  g_value_set_string(value, priv->repo_uri);
-  //  break;
- // case PROP_PROXY_URI:
- //   g_value_set_string(value, priv->proxy_uri);
- //    break;
+    // case PROP_REPO_URI:
+    //  g_value_set_string(value, priv->repo_uri);
+    //  break;
+    // case PROP_PROXY_URI:
+    //   g_value_set_string(value, priv->proxy_uri);
+    //    break;
   case PROP_TILE_CACHE_DIR:
     g_value_set_string(value, priv->cache_dir);
     break;
@@ -2052,7 +2043,6 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
   properties[PROP_FACTOR] = g_param_spec_float("factor", "factor", "zooming adjustment factor", 0.4,
                                                2.8, 1., G_PARAM_READWRITE);
   g_object_class_install_property(object_class, PROP_FACTOR, properties[PROP_FACTOR]);
-
 
   /*
   g_object_class_install_property(
@@ -2590,11 +2580,17 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
   map->priv->map_depth = depthDm;
 }
 
-void osm_gps_map_set_windSpeed(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg)
+void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg, double uvIndex)
 {
+  map->priv->uvIndex = uvIndex;
   map->priv->tempDeg = tempDeg;
   map->priv->windSpeedMs = speedMs;
   map->priv->windDirectionRad = deg2rad(directionDeg);
+}
+
+double uvIndex(OsmGpsMap* map)
+{
+  return map->priv->uvIndex;
 }
 
 double windSpeedMs(OsmGpsMap* map)

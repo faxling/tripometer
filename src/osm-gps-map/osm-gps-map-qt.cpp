@@ -152,9 +152,9 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
 void Maep::GpsMap::Init()
 {
   m_pReqCountTimer = new MssTimer([this] {
-    if (g_nOutstaningCurls != numberPendingReq_)
+    if (g_nOutstaningCurls != m_numberPendingReq)
     {
-      numberPendingReq_ = g_nOutstaningCurls;
+      m_numberPendingReq = g_nOutstaningCurls;
       emit numberPendingReqChanged();
       if (g_nOutstaningCurls == 0)
       {
@@ -284,7 +284,6 @@ void Maep::GpsMap::enableAis(bool b)
   }
   else
     m_AisStreamClient.reset(nullptr);
-
 
   emit enableAisChanged(b);
 
@@ -737,8 +736,10 @@ void curl_wind_cb(net_result_t* result, gpointer data)
     OsmGpsMap* map = static_cast<OsmGpsMap*>(data);
     QJsonDocument oJD = QJsonDocument::fromJson(QByteArray(result->data.ptr, result->data.len));
     auto oJ = oJD.object()["current"].toObject();
-    osm_gps_map_set_windSpeed(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-                              oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble());
+    auto oDaily = oJD.object()["daily"].toObject();
+    auto oUv = oDaily["uv_index_max"].toArray();
+    osm_gps_map_set_meteo(map, oJ["wind_speed_10m"].toDouble() / 3.6,
+                          oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble(), oUv.first().toDouble());
   }
 }
 
@@ -754,7 +755,7 @@ void Maep::GpsMap::getWeatherCurrentPos()
 {
   // constexpr char constString[] = "constString";
   constexpr char WAPI[] = "https://api.open-meteo.com/v1/"
-                          "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m";
+                          "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m&daily=uv_index_max&forecast_days=1";
   coord_t tPos = osm_gps_map_get_center_ordinates(map);
   tPos.rlat = rad2deg(tPos.rlat);
   tPos.rlon = rad2deg(tPos.rlon);
@@ -1595,7 +1596,7 @@ void AisStreamClient::onError(QAbstractSocket::SocketError error)
   else
     m_webSocket.close();
 
-  g_message("onError");
+  g_message("AisStreamClient socket error");
 }
 
 AisStreamClient::~AisStreamClient()
@@ -1653,7 +1654,7 @@ void TimedWS::onPong(quint64, const QByteArray&)
   m_nLastPong = time(0);
 }
 
-void AisStreamClient::onStateChanged(QAbstractSocket::SocketState state)
+void AisStreamClient::onStateChanged(QAbstractSocket::SocketState )
 {
   // qDebug() << "state changed" << state;
 }

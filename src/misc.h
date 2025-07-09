@@ -44,7 +44,7 @@ void gconf_set_float(const char *key, gfloat value);
 gfloat gconf_get_float(const char *key, gfloat default_value);
 
 char *url_encode(const char *str);
-
+/*
 struct proxy_config {
     // Host is NULL if no proxy should be used
     gchar *host;
@@ -54,9 +54,9 @@ struct proxy_config {
     gchar *username;
     gchar *password;
 };
-
-struct proxy_config *proxy_config_get();
-void proxy_config_free(struct proxy_config *config);
+*/
+//struct proxy_config *proxy_config_get();
+// void proxy_config_free(struct proxy_config *config);
 
 
 

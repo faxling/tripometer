@@ -156,7 +156,10 @@ OsmGpsMap* osm_gps_map_new(void);
 // Things for seacharts
 int osm_gps_map_depth(OsmGpsMap* map);
 void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
-void osm_gps_map_set_windSpeed(OsmGpsMap* map,double speedMs, double directionDeg, double tempDeg);
+
+// Things for weather
+void osm_gps_map_set_meteo(OsmGpsMap* map,double speedMs, double directionDeg, double tempDeg,double uvIndex);
+double uvIndex(OsmGpsMap* map);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
 double tempDeg(OsmGpsMap* map);

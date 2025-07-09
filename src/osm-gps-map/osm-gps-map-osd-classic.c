@@ -295,7 +295,6 @@ static void drawLineFromTo(cairo_t* cr, double nx, double ny, double v, int nR)
   cairo_line_to(cr, x * nR + nx, y * nR + ny);
 }
 
-
 // #define MAXARR (OSD_CROSSHAIR_H / 2 - 5)
 static void drawArrowTo(cairo_t* cr, double v, int nR)
 {
@@ -330,6 +329,23 @@ static void drawCrosshair(cairo_t* cr)
 
 extern int g_nFontSizePx;
 
+void setStyle(cairo_t* cr, unsigned int nRGB, double fWidth)
+{
+  if (cr == 0)
+    return;
+  cairo_set_line_width(cr, fWidth);
+  static double rgb[3];
+  rgbToCario(nRGB, rgb);
+  cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+}
+
+void setColor(cairo_t* cr, unsigned int nRGB)
+{
+  static double rgb[3];
+  rgbToCario(nRGB, rgb);
+  cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+}
+
 static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 {
   osd_priv_t* priv = (osd_priv_t*)osd->priv;
@@ -348,11 +364,13 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
-  cairo_set_source_rgb(cr, 0, 0xf4 / 255.0, 0xfb / 255.0);
-  cairo_set_line_width(cr, 4);
+
+
+
+  setStyle(cr, 0x00f4fb, 4);
+
   drawCrosshair(cr);
-  cairo_set_line_width(cr, 1);
-  cairo_set_source_rgb(cr, 0, 0, 0);
+  setStyle(cr, 0, 1);
   drawCrosshair(cr);
   if (*priv->pbWeather == 0)
   {
@@ -360,21 +378,24 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
     return;
   }
 
+
+  // Draw weather
+
   double w = windDirRad(osd->map) + M_PI;
-
-  cairo_set_line_width(cr, 2);
-  cairo_set_source_rgb(cr, 0x33 / 255.0, 0, 255);
-
-  moveTo(cr, w, 5);
   int nTemp = lround(tempDeg(osd->map));
   int nMs = lround(windSpeedMs(osd->map));
+  double fUvIndex = uvIndex(osd->map);
+  setStyle(cr, 0xffdb00,7);
+  cairo_arc(cr, OSD_CROSSHAIR_WH / 2, OSD_CROSSHAIR_WH / 2, OSD_CROSSHAIR_RADIUS / 1.5, M_PI , M_PI + (M_PI * (fUvIndex / 6)));
+  cairo_stroke(cr);
+
   int nAL = OSD_CROSSHAIR_RADIUS * (nMs / 5.0) + OSD_CROSSHAIR_RADIUS;
-  cairo_set_source_rgb(cr, 0, 0xf4 / 255.0, 0xfb / 255.0);
-  cairo_set_line_width(cr, 3);
-  drawArrowTo(cr, w, nAL);
-  cairo_set_line_width(cr, 1);
   moveTo(cr, w, 5);
-  cairo_set_source_rgb(cr, 0x33 / 255.0, 0, 255);
+  setStyle(cr, 0x00f4fb, 3);
+  drawArrowTo(cr, w, nAL);
+
+  moveTo(cr, w, 5);
+  setStyle(cr, 0x3300ff, 1);
   drawArrowTo(cr, w, nAL);
   cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
   cairo_set_source_rgb(cr, 0, 0, 0.0);
@@ -390,7 +411,8 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   if (nTemp < 0)
     nMargin *= 2;
 
-  cairo_move_to(cr, OSD_CROSSHAIR_WH / 2  - nMargin, OSD_CROSSHAIR_WH / 2 + g_nFontSizePx - nMargin / 3);
+  cairo_move_to(cr, OSD_CROSSHAIR_WH / 2 - nMargin,
+                OSD_CROSSHAIR_WH / 2 + g_nFontSizePx - nMargin / 3);
 
   cairo_show_text(cr, temp_str);
 
