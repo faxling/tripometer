@@ -56,7 +56,7 @@ static void osm_gps_map_qt_coordinate(Maep::GpsMap* widget, GParamSpec* pspec, O
 static void osm_gps_map_qt_auto_center(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGpsMap* map);
 static void osm_gps_map_qt_places(Maep::GpsMap* widget, GSList* places);
-
+float DOWLOAD_SQUARE_SIZE = 0.01;
 static void osm_gps_map_qt_places_failure(Maep::GpsMap* widget, GError* error);
 
 extern "C" void parse_navionics_key(const char* pResponce, int nLen, char* a_pToken, char* c_pToken)
@@ -265,6 +265,7 @@ void Maep::GpsMap::Init()
   track_capture = false;
   track_current = NULL;
   enableCompass(compassEnabled());
+  m_pTileDownloader.reset(new TileDownloader(map));
 }
 
 bool Maep::GpsMap::aisEnabled()
@@ -452,6 +453,9 @@ void Maep::GpsMap::mapUpdate()
     m_AisStreamClient->DrawAllAis();
   }
 
+  if (m_bDownload == true)
+    drawDownloadSquare(map, DOWLOAD_SQUARE_SIZE);
+
   int drag_mouse_dx, drag_mouse_dy;
   osm_gps_map_get_offset(map, &drag_mouse_dx, &drag_mouse_dy);
   cairo_translate(cr, drag_mouse_dx, drag_mouse_dy);
@@ -489,7 +493,7 @@ void Maep::GpsMap::paintTo(QPainter* painter, int width, int height)
   QRectF target(0, 0, width, height);
   QRectF source((w - width) * 0.5, (h - height) * 0.5, width, height);
 
-  img->pixel(width / 2, height / 2);
+  //  img->pixel(width / 2, height / 2);
 
   painter->drawImage(target, *img, source);
   QRgb o = img->pixel(img->width() / 2, img->height() / 2);
@@ -739,7 +743,8 @@ void curl_wind_cb(net_result_t* result, gpointer data)
     auto oDaily = oJD.object()["daily"].toObject();
     auto oUv = oDaily["uv_index_max"].toArray();
     osm_gps_map_set_meteo(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-                          oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble(), oUv.first().toDouble());
+                          oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble(),
+                          oUv.first().toDouble());
   }
 }
 
@@ -755,7 +760,8 @@ void Maep::GpsMap::getWeatherCurrentPos()
 {
   // constexpr char constString[] = "constString";
   constexpr char WAPI[] = "https://api.open-meteo.com/v1/"
-                          "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m&daily=uv_index_max&forecast_days=1";
+                          "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m&daily="
+                          "uv_index_max&forecast_days=1";
   coord_t tPos = osm_gps_map_get_center_ordinates(map);
   tPos.rlat = rad2deg(tPos.rlat);
   tPos.rlon = rad2deg(tPos.rlon);
@@ -1536,6 +1542,11 @@ void Maep::GpsMap::gpsToTrack()
     track_current->addPoint(lastGps);
 }
 
+void Maep::GpsMap::downloadMapSquare()
+{
+  m_pTileDownloader->DownloadAsyc([=](int nP) { setProperty("downloadProgress", nP); });
+}
+
 QMap<int, AisPainter::C> AisPainter::m_ocColorTable;
 
 AisPainter::AisPainter(OsmGpsMap* _map)
@@ -1654,7 +1665,7 @@ void TimedWS::onPong(quint64, const QByteArray&)
   m_nLastPong = time(0);
 }
 
-void AisStreamClient::onStateChanged(QAbstractSocket::SocketState )
+void AisStreamClient::onStateChanged(QAbstractSocket::SocketState)
 {
   // qDebug() << "state changed" << state;
 }
@@ -1847,4 +1858,95 @@ void AisStreamClient::onSslErrors(const QList<QSslError>& errors)
   qWarning() << "SSL errors:" << errors;
   g_pRootObject->setProperty("bAisError", true);
   m_webSocket.close();
+}
+
+Worker::Worker(OsmGpsMap* _map)
+{
+  m_map = _map;
+}
+
+Worker::~Worker()
+{
+}
+
+void Worker::process()
+{
+
+  qDebug("Download tiles");
+  int x1, y1, x2, y2;
+  int nProgress = 1;
+  emit progress(nProgress);
+  OsmGpsMapSource_t source;
+  g_object_get(m_map, "map-source", &source, NULL);
+  int max_zoom = osm_gps_map_source_get_max_zoom(source);
+  int nCount = 0;
+  int nTotalCount = 0;
+  for (int zoom = 4; zoom <= max_zoom; ++zoom)
+  {
+    getDownloadSquareTile(m_map, DOWLOAD_SQUARE_SIZE, zoom, &x1, &y1, &x2, &y2);
+    nTotalCount += (x2 - x1) * (y2 - y1);
+  }
+
+  g_message("TotalCount %d", nTotalCount);
+
+  auto proc = [&]() {
+    for (int zoom = 4; zoom <= max_zoom; ++zoom)
+    {
+      getDownloadSquareTile(m_map, DOWLOAD_SQUARE_SIZE, zoom, &x1, &y1, &x2, &y2);
+      for (int i = x1; i < x2; i++)
+      {
+        for (int j = y1; j < y2; j++)
+        {
+          nCount++;
+          if (Break)
+            return;
+
+          while (g_nOutstaningCurls > 50)
+          {
+            if (Break)
+              return;
+            QThread::msleep(1);
+          }
+
+          osm_gps_map_download_tile2(m_map, zoom, i, j, FALSE);
+          int t = (nCount * 100) / nTotalCount + 1;
+          if (t != nProgress)
+          {
+            nProgress = t;
+            emit progress(t);
+          }
+        }
+      }
+    }
+  };
+
+  proc();
+  //   int x1, y1, x2, y2;
+  emit progress(0);
+  emit finished();
+}
+
+void TileDownloader::WorkerFinished()
+{
+  m_pWorker = nullptr;
+}
+
+void TileDownloader::DownloadAsyc(std::function<void(int nProgress1_100)> pf)
+{
+  if (m_pWorker != nullptr)
+  {
+    m_pWorker->Break = true;
+    return;
+  }
+
+  QThread* thread = new QThread();
+  m_pWorker = new Worker(m_map);
+  m_pWorker->moveToThread(thread);
+  QObject::connect(m_pWorker, &Worker::progress, this, pf);
+  QObject::connect(thread, &QThread::started, m_pWorker, &Worker::process);
+  QObject::connect(m_pWorker, &Worker::finished, thread, &QThread::quit);
+  QObject::connect(m_pWorker, &Worker::finished, m_pWorker, &Worker::deleteLater);
+  QObject::connect(m_pWorker, &Worker::finished, this, &TileDownloader::WorkerFinished);
+  QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+  thread->start();
 }

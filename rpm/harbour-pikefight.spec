@@ -28,6 +28,7 @@ Requires: qt5-qtdeclarative-import-positioning
 Requires: qt5-qtdeclarative-import-folderlistmodel
 Requires: nemo-qml-plugin-notifications-qt5
 Requires: sailfishsilica-qt5 >= 0.10.9
+
 Requires: nemo-qml-plugin-contextkit-qt5
 BuildRequires: pkgconfig(qdeclarative5-boostable)
 BuildRequires: pkgconfig(sailfishsilica)
@@ -66,7 +67,7 @@ rm -rf $RPM_BUILD_ROOT
 %install
 rm -rf %{buildroot}
 %qmake5_install
-# Copy here the blacklisted libraries
+# Copy here the blacklisted libraries libdir /usr/share/harbour-pikefight/lib/
 
 install -d %{buildroot}/usr/share/%{name}/lib
 install -m 644 -p %{_libdir}/libjpeg.so.62 %{buildroot}/usr/share/%{name}/lib/

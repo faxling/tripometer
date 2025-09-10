@@ -22,6 +22,26 @@ ApplicationWindow {
     mainMap.saveCurrentTrack()
   }
 
+  Rectangle {
+    id: idLowBatteryMsgBox
+    visible: false
+    width: parent.width - 40
+    height: 300
+    radius: 5
+    anchors.centerIn: parent
+    color: Theme.highlightBackgroundColor
+    opacity: 0.9
+
+    Text {
+      anchors.centerIn: parent
+      horizontalAlignment: Text.AlignHCenter
+      font.family: Theme.fontFamilyHeading
+      text: "Battery to Low!\n Application will close"
+      font.pixelSize: Theme.fontSizeLarge
+      color: Theme.primaryColor
+    }
+  }
+
   property int nExportMapW: 2480
   property int nExportMapH: 3508
   property var ocSumSize: ["", "", ""]
@@ -58,6 +78,10 @@ ApplicationWindow {
 
     // Save track
     onValueChanged: {
+      if (value < 6)
+        idLowBatteryMsgBox.visible = true
+      else
+        idLowBatteryMsgBox.visible = false
       if (value < 5)
         Qt.quit()
     }

@@ -131,7 +131,7 @@ struct _OsmGpsMapPrivate
   int ui_gps_point_inner_radius;
   int ui_gps_point_outer_radius;
 
-//   guint fullscreen : 1;
+  //   guint fullscreen : 1;
   guint is_disposed : 1;
   //   guint double_pixel : 1;
 };
@@ -197,8 +197,6 @@ static gchar* replace_string(const gchar* src, const gchar* from, const gchar* t
 static void inspect_map_uri(OsmGpsMapPrivate* priv);
 
 static void osm_gps_map_print_images(OsmGpsMap* map);
-
-static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
 
 static void osm_gps_map_load_tile(OsmGpsMap* map, int zoom, int x, int y, int offset_x,
                                   int offset_y, cairo_t*);
@@ -530,72 +528,7 @@ static void osm_gps_map_free_images(OsmGpsMap* map)
     priv->images = NULL;
   }
 }
-/*
-static void osm_gps_map_free_layers(OsmGpsMap* map)
-{
-  OsmGpsMapPrivate* priv = map->priv;
-   g_message("g_object_list unref enter");
-  if (priv->layers)
-  {
-    //   g_slist_foreach(priv->layers, (GFunc)g_object_unref, NULL);
-    GSList* list;
-    for (list = priv->layers; list; list = list->next)
-    {
-      g_message("g_object_unref");
-      g_object_unref(list);
-    }
- g_message("g_object_list unref");
-    g_slist_free(priv->layers);
-    priv->layers = NULL;
-  }
-}
-*/
-/*
-void osm_gps_map_add_layer(OsmGpsMap* map, OsmGpsMapLayer* layer)
-{
-  OsmGpsMapPrivate* priv;
-  GSList* list;
 
-  g_return_if_fail(OSM_IS_GPS_MAP(map));
-  priv = map->priv;
-
-  for (list = priv->layers; list; list = list->next)
-    if (list->data == layer)
-      return;
-  g_object_ref(layer);
-  priv->layers = g_slist_prepend(priv->layers, layer);
-}
-
-void osm_gps_map_layer_changed(OsmGpsMap* map, G_GNUC_UNUSED OsmGpsMapLayer* layer)
-{
-  OsmGpsMapPrivate* priv;
-
-  g_return_if_fail(OSM_IS_GPS_MAP(map));
-  priv = map->priv;
-  if (!priv->idle_map_redraw)
-    priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
-}
-void osm_gps_map_remove_layer(OsmGpsMap* map, OsmGpsMapLayer* layer)
-{
-  OsmGpsMapPrivate* priv;
-  GSList* list;
-
-  g_return_if_fail(OSM_IS_GPS_MAP(map));
-  priv = map->priv;
-
-  for (list = priv->layers; list; list = list->next)
-    if (list->data == layer)
-      break;
-  if (!list)
-    return;
-
-  priv->layers = g_slist_remove(priv->layers, layer);
-  g_object_unref(layer);
-
-  if (!priv->idle_map_redraw)
-    priv->idle_map_redraw = g_idle_add((GSourceFunc)osm_gps_map_idle_redraw, map);
-}
-*/
 
 void move_to(cairo_t* cr, cairo_matrix_t* m, double x, double y)
 {
@@ -658,6 +591,57 @@ void drawAisMoored(OsmGpsMap* map, double x0, double y0, const char* szName)
   cairo_move_to(cr, x0, y0);
   cairo_set_source_rgb(cr, 0, 0, 0);
   cairo_show_text(cr, szName);
+}
+
+int lon2tile(float lon, int powzoom)
+{
+  return (int)((lon + 180) / 360 * powzoom);
+}
+
+int lat2tile(float lat, int powzoom)
+{
+  return (int)((1 - log(tan(lat * M_PI / 180) + 1 / cos(lat * M_PI / 180)) / M_PI) / 2 * powzoom);
+}
+
+void getDownloadSquareTile(OsmGpsMap* map, float fSizeDeg, int zoom, int* x1, int* y1, int* x2,
+                           int* y2)
+{
+  OsmGpsMapPrivate* priv = map->priv;
+
+  float fULlon, fULlat, fLRlon, fLRlat;
+  int powzoom = 1 << zoom;
+  fULlon = rad2deg(priv->center_rlon) - fSizeDeg;
+  fULlat = rad2deg(priv->center_rlat) + fSizeDeg / 2;
+  fLRlon = rad2deg(priv->center_rlon) + fSizeDeg;
+  fLRlat = rad2deg(priv->center_rlat) - fSizeDeg / 2;
+
+  *x1 = lon2tile(fULlon, powzoom);
+  *y1 = lat2tile(fULlat, powzoom);
+  *x2 = lon2tile(fLRlon, powzoom);
+  *y2 = lat2tile(fLRlat, powzoom);
+
+}
+
+void drawDownloadSquare(OsmGpsMap* map, float fSizeDeg)
+{
+  cairo_t* cr = map->priv->cr;
+  OsmGpsMapPrivate* priv = map->priv;
+  int x0, y0, x1, y1;
+  //  float pixel2lon(int zoom, int pixel_x);
+
+  loLaToPx(map, rad2deg(priv->center_rlon) - fSizeDeg, rad2deg(priv->center_rlat) + fSizeDeg / 2,
+           &x0, &y0);
+  loLaToPx(map, rad2deg(priv->center_rlon) + fSizeDeg, rad2deg(priv->center_rlat) - fSizeDeg / 2,
+           &x1, &y1);
+  cairo_set_dash(cr,0,0,0);
+  cairo_set_line_width(cr, 1);
+  cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+  cairo_move_to(cr, x0, y0);
+  cairo_line_to(cr, x1, y0);
+  cairo_line_to(cr, x1, y1);
+  cairo_line_to(cr, x0, y1);
+  cairo_line_to(cr, x0, y0);
+  cairo_stroke(cr);
 }
 
 void drawAis(OsmGpsMap* map, float v, double speed, double x0, double y0, const char* szName)
@@ -850,9 +834,13 @@ char g_szAUTH[MAXTOKEN * 2] = {0};
 
 */
 
-#define NAVURL1 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=2&sa=false"
+#define NAVURL1                                                                                    \
+  "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/"                                          \
+  "#Y?config=%s&transparent=false&ugc=false&layer=0&du=1&sd=2&sa=false"
 
-#define NAVURL2 "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=20&sa=false"
+#define NAVURL2                                                                                    \
+  "https://tile1.navionics.com/viewer/api/v1/tile/#Z/#X/"                                          \
+  "#Y?config=%s&transparent=false&ugc=false&layer=1&du=1&sd=20&sa=false"
 
 extern void parse_navionics_key(const char* pResponce, int nLen, char* a_pToken, char* c_pToken);
 
@@ -902,7 +890,7 @@ void get_navionics_key2()
 */
 }
 
-struct curl_slist* chunk = 0;
+// struct curl_slist* chunk = 0;
 
 // Run in main thread
 void curl_cb(net_result_t* result, gpointer data)
@@ -960,7 +948,7 @@ void curl_cb(net_result_t* result, gpointer data)
   g_free(dl);
 }
 
-static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
+void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw)
 {
   OsmGpsMapPrivate* priv = map->priv;
 
@@ -988,9 +976,15 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
                                  G_DIR_SEPARATOR, x, G_DIR_SEPARATOR);
     dl->filename = g_strdup_printf("%s%c%d%c%d%c%d.%s", priv->cache_dir, G_DIR_SEPARATOR, zoom,
                                    G_DIR_SEPARATOR, x, G_DIR_SEPARATOR, y, priv->image_format);
+
     dl->map = map;
     dl->redraw = redraw;
     g_hash_table_insert(priv->tile_queue, dl->uri, NULL);
+  }
+
+  if (g_file_test(dl->filename, G_FILE_TEST_EXISTS))
+  {
+    return;
   }
 
   struct curl_slist* chunk = 0;
@@ -1012,6 +1006,7 @@ static void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, g
     net_io_append_header(&chunk, "sec-fetch-mode: cors");
     net_io_append_header(&chunk, "sec-fetch-site: same-site");
   }
+
   net_io_download_async(dl->uri, curl_cb, dl, chunk);
 }
 
@@ -1272,17 +1267,6 @@ static void osm_gps_map_fill_tiles_pixel(OsmGpsMap* map)
   }
 }
 
-void osm_gps_map_get_tile_xy_at(OsmGpsMap* map, float lat, float lon, int* zoom, int* x, int* y)
-{
-  int tilesize;
-
-  g_return_if_fail(OSM_IS_GPS_MAP(map));
-
-  tilesize = TILESIZE;
-  *zoom = map->priv->map_zoom;
-  *x = (int)floor(lon2pixel(map->priv->map_zoom, deg2rad(lon)) / (float)tilesize);
-  *y = (int)floor(lat2pixel(map->priv->map_zoom, deg2rad(lat)) / (float)tilesize);
-}
 
 static void draw_startpoint(OsmGpsMapPrivate* priv, MaepGeodataTrackIter iter)
 {
@@ -1419,10 +1403,6 @@ static void osm_gps_map_print_tracks(OsmGpsMap* map)
 
   if (priv->tracks)
   {
-    /* g_message("Print a track list!"); */
-
-    // if (priv->show_trip_history)
-    //   osm_gps_map_print_track(priv, priv->trip_history, lw, &max_x, &min_x, &max_y, &min_y, 1);
     GSList* tmp = priv->tracks;
     while (tmp != NULL)
     {
@@ -1513,12 +1493,9 @@ static gboolean osm_gps_map_redraw(OsmGpsMap* map)
   cairo_set_operator(priv->cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(priv->cr);
   cairo_restore(priv->cr);
-
   osm_gps_map_fill_tiles_pixel(map);
   osm_gps_map_print_tracks(map);
-
   osm_gps_map_print_images(map);
-
   osm_gps_map_purge_cache(map);
 
   g_signal_emit_by_name(G_OBJECT(map), "dirty");
@@ -1866,33 +1843,9 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
 
   switch (prop_id)
   {
-  /*
-  case PROP_DOUBLE_PIXEL:
-    g_value_set_boolean(value, priv->double_pixel);
-    break;
-
-    */
   case PROP_AUTO_CENTER:
     g_value_set_boolean(value, priv->map_auto_center);
     break;
-
-    /*
-  case PROP_RECORD_TRIP_HISTORY:
-    g_value_set_boolean(value, priv->record_trip_history);
-    break;
-  case PROP_SHOW_TRIP_HISTORY:
-    g_value_set_boolean(value, priv->show_trip_history);
-    break;
-  case PROP_AUTO_DOWNLOAD:
-    g_value_set_boolean(value, priv->map_auto_download);
-    break;
-    */
-    // case PROP_REPO_URI:
-    //  g_value_set_string(value, priv->repo_uri);
-    //  break;
-    // case PROP_PROXY_URI:
-    //   g_value_set_string(value, priv->proxy_uri);
-    //    break;
   case PROP_TILE_CACHE_DIR:
     g_value_set_string(value, priv->cache_dir);
     break;
@@ -1905,15 +1858,6 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_ZOOM:
     g_value_set_int(value, priv->map_zoom);
     break;
-    /*
-  case PROP_MAX_ZOOM:
-    g_value_set_int(value, priv->max_zoom);
-    break;
-  case PROP_MIN_ZOOM:
-    g_value_set_int(value, priv->min_zoom);
-    break;
-
-    */
   case PROP_FACTOR:
     g_value_set_float(value, priv->map_factor);
     break;
@@ -2139,16 +2083,10 @@ const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source)
     return "NAVIONICS Sea Chart";
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
     return "OpenStreetMap I";
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-    return "Peruskartta";
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-    return "Ortoilmakuva";
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-    return "Taustakartta";
+
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
     return "OpenStreetMap II";
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-    return "OpenAerialMap";
+
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
     return "OpenSeaMap";
   case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
@@ -2199,21 +2137,6 @@ const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
     return "none://";
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
     return OSM_REPO_URI;
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-    return "http://tiles.kartat.kapsi.fi/peruskartta/#Z/#X/#Y.png";
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-    return "http://tiles.kartat.kapsi.fi/ortokuva/#Z/#X/#Y.png";
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-    return "http://tiles.kartat.kapsi.fi/taustakartta/#Z/#X/#Y.png";
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-    /* OpenAerialMap is down, offline till furthur notice
-               http://openaerialmap.org/pipermail/talk_openaerialmap.org/2008-December/000055.html
-     */
-    return "";
-
-    // curl
-    // 'https://backend.navionics.com/tile/get_key/NAVIONICS_WEBAPP_P01/webapp.navionics.com?_=1690792123234'
-    // -H 'Referer: https://webapp.navionics.com/'
 
   case OSM_GPS_MAP_SOURCE_NAVIONICS:
     return g_szNAVURL1;
@@ -2284,15 +2207,7 @@ void osm_gps_map_source_get_repo_copyright(OsmGpsMapSource_t source, const gchar
     *notice = "© OpenStreetMap contributors";
     *url = "http://www.openstreetmap.org/copyright";
     return;
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-    *notice = "CC 4.0 licence (© Maanmittauslaitos)";
-    *url = "http://www.maanmittauslaitos.fi/"
-           "avoimen-tietoaineiston-cc-40-lisenssi";
-    return;
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-    return;
+
   case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_NAVIONICS:
     *notice = "© navionics contributors";
@@ -2350,9 +2265,6 @@ const char* osm_gps_map_source_get_image_format(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP:
   case OSM_GPS_MAP_SOURCE_NAVIONICS_2:
   case OSM_GPS_MAP_SOURCE_NAVIONICS:
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
   case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
   case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
@@ -2362,7 +2274,6 @@ const char* osm_gps_map_source_get_image_format(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
     return "png";
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID:
@@ -2397,10 +2308,8 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
   case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
   case OSM_GPS_MAP_SOURCE_OPENSEAMAP:
-    return OSM_MAX_ZOOM;
+    return 19;
   case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
-  case OSM_GPS_MAP_SOURCE_OPENAERIALMAP:
-
   case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
   case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
@@ -2415,12 +2324,9 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
     return 11;
   case OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE:
     return 18;
-  case OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA:
-  case OSM_GPS_MAP_SOURCE_MML_ORTOKUVA:
-  case OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA:
-    return 20;
+
   case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-    return 21;
+    return 19;
   case OSM_GPS_MAP_SOURCE_LAST:
   default:
     return 17;
@@ -2428,65 +2334,6 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source)
   return 17;
 }
 
-void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,
-                               int zoom_end)
-{
-  int i, j, zoom, num_tiles;
-  OsmGpsMapPrivate* priv = map->priv;
-
-  if (pt1 && pt2)
-  {
-    gchar* filename;
-    num_tiles = 0;
-    zoom_end = CLAMP(zoom_end, priv->min_zoom, priv->max_zoom);
-
-    for (zoom = zoom_start; zoom <= zoom_end; zoom++)
-    {
-      int x1, y1, x2, y2;
-
-      x1 = (int)floor((float)lon2pixel(zoom, pt1->rlon) / (float)TILESIZE);
-      y1 = (int)floor((float)lat2pixel(zoom, pt1->rlat) / (float)TILESIZE);
-
-      x2 = (int)floor((float)lon2pixel(zoom, pt2->rlon) / (float)TILESIZE);
-      y2 = (int)floor((float)lat2pixel(zoom, pt2->rlat) / (float)TILESIZE);
-
-      // loop x1-x2
-      for (i = x1; i <= x2; i++)
-      {
-        // loop y1 - y2
-        for (j = y1; j <= y2; j++)
-        {
-          // x = i, y = j
-          filename = g_strdup_printf("%s%c%d%c%d%c%d.%s", priv->cache_dir, G_DIR_SEPARATOR, zoom,
-                                     G_DIR_SEPARATOR, i, G_DIR_SEPARATOR, j, priv->image_format);
-
-          if ((!g_file_test(filename, G_FILE_TEST_EXISTS)))
-          {
-            osm_gps_map_download_tile2(map, zoom, i, j, FALSE);
-            num_tiles++;
-          }
-
-          g_free(filename);
-        }
-      }
-    }
-  }
-}
-
-void osm_gps_map_get_bbox(OsmGpsMap* map, coord_t* pt1, coord_t* pt2)
-{
-  OsmGpsMapPrivate* priv = map->priv;
-
-  if (pt1 && pt2)
-  {
-    pt1->rlat = pixel2lat(priv->map_zoom, priv->map_y);
-    pt1->rlon = pixel2lon(priv->map_zoom, priv->map_x);
-    pt2->rlat = pixel2lat(priv->map_zoom, priv->map_y + priv->viewport_height);
-    pt2->rlon = pixel2lon(priv->map_zoom, priv->map_x + priv->viewport_width);
-
-    g_debug("BBOX: %f %f %f %f", pt1->rlat, pt1->rlon, pt2->rlat, pt2->rlon);
-  }
-}
 
 static void _update_screen_pos(OsmGpsMap* map)
 {
@@ -2580,7 +2427,8 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
   map->priv->map_depth = depthDm;
 }
 
-void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg, double uvIndex)
+void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
+                           double uvIndex)
 {
   map->priv->uvIndex = uvIndex;
   map->priv->tempDeg = tempDeg;
@@ -2612,7 +2460,6 @@ int osm_gps_map_zoom_in(OsmGpsMap* map)
 {
   g_return_val_if_fail(OSM_IS_GPS_MAP(map), 0);
 
-  //  int nLZoom = map->priv->map_zoom;
   int nRZoom = osm_gps_map_set_zoom(map, map->priv->map_zoom + 1);
 
   return nRZoom;

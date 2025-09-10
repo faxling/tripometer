@@ -14,8 +14,8 @@ Item {
   //// property bool bShowBtns: true
   GpsMap {
     id: idMap
-
     property bool bIsRotated: idApp.bIsRotated
+    property int downloadProgress
     enable_ais: idApp.bEnableAis
     track_capture: !idApp.bIsPause
     function reCalc() {
@@ -45,7 +45,7 @@ Item {
     }
 
     Component.onCompleted: {
-      mainMap = idMap
+      idApp.mainMap = idMap
       Lib.initDB()
     }
 
@@ -109,19 +109,19 @@ Item {
 
     TrippBtn {
       id: idSat
-      bSelected: idMap.source === 11
+      bSelected: idMap.source === 10
       src: "btnSat.png"
       onClicked: {
-        idMap.setSource(11)
+        idMap.setSource(10)
       }
     }
 
     TrippBtn {
       id: idEniro
-      bSelected: idMap.source === 17
+      bSelected: idMap.source === 16
       src: "btnSeaMap.png"
       onClicked: {
-        idMap.setSource(17)
+        idMap.setSource(16)
       }
     }
 
@@ -183,26 +183,26 @@ Item {
 
     TrippBtn {
       id: idNavionics1
-      bSelected: idMap.source === 22
+      bSelected: idMap.source === 18
       src: "btnSeaMap.png"
       onClicked: {
-        idMap.setSource(22)
+        idMap.setSource(18)
       }
     }
     TrippBtn {
       id: idNavionics2
-      bSelected: idMap.source === 23
+      bSelected: idMap.source === 19
       src: "btnSeaMap.png"
       onClicked: {
-        idMap.setSource(23)
+        idMap.setSource(19)
       }
     }
     TrippBtn {
       id: idGoogle
-      bSelected: idMap.source === 7
+      bSelected: idMap.source === 6
       src: "btnMap.png"
       onClicked: {
-        idMap.setSource(7)
+        idMap.setSource(6)
       }
       Text {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -221,22 +221,16 @@ Item {
     anchors.leftMargin: 20
 
     //z: idMap.z + 1
-    TrippBtn {
+    TrippProgBtn {
       id: idBtnMap
       src: "btnWorld.png"
+      progress: idMap.numberPendingReq
 
       onClicked: {
         if (map_controls3.state === "")
           map_controls3.state = "menuMapVisible"
         else
           map_controls3.state = ""
-      }
-
-      Rectangle {
-        y: 20
-        height: 20
-        color: "white"
-        width: (idMap.numberPendingReq / 100.0) * parent.width
       }
     }
 
@@ -316,6 +310,21 @@ Item {
     NumberAnimation {
       property: "opacity"
       duration: 300
+    }
+  }
+
+  LargeProgBtn {
+    id: idDownloadBtn
+    visible: idApp.mainMap.enableDownload
+    src: "image://theme/icon-m-cloud-download?"
+         + (idMap.downloadProgress > 0 ? Theme.highlightColor : Theme.primaryColor)
+    anchors.right: parent.right
+    anchors.rightMargin: 20
+    anchors.bottom: idRotateBtn.top
+    anchors.bottomMargin: 20
+    progress: idMap.downloadProgress
+    onClicked: {
+      idMap.downloadMapSquare()
     }
   }
 

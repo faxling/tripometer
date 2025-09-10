@@ -26,84 +26,72 @@
 
 #define TILESIZE 256
 
-float
-deg2rad(float deg)
+float deg2rad(float deg)
 {
-    return (deg * M_PI / 180.0);
+  return (deg * M_PI / 180.0);
 }
 
-float
-rad2deg(float rad)
+float rad2deg(float rad)
 {
-    return (rad / M_PI * 180.0);
+  return (rad / M_PI * 180.0);
 }
 
-int
-lat2pixel(  int zoom,
-            float lat)
+int lat2pixel(int zoom, float lat)
 {
-    float lat_m;
-    int pixel_y;
+  float lat_m;
+  int pixel_y;
 
-    lat_m = atanh(sin(lat));
+  lat_m = atanh(sin(lat));
 
-    /* the formula is
-     *
-     * pixel_y = -(2^zoom * TILESIZE * lat_m) / 2PI + (2^zoom * TILESIZE) / 2
-     */
-    pixel_y = -(int)( (lat_m * TILESIZE * (1 << zoom) ) / (2*M_PI)) +
-        ((1 << zoom) * (TILESIZE/2) );
+  /* the formula is
+   *
+   * pixel_y = -(2^zoom * TILESIZE * lat_m) / 2PI + (2^zoom * TILESIZE) / 2
+   */
+  pixel_y = -(int)((lat_m * TILESIZE * (1 << zoom)) / (2 * M_PI)) + ((1 << zoom) * (TILESIZE / 2));
 
-
-    return pixel_y;
+  return pixel_y;
 }
 
-
-int
-lon2pixel(  int zoom,
-            float lon)
+int lon2pixel(int zoom, float lon)
 {
-    int pixel_x;
-    int zoom_p = (1<<zoom) * TILESIZE/2;
+  int pixel_x;
+  int zoom_p = (1 << zoom) * TILESIZE / 2;
 
-    /* the formula is
-     *
-     * pixel_x = (2^zoom * TILESIZE * lon) / 2PI + (2^zoom * TILESIZE) / 2
-     */
-    pixel_x = (int)(lon * (zoom_p / M_PI)) + zoom_p;
+  /* the formula is
+   *
+   * pixel_x = (2^zoom * TILESIZE * lon) / 2PI + (2^zoom * TILESIZE) / 2
+   */
+  pixel_x = (int)(lon * (zoom_p / M_PI)) + zoom_p;
 
-    return pixel_x;
+  return pixel_x;
 }
 
-double* rgbToCario(unsigned int nRGB, double* rgb) {
+double* rgbToCario(unsigned int nRGB, double* rgb)
+{
   rgb[0] = (((nRGB & 0xFF0000) >> 16) / 255.0);
   rgb[1] = (((nRGB & 0xFF00) >> 8) / 255.0);
   rgb[2] = (((nRGB & 0xFF)) / 255.0);
   return rgb;
 }
 
-float
-pixel2lon(  int zoom,
-            int pixel_x)
+float pixel2lon(int zoom, int pixel_x)
 {
-    float lon;
-    int zoom_p = (1<<zoom) * TILESIZE/2;
+  float lon;
+  int zoom_p = (1 << zoom) * TILESIZE / 2;
 
-    lon = (float)(pixel_x - zoom_p) / (float)zoom_p * M_PI ;
+  lon = (float)(pixel_x - zoom_p) / (float)zoom_p * M_PI;
 
-    return lon;
+  return lon;
 }
 
-float
-pixel2lat(  int zoom,
-            int pixel_y)
+float pixel2lat(int zoom, int pixel_y)
 {
-    float lat, lat_m;
-    int zoom_p = (1<<zoom) * TILESIZE/2;
+  float lat, lat_m;
+  int zoom_p = (1 << zoom) * TILESIZE / 2;
 
-    lat_m = - (float)(pixel_y - zoom_p) / (float)zoom_p * M_PI;
+  lat_m = -(float)(pixel_y - zoom_p) / (float)zoom_p * M_PI;
 
-    lat = asin(tanh(lat_m));
+  lat = asin(tanh(lat_m));
 
-    return lat;
+  return lat;
 }

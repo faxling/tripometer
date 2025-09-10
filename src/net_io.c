@@ -120,23 +120,6 @@ static size_t mem_write(void* ptr, size_t size, size_t nmemb, void* stream)
   }
   return nmemb;
 }
-/*
-static void set_proxy(CURL* curl, const struct proxy_config* config)
-{
-  if (config->host)
-  {
-    curl_easy_setopt(curl, CURLOPT_PROXY, config->host);
-    curl_easy_setopt(curl, CURLOPT_PROXYPORT, config->port);
-
-    if (config->username)
-    {
-      char* cred = g_strdup_printf("%s:%s", config->username, config->password);
-      curl_easy_setopt(curl, CURLOPT_PROXYUSERPWD, cred);
-      g_free(cred);
-    }
-  }
-}
-*/
 
 // In Main thread
 static gboolean net_io_idle_cb(gpointer data)
@@ -191,15 +174,6 @@ static void* worker_thread(void* ptr)
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &request->result.data);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mem_write);
 
-  // set_proxy(curl, request->proxy);
-
-  /* set user name and password for the authentication */
-
-  /*
-  if (request->user)
-    curl_easy_setopt(curl, CURLOPT_USERPWD, request->user);
-*/
-  /* play nice and report some user agent */
 
   if (request->chunk)
   {
@@ -269,35 +243,6 @@ void net_io_append_header(struct curl_slist** chunk, const char* szVal)
   *chunk = curl_slist_append(*chunk, szVal);
 }
 
-/*
-net_result_t net_io_download_sync(const char* url, struct curl_slist* chunk)
-{
-  net_result_t result;
-  result.data.ptr = NULL;
-  result.data.len = 0;
-  result.respCode = -1;
-
-  CURL* curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-  curl_easy_setopt(curl, CURLOPT_URL, url);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result.data);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mem_write);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000);
-  if (chunk)
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-  else
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, PACKAGE "-libcurl/" VERSION);
-
-  result.code = curl_easy_perform(curl);
-
-  curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &result.respCode);
-
-  curl_easy_cleanup(curl);
-  curl_slist_free_all(chunk);
-
-  return result;
-}
-*/
 net_io_t net_io_download_async(const char* url, net_io_cb cb, gpointer data, struct curl_slist* chunk)
 {
   net_io_request_t* request = g_new0(net_io_request_t, 1);

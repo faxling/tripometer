@@ -47,8 +47,6 @@ G_BEGIN_DECLS
 #define OSM_GPS_MAP_GET_CLASS(obj)                                                                 \
   (G_TYPE_INSTANCE_GET_CLASS((obj), OSM_TYPE_GPS_MAP, OsmGpsMapClass))
 
-
-
 typedef struct _OsmGpsMapClass OsmGpsMapClass;
 typedef struct _OsmGpsMap OsmGpsMap;
 typedef struct _OsmGpsMapPrivate OsmGpsMapPrivate;
@@ -65,15 +63,12 @@ struct _OsmGpsMap
   OsmGpsMapPrivate* priv;
 };
 
-
-
 /* New tiles should be appended to avoid id breakage. */
 typedef enum
 {
   OSM_GPS_MAP_SOURCE_NULL,
   OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
   OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
-  OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
   OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
   OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
   OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
@@ -89,9 +84,6 @@ typedef enum
   OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
   OSM_GPS_MAP_SOURCE_OPENSEAMAP,
   OSM_GPS_MAP_SOURCE_GOOGLE_TRAFFIC,
-  OSM_GPS_MAP_SOURCE_MML_PERUSKARTTA,
-  OSM_GPS_MAP_SOURCE_MML_ORTOKUVA,
-  OSM_GPS_MAP_SOURCE_MML_TAUSTAKARTTA,
   OSM_GPS_MAP_SOURCE_NAVIONICS,
   OSM_GPS_MAP_SOURCE_NAVIONICS_2,
   OSM_GPS_MAP_SOURCE_USER_DEFINED = 100,
@@ -124,14 +116,24 @@ int osm_gps_map_source_get_max_zoom(OsmGpsMapSource_t source);
 
 // False if outside painted map
 
-int loLaToPx(OsmGpsMap* map, float lo, float la, int* x , int* y);
+int loLaToPx(OsmGpsMap* map, float lo, float la, int* x, int* y);
 
 void setAisStyle2(OsmGpsMap* map, double* pRGB, double fWidth);
 
-void drawAis(OsmGpsMap* map, float fHeading,double fSpeed, double xPx, double yPx, const char* szName);
+void drawAis(OsmGpsMap* map, float fHeading, double fSpeed, double xPx, double yPx,
+             const char* szName);
 
 void drawAisMoored(OsmGpsMap* map, double xPx, double yPx, const char* szName);
 
+void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean redraw);
+
+
+
+// gets the tile numbers up the upper left and bottom right of the download square
+// the size of the square is in deg and defined in  DOWLOAD_SQUARE_SIZE
+void getDownloadSquareTile(OsmGpsMap* map, float fSizeDeg,int zoom, int* x1, int* y1, int* x2, int* y2);
+
+void drawDownloadSquare(OsmGpsMap* map, float fSizeDeg);
 
 void saveDraw(OsmGpsMap* map);
 
@@ -158,18 +160,18 @@ int osm_gps_map_depth(OsmGpsMap* map);
 void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
 
 // Things for weather
-void osm_gps_map_set_meteo(OsmGpsMap* map,double speedMs, double directionDeg, double tempDeg,double uvIndex);
+void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
+                           double uvIndex);
 double uvIndex(OsmGpsMap* map);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
 double tempDeg(OsmGpsMap* map);
 
-
 char* osm_gps_map_get_default_cache_directory(void);
 
-void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,
-                               int zoom_end);
-void osm_gps_map_get_bbox(OsmGpsMap* map, coord_t* pt1, coord_t* pt2);
+//void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,
+//                               int zoom_end);
+// void osm_gps_map_get_bbox(OsmGpsMap* map, coord_t* pt1, coord_t* pt2);
 void osm_gps_map_set_mapcenter(OsmGpsMap* map, float latitude, float longitude, int zoom);
 void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude);
 int osm_gps_map_set_zoom(OsmGpsMap* map, int zoom);
@@ -182,9 +184,13 @@ gfloat osm_gps_map_get_factor(OsmGpsMap* map);
 void osm_gps_map_auto_center_at(OsmGpsMap* map, float latitude, float longitude);
 
 void osm_gps_map_adjust_to(OsmGpsMap* map, coord_t* top_left, coord_t* bottom_right);
+/*
 void osm_gps_map_get_tile_xy_at(
     OsmGpsMap* map, float lat, float lon, int* zoom, int* x,
-    int* y); //      -1  = Db,        0 = track , 1 = point , 2 = imported
+    int* y);
+*/
+
+//      -1  = Db,        0 = track , 1 = point , 2 = imported
 void osm_gps_map_add_track(OsmGpsMap* map, MaepGeodata* track, int nId, int nType);
 void osm_gps_map_uppdate_offset(OsmGpsMap* map, int pixel_x, int pixel_y);
 void osm_gps_map_get_offset(OsmGpsMap* map, int* pixel_x, int* pixel_y);
@@ -221,9 +227,7 @@ void osm_gps_map_blit(OsmGpsMap* map, cairo_t* cr, cairo_operator_t op);
 
 float osm_db_last_dist(OsmGpsMap* map, float la, float lo);
 
-
 coord_t* osm_gps_map_get_gps(OsmGpsMap* map);
-
 
 G_END_DECLS
 

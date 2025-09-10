@@ -112,11 +112,13 @@ SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
 DISTFILES += \
     qml/LargeBtn.qml \
+    qml/LargeProgBtn.qml \
     qml/NameText.qml \
     qml/PikeBtn.qml \
     qml/PikeMapPage.qml \
     qml/PikePanel.qml \
     qml/StepSlider.qml \
+    qml/TrippProgBtn.qml \
     qml/pages/BusyIndPike.qml \
     qml/pages/CameraPage.qml \
     qml/pages/DateTimePage.qml \

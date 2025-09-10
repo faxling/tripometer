@@ -269,6 +269,29 @@ Page {
           idApp.bEnableAis = !checked
         }
       }
+
+      Label {
+        id: idLblDownload
+        font.pixelSize: Theme.fontSizeMedium
+        text: "Download Square"
+      }
+
+      Button {
+        id: idBtnDownload
+
+        property bool checked: idApp.mainMap.enableDownload
+        Image {
+          visible: parent.checked
+          anchors.centerIn: parent
+          source: "image://theme/icon-m-accept"
+        }
+        height: Theme.itemSizeExtraSmall
+        width: Theme.itemSizeExtraSmall
+        onClicked: {
+          //checked = !checked
+          idApp.mainMap.enableDownload = !checked
+        }
+      }
     }
   }
 }

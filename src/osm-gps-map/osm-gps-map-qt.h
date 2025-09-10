@@ -70,6 +70,7 @@ public:
   ~AisPainter();
   void DrawAis(Point& tPos, int nType, double vHeading, double fSpeed, const QByteArray& sName);
   void DrawAisMoored(Point& tPos, int nType, const QByteArray& sName);
+
 private:
   OsmGpsMap* map;
   struct C
@@ -141,6 +142,36 @@ private:
   std::map<int, AisData> m_ocAis;
 };
 
+class Worker : public QObject
+{
+  Q_OBJECT
+public:
+  Worker( OsmGpsMap* map);
+  ~Worker();
+  bool Break = false;
+public slots:
+  void process();
+signals:
+  void finished();
+  void progress(int n1_100);
+
+private:
+  OsmGpsMap* m_map;
+  // add your variables here
+};
+
+class TileDownloader : public QObject
+{
+public:
+  TileDownloader(OsmGpsMap* map) {m_map = map;};
+  void DownloadAsyc(std::function<void(int nProgress1_100)>);
+  void Break();
+  void WorkerFinished();
+private:
+  OsmGpsMap* m_map;
+  Worker* m_pWorker = nullptr;
+};
+
 namespace Maep
 {
 
@@ -168,7 +199,7 @@ namespace Maep
       else
         track = maep_geodata_new();
       this->track = track;
-    //   autosavePeriod = 0;
+      //   autosavePeriod = 0;
     }
     inline ~Track() { g_object_unref(G_OBJECT(track)); }
 
@@ -255,7 +286,8 @@ namespace Maep
     Q_PROPERTY(bool enable_crossHair READ crossHairEnabled WRITE enableCrossHair NOTIFY
                    enableCrossHairChanged)
     Q_PROPERTY(bool enable_ais READ aisEnabled WRITE enableAis NOTIFY enableAisChanged)
-
+    Q_PROPERTY(bool enableDownload WRITE put_enableDownload READ get_enableDownload NOTIFY
+                   enableDownloadChanged)
     Q_PROPERTY(bool skipDraw READ skipDraw WRITE putSkipDraw NOTIFY skipDrawChanged)
   public:
     enum Source
@@ -295,6 +327,12 @@ namespace Maep
     inline bool trackCapture() { return track_capture; }
     inline Maep::Track* getTrack() { return track_current; }
     inline bool screen_rotation() const { return screenRotation; }
+    void put_enableDownload(bool b)
+    {
+      m_bDownload = b;
+      emit enableDownloadChanged(b);
+    };
+    bool get_enableDownload() { return m_bDownload; };
 
     inline bool autoCenter()
     {
@@ -309,6 +347,7 @@ namespace Maep
       return (Source)source;
     }
 
+    Q_INVOKABLE void downloadMapSquare();
     Q_INVOKABLE void addDbPoint();
     Q_INVOKABLE void noDbPoint();
     Q_INVOKABLE QGeoCoordinate currentPos();
@@ -382,6 +421,7 @@ namespace Maep
     void enableCrossHairChanged(bool enable);
     void enableAisChanged(bool enable);
     void skipDrawChanged(bool enable);
+    void enableDownloadChanged(bool b);
   public slots:
     void setSource(Source source);
     void setAutoCenter(bool status);
@@ -429,6 +469,7 @@ namespace Maep
 
     MaepSearchContext* search;
 
+    bool m_bDownload = false;
     gboolean dragging;
     gboolean zooming;
     int numberPendingReq() { return m_numberPendingReq; };
@@ -460,6 +501,7 @@ namespace Maep
     bool m_bAisEnabled = false;
     IdlePainter* m_pIdlePainter;
     std::unique_ptr<AisStreamClient> m_AisStreamClient;
+    std::unique_ptr<TileDownloader> m_pTileDownloader;
   };
 
 } // namespace Maep

@@ -55,7 +55,6 @@ struct curl_slist;
 void net_io_append_header(struct curl_slist **chunk, const char* );
 
 net_io_t net_io_download_async(const char *url, net_io_cb, gpointer data, struct curl_slist *chunk);
-// net_result_t net_io_download_sync(const char *url,  struct curl_slist *chunk);
 
 G_END_DECLS
 
