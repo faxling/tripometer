@@ -47,6 +47,16 @@ int main(int argc, char* argv[])
   //  cashe /home/nemo/.cache/harbour-pikefight
   // settings file  "/home/nemo/.config/harbour-pikefight/PikeFight.conf"
   // local storage "/home/nemo/.local/share/harbour-pikefight/harbour-pikefight"
+
+
+  // #c:\Users\fraxl\.ssh\config
+  // Host github.com
+  //     HostName github.com
+  //     PreferredAuthentications publickey
+  //     IdentityFile ~/.ssh/github
+
+
+
   qInstallMessageHandler(MssMessageOutput);
   StopWatch oSW("Start pike application %1");
   QGuiApplication* app = SailfishApp::application(argc, argv);

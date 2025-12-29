@@ -70,7 +70,10 @@ struct _OsmGpsMapPrivate
   gfloat windDirectionRad;
   gfloat windSpeedMs;
   gfloat tempDeg;
-  gfloat uvIndex;
+  gfloat uvIndex;  
+  int nSunrise;
+  int nSunset;
+
   int map_zoom;
   int max_zoom;
   int min_zoom;
@@ -2428,8 +2431,10 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
 }
 
 void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
-                           double uvIndex)
+                           double uvIndex,int nSunrise, int nSunset)
 {
+  map->priv->nSunrise = nSunrise;
+  map->priv->nSunset = nSunset;
   map->priv->uvIndex = uvIndex;
   map->priv->tempDeg = tempDeg;
   map->priv->windSpeedMs = speedMs;
@@ -2440,6 +2445,20 @@ double uvIndex(OsmGpsMap* map)
 {
   return map->priv->uvIndex;
 }
+
+
+int sunset(OsmGpsMap* map)
+{
+  return map->priv->nSunset;
+}
+
+
+int sunrise(OsmGpsMap* map)
+{
+
+  return map->priv->nSunrise;
+}
+
 
 double windSpeedMs(OsmGpsMap* map)
 {

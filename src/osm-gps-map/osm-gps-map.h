@@ -161,11 +161,13 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
 
 // Things for weather
 void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
-                           double uvIndex);
+                           double uvIndex,int nSunrise, int nSunset);
 double uvIndex(OsmGpsMap* map);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
 double tempDeg(OsmGpsMap* map);
+int sunset(OsmGpsMap* map);
+int sunrise(OsmGpsMap* map);
 
 char* osm_gps_map_get_default_cache_directory(void);
 

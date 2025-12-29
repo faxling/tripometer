@@ -562,7 +562,7 @@ void Maep::GpsMap::zoomOut()
 }
 
 #define OSM_GPS_MAP_SCROLL_STEP (10)
-
+/*
 void Maep::GpsMap::keyPressEvent(QKeyEvent* event)
 {
   int step;
@@ -603,7 +603,7 @@ void Maep::GpsMap::keyPressEvent(QKeyEvent* event)
     break;
   }
 }
-
+*/
 void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
 {
   int nTDist = 0;
@@ -742,14 +742,19 @@ void curl_wind_cb(net_result_t* result, gpointer data)
     auto oJ = oJD.object()["current"].toObject();
     auto oDaily = oJD.object()["daily"].toObject();
     auto oUv = oDaily["uv_index_max"].toArray();
+    int nSunRise = oDaily["sunrise"].toArray().first().toInt();
+    int nSunSet = oDaily["sunset"].toArray().first().toInt();
     osm_gps_map_set_meteo(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-                          oJ["wind_direction_10m"].toDouble(), oJ["temperature_2m"].toDouble(),
-                          oUv.first().toDouble());
+        oJ["wind_direction_10m"].toDouble(),
+        oJ["temperature_2m"].toDouble(),
+        oUv.first().toDouble(),
+        nSunRise,
+        nSunSet);
   }
 }
 
 // using namespace std;
-class comma_numpunct : public std::numpunct<char>
+  class comma_numpunct : public std::numpunct<char>
 {
   char do_decimal_point() const override { return '.'; }
 };
@@ -759,9 +764,10 @@ std::locale comma_locale(std::locale(), new comma_numpunct());
 void Maep::GpsMap::getWeatherCurrentPos()
 {
   // constexpr char constString[] = "constString";
+  // &timezone=auto
   constexpr char WAPI[] = "https://api.open-meteo.com/v1/"
                           "forecast?current=temperature_2m,wind_speed_10m,wind_direction_10m&daily="
-                          "uv_index_max&forecast_days=1";
+                          "uv_index_max,sunrise,sunset&timeformat=unixtime&forecast_days=1";
   coord_t tPos = osm_gps_map_get_center_ordinates(map);
   tPos.rlat = rad2deg(tPos.rlat);
   tPos.rlon = rad2deg(tPos.rlon);
@@ -1544,7 +1550,7 @@ void Maep::GpsMap::gpsToTrack()
 
 void Maep::GpsMap::downloadMapSquare()
 {
-  m_pTileDownloader->DownloadAsyc([=](int nP) { setProperty("downloadProgress", nP); });
+  m_pTileDownloader->DownloadAsyc([this](int nP) { setProperty("downloadProgress", nP); });
 }
 
 QMap<int, AisPainter::C> AisPainter::m_ocColorTable;

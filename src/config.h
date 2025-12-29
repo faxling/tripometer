@@ -68,10 +68,8 @@
 #define OSD_HR_Y 60    // HR is always at screens top
 
 #ifdef HIGH_DPI
-#define OSD_FONT_SIZE             (28.0)
-#define OSD_DIAMETER              (60)
 #define OSD_SCALE_FONT_SIZE       (20.0)
-#define OSD_COORDINATES_FONT_SIZE (30.0)
+#define OSD_COORDINATES_FONT_SIZE (25.0)
 #endif
 
 #define WITH_QT

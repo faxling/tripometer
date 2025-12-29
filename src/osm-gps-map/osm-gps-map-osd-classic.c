@@ -40,12 +40,14 @@
 typedef struct
 {
   /* the offscreen representation of the OSD */
+
+  /*
   struct
   {
     cairo_surface_t* surface;
     gboolean rendered;
   } controls;
-
+*/
   struct
   {
     cairo_surface_t* surface;
@@ -134,11 +136,11 @@ static char* osd_longitude_str(float longitude)
 }
 
 /* render a string at the given screen position */
-static int osd_render_centered_text(cairo_t* cr, int y, int width, char* text)
+static int osd_render_text_w_halo(cairo_t* cr, int x, int y, int nFontSize, char* text )
 {
   if (!text)
     return y;
-
+/*
   int nL = strlen(text) + 4;
   char* p = g_malloc(strlen(text) + 4); // space for "...\n"
   strncpy(p, text, nL);
@@ -148,13 +150,13 @@ static int osd_render_centered_text(cairo_t* cr, int y, int width, char* text)
   cairo_text_extents(cr, p, &extents);
   g_assert(extents.width != 0.0);
 
-  /* check if text needs to be truncated */
+  //check if text needs to be truncated
   int trunc_at = strlen(text);
   while (extents.width > width)
   {
 
-    /* cut off all utf8 multibyte remains so the actual */
-    /* truncation only deals with one byte */
+    // cut off all utf8 multibyte remains so the actual
+    // truncation only deals with one byte
     while ((p[trunc_at - 1] & 0xc0) == 0x80)
     {
       trunc_at--;
@@ -167,21 +169,23 @@ static int osd_render_centered_text(cairo_t* cr, int y, int width, char* text)
     strncpy(p + trunc_at, "...", nL - trunc_at);
     cairo_text_extents(cr, p, &extents);
   }
-
+*/
+// y+=(OSD_COORDINATES_FONT_SIZE/6);
+  cairo_set_font_size(cr, nFontSize);
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-  cairo_set_line_width(cr, OSD_COORDINATES_FONT_SIZE / 6);
-  cairo_move_to(cr, 0, y - extents.y_bearing);
-  cairo_text_path(cr, p);
+  cairo_set_line_width(cr, nFontSize / 6);
+  cairo_move_to(cr, x, y );
+  cairo_text_path(cr, text);
   cairo_stroke(cr);
 
   cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-  cairo_move_to(cr, 0, y - extents.y_bearing);
-  cairo_show_text(cr, p);
+  cairo_move_to(cr, x, y );
+  cairo_show_text(cr, text);
 
-  g_free(p);
+  // g_free(p);
 
   /* skip + 1/5 line */
-  return y + 6 * OSD_COORDINATES_FONT_SIZE / 5;
+  return y + nFontSize  ;
 }
 
 static void osd_render_coordinates(osm_gps_map_osd_t* osd)
@@ -217,14 +221,14 @@ static void osd_render_coordinates(osm_gps_map_osd_t* osd)
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
   cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, OSD_COORDINATES_FONT_SIZE);
+
 
   char* latitude = osd_latitude_str(lat);
   char* longitude = osd_longitude_str(lon);
 
-  int y = OSD_COORDINATES_OFFSET;
-  y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, latitude);
-  y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, longitude);
+  int y = OSD_COORDINATES_OFFSET*4;
+  y = osd_render_text_w_halo(cr,0,y,OSD_COORDINATES_FONT_SIZE, latitude);
+  y = osd_render_text_w_halo(cr,0, y, OSD_COORDINATES_FONT_SIZE, longitude);
 
   // Render distance tool
 
@@ -241,7 +245,7 @@ static void osd_render_coordinates(osm_gps_map_osd_t* osd)
   if (fDist > 0)
   {
     gchar* dist_str = g_strdup_printf("Dist %.3f km", fDist / 1000);
-    y = osd_render_centered_text(cr, y, OSD_COORDINATES_W, dist_str);
+    y = osd_render_text_w_halo(cr,0,y, OSD_COORDINATES_FONT_SIZE, dist_str);
     g_free(dist_str);
   }
 
@@ -250,11 +254,11 @@ static void osd_render_coordinates(osm_gps_map_osd_t* osd)
     if (nD < 200)
     {
       gchar* deep_str = g_strdup_printf("Depth %.1f m", nD / 10.0);
-      osd_render_centered_text(cr, y, OSD_COORDINATES_W, deep_str);
+      osd_render_text_w_halo(cr,0,y, OSD_COORDINATES_FONT_SIZE, deep_str);
       g_free(deep_str);
     }
     else
-      osd_render_centered_text(cr, y, OSD_COORDINATES_W, ">= 20 m");
+      osd_render_text_w_halo(cr,0,y,OSD_COORDINATES_FONT_SIZE, ">= 20 m");
   }
 
   g_free(latitude);
@@ -269,11 +273,11 @@ static void onLatLon(G_GNUC_UNUSED GObject* obj, G_GNUC_UNUSED GParamSpec* pspec
 
   osd_render_coordinates(osd);
 }
-
-int OSD_CROSSHAIR_WH = 100;
-int OSD_CROSSHAIR_RADIUS = 30;
-int OSD_CROSSHAIR_BORDER = 20;
-int MAXARR = 45;
+// Assigned in osm_gps_map_osd_classic_init
+int OSD_CROSSHAIR_WH = -1;
+int OSD_CROSSHAIR_RADIUS = -1;
+int OSD_CROSSHAIR_BORDER = -1;
+int MAXARR = -1;
 
 void moveTo(cairo_t* cr, double v, int nR)
 {
@@ -385,6 +389,7 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   int nTemp = lround(tempDeg(osd->map));
   int nMs = lround(windSpeedMs(osd->map));
   double fUvIndex = uvIndex(osd->map);
+
   setStyle(cr, 0xffdb00,7);
   cairo_arc(cr, OSD_CROSSHAIR_WH / 2, OSD_CROSSHAIR_WH / 2, OSD_CROSSHAIR_RADIUS / 1.5, M_PI , M_PI + (M_PI * (fUvIndex / 6)));
   cairo_stroke(cr);
@@ -414,7 +419,25 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   cairo_move_to(cr, OSD_CROSSHAIR_WH / 2 - nMargin,
                 OSD_CROSSHAIR_WH / 2 + g_nFontSizePx - nMargin / 3);
 
+
+
   cairo_show_text(cr, temp_str);
+  int nFS = g_nFontSizePx/ 1.5;
+  int nMidle = OSD_CROSSHAIR_WH / 2 - 3;
+  // cairo_set_font_size(cr, nFS);
+  char sun_str[20];
+  time_t nT = sunrise(osd->map);
+  struct tm* t = localtime(&nT);
+  strftime(sun_str, 20, "%H:%M", t);
+  osd_render_text_w_halo(cr,0,nMidle,nFS,sun_str);
+
+  nT = sunset(osd->map);
+  t = localtime(&nT);
+  strftime(sun_str, 20, "%H:%M", t);
+
+  osd_render_text_w_halo(cr,OSD_CROSSHAIR_WH- nFS*3 ,nMidle , nFS,sun_str);
+  //  cairo_move_to(cr,OSD_CROSSHAIR_WH- nFS*3 ,nMidle );
+  // cairo_show_text(cr, sun_str);
 
   cairo_destroy(cr);
 }
@@ -561,16 +584,17 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   g_free(dist_str);
   g_free(dist_str_imp);
 
+  int LEFT_X = OSD_SCALE_FONT_SIZE / 3;
   /* draw white line */
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
   cairo_set_line_width(cr, OSD_SCALE_FONT_SIZE / 3);
-  cairo_move_to(cr, OSD_SCALE_FONT_SIZE / 6, OSD_SCALE_M);
+  cairo_move_to(cr, LEFT_X, OSD_SCALE_M);
   cairo_rel_line_to(cr, 0, OSD_SCALE_TICK);
   cairo_rel_line_to(cr, width_metric, 0);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
   cairo_stroke(cr);
-  cairo_move_to(cr, OSD_SCALE_FONT_SIZE / 6, OSD_SCALE_I);
+  cairo_move_to(cr, LEFT_X, OSD_SCALE_I);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
   cairo_rel_line_to(cr, width_imp, 0);
   cairo_rel_line_to(cr, 0, +OSD_SCALE_TICK);
@@ -579,12 +603,12 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   /* draw black line */
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
   cairo_set_line_width(cr, OSD_SCALE_FONT_SIZE / 6);
-  cairo_move_to(cr, OSD_SCALE_FONT_SIZE / 6, OSD_SCALE_M);
+  cairo_move_to(cr, LEFT_X, OSD_SCALE_M);
   cairo_rel_line_to(cr, 0, OSD_SCALE_TICK);
   cairo_rel_line_to(cr, width_metric, 0);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
   cairo_stroke(cr);
-  cairo_move_to(cr, OSD_SCALE_FONT_SIZE / 6, OSD_SCALE_I);
+  cairo_move_to(cr, LEFT_X, OSD_SCALE_I);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
   cairo_rel_line_to(cr, width_imp, 0);
   cairo_rel_line_to(cr, 0, +OSD_SCALE_TICK);
@@ -616,6 +640,7 @@ static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 
   if (!priv->crosshair.surface)
   {
+  g_message("OSD_CROSSHAIR_WH %d", OSD_CROSSHAIR_WH);
     priv->crosshair.surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, OSD_CROSSHAIR_WH, OSD_CROSSHAIR_WH);
   }
@@ -640,7 +665,7 @@ static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 
   g_object_get(G_OBJECT(osd->map), "viewport-width", &width, "viewport-height", &height, NULL);
 
-  x = OSD_X;
+  x = OSD_X*2;
   y = -OSD_Y;
   if (x < 0)
     x += width - OSD_SCALE_W;
@@ -693,7 +718,6 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
   osd_classic->priv = priv;
   priv->scale.compass_azimuth = 0;
   osd_classic->draw = osd_draw;
-
   osd_classic->map = map;
   g_object_ref(map);
 
@@ -707,7 +731,7 @@ osm_gps_map_osd_t* osm_gps_map_osd_classic_init(OsmGpsMap* map)
   int nQ = g_nFontSizePx * 1.5;
   OSD_CROSSHAIR_BORDER = nQ;
   OSD_CROSSHAIR_RADIUS = (nQ * 2) / 3;
-  OSD_CROSSHAIR_WH = (OSD_CROSSHAIR_BORDER + OSD_CROSSHAIR_RADIUS) * 2;
+  OSD_CROSSHAIR_WH = (OSD_CROSSHAIR_BORDER + OSD_CROSSHAIR_RADIUS) * 2 + nQ;
   MAXARR = OSD_CROSSHAIR_WH / 2;
   return osd_classic;
 }
