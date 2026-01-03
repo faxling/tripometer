@@ -66,14 +66,7 @@ struct _OsmGpsMapPrivate
 
   gfloat map_factor;
   int map_depth;
-
-  gfloat windDirectionRad;
-  gfloat windSpeedMs;
-  gfloat tempDeg;
-  gfloat uvIndex;  
-  int nSunrise;
-  int nSunset;
-
+  WeatherData mWeatherData;
   int map_zoom;
   int max_zoom;
   int min_zoom;
@@ -131,8 +124,8 @@ struct _OsmGpsMapPrivate
 
   // for customizing the redering of the gps track
   int ui_gps_track_width;
-  int ui_gps_point_inner_radius;
-  int ui_gps_point_outer_radius;
+ // int ui_gps_point_inner_radius;
+ // int ui_gps_point_outer_radius;
 
   //   guint fullscreen : 1;
   guint is_disposed : 1;
@@ -163,17 +156,10 @@ enum
 {
   PROP_0,
   PROP_AUTO_CENTER,
-  // PROP_RECORD_TRIP_HISTORY,
-  // PROP_SHOW_TRIP_HISTORY,
-  // PROP_AUTO_DOWNLOAD,
-  // PROP_REPO_URI,
-  // PROP_PROXY_URI,
   PROP_TILE_CACHE_DIR,
   PROP_TILE_CACHE_BASE_DIR,
   PROP_TILE_CACHE_DIR_IS_FULL_PATH,
   PROP_ZOOM,
-  // PROP_MAX_ZOOM,
-  //  PROP_MIN_ZOOM,
   PROP_FACTOR,
   PROP_LATITUDE,
   PROP_LONGITUDE,
@@ -181,8 +167,8 @@ enum
   PROP_MAP_Y,
   PROP_TILES_QUEUED,
   PROP_GPS_TRACK_WIDTH,
-  PROP_GPS_POINT_R1,
-  PROP_GPS_POINT_R2,
+  // PROP_GPS_POINT_R1,
+  // PROP_GPS_POINT_R2,
   PROP_MAP_SOURCE,
   PROP_IMAGE_FORMAT,
   PROP_VIEWPORT_WIDTH,
@@ -1573,7 +1559,7 @@ static char* osm_gps_map_get_cache_dir(OsmGpsMapPrivate* priv)
 {
   if (priv->tile_base_dir)
     return g_strdup(priv->tile_base_dir);
-  return osm_gps_map_get_default_cache_directory();
+ //  return osm_gps_map_get_default_cache_directory();
 }
 
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
@@ -1789,6 +1775,8 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
   case PROP_GPS_TRACK_WIDTH:
     priv->ui_gps_track_width = g_value_get_int(value);
     break;
+
+    /*
   case PROP_GPS_POINT_R1:
     priv->ui_gps_point_inner_radius = g_value_get_int(value);
     break;
@@ -1796,6 +1784,7 @@ static void osm_gps_map_set_property(GObject* object, guint prop_id, const GValu
     // The value is given in meters.
     priv->ui_gps_point_outer_radius = g_value_get_int(value);
     break;
+    */
   case PROP_MAP_SOURCE:
   {
     OsmGpsMapSource_t old = priv->map_source;
@@ -1882,12 +1871,15 @@ static void osm_gps_map_get_property(GObject* object, guint prop_id, GValue* val
   case PROP_GPS_TRACK_WIDTH:
     g_value_set_int(value, priv->ui_gps_track_width);
     break;
+    /*
   case PROP_GPS_POINT_R1:
     g_value_set_int(value, priv->ui_gps_point_inner_radius);
     break;
   case PROP_GPS_POINT_R2:
     g_value_set_int(value, priv->ui_gps_point_outer_radius);
     break;
+
+    */
   case PROP_MAP_SOURCE:
     g_value_set_uint(value, priv->map_source);
     break;
@@ -2030,7 +2022,7 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       g_param_spec_int("gps-track-width", "gps-track-width",
                        "width of the lines drawn for the gps track", 1, G_MAXINT, 4,
                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
+/*
   g_object_class_install_property(
       object_class, PROP_GPS_POINT_R1,
       g_param_spec_int("gps-track-point-radius", "gps-track-point-radius",
@@ -2042,7 +2034,7 @@ static void osm_gps_map_class_init(OsmGpsMapClass* klass)
       g_param_spec_int("gps-track-highlight-radius", "gps-track-highlight-radius",
                        "radius of the gps point highlight circle", 0, G_MAXINT, 20,
                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
+*/
   properties[PROP_MAP_SOURCE] = g_param_spec_uint(
       "map-source", "map source", "map source ID", OSM_GPS_MAP_SOURCE_NULL, OSM_GPS_MAP_SOURCE_LAST,
       OSM_GPS_MAP_SOURCE_LAST, G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
@@ -2430,50 +2422,46 @@ void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm)
   map->priv->map_depth = depthDm;
 }
 
-void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
-                           double uvIndex,int nSunrise, int nSunset)
+void osm_gps_map_set_meteo(OsmGpsMap* map, WeatherData* r)
 {
-  map->priv->nSunrise = nSunrise;
-  map->priv->nSunset = nSunset;
-  map->priv->uvIndex = uvIndex;
-  map->priv->tempDeg = tempDeg;
-  map->priv->windSpeedMs = speedMs;
-  map->priv->windDirectionRad = deg2rad(directionDeg);
+  map->priv->mWeatherData = *r;
 }
 
 double uvIndex(OsmGpsMap* map)
 {
-  return map->priv->uvIndex;
+  return map->priv->mWeatherData.uvIndex;
 }
-
 
 int sunset(OsmGpsMap* map)
 {
-  return map->priv->nSunset;
+  return map->priv->mWeatherData.nSunset;
 }
-
 
 int sunrise(OsmGpsMap* map)
 {
-
-  return map->priv->nSunrise;
+  return map->priv->mWeatherData.nSunrise;
 }
-
 
 double windSpeedMs(OsmGpsMap* map)
 {
-  return map->priv->windSpeedMs;
+  return map->priv->mWeatherData.speedMs;
 }
 
 double windDirRad(OsmGpsMap* map)
 {
-  return map->priv->windDirectionRad;
+  return map->priv->mWeatherData.directionRad;
 }
 
 double tempDeg(OsmGpsMap* map)
 {
-  return map->priv->tempDeg;
+  return map->priv->mWeatherData.tempDeg;
 }
+
+double elevation(OsmGpsMap* map)
+{
+  return map->priv->mWeatherData.fElevationMeter;
+}
+
 
 int osm_gps_map_zoom_in(OsmGpsMap* map)
 {
@@ -2506,6 +2494,7 @@ void osm_gps_map_set_factor(OsmGpsMap* map, gfloat factor)
   g_object_notify_by_pspec(G_OBJECT(map), properties[PROP_FACTOR]);
   g_signal_emit_by_name(map, "changed");
 }
+
 gfloat osm_gps_map_get_factor(OsmGpsMap* map)
 {
   g_return_val_if_fail(OSM_IS_GPS_MAP(map), 1.f);
@@ -2858,7 +2847,7 @@ coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map)
   coord.rlat = priv->center_rlat;
   return coord;
 }
-
+/*
 coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
 {
   coord_t coord;
@@ -2873,7 +2862,7 @@ coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
                                                            priv->map_factor);
   return coord;
 }
-
+*/
 void osm_gps_map_from_deg(OsmGpsMap* map, double logDeg, double latDeg, int* px, int* py)
 {
   coord_t pos;

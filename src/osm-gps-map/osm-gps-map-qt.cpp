@@ -142,7 +142,7 @@ Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(pa
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
   map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
                                  OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
-                                 FALSE, "gps-track-point-radius", 10, NULL));
+                                 FALSE, NULL));
 
   g_free(path);
 
@@ -739,17 +739,19 @@ void curl_wind_cb(net_result_t* result, gpointer data)
   {
     OsmGpsMap* map = static_cast<OsmGpsMap*>(data);
     QJsonDocument oJD = QJsonDocument::fromJson(QByteArray(result->data.ptr, result->data.len));
+    WeatherData tWD;
     auto oJ = oJD.object()["current"].toObject();
     auto oDaily = oJD.object()["daily"].toObject();
     auto oUv = oDaily["uv_index_max"].toArray();
-    int nSunRise = oDaily["sunrise"].toArray().first().toInt();
-    int nSunSet = oDaily["sunset"].toArray().first().toInt();
-    osm_gps_map_set_meteo(map, oJ["wind_speed_10m"].toDouble() / 3.6,
-        oJ["wind_direction_10m"].toDouble(),
-        oJ["temperature_2m"].toDouble(),
-        oUv.first().toDouble(),
-        nSunRise,
-        nSunSet);
+    tWD.nSunrise = oDaily["sunrise"].toArray().first().toInt();
+    tWD.nSunset = oDaily["sunset"].toArray().first().toInt();
+    tWD.speedMs = oJ["wind_speed_10m"].toDouble() / 3.6;
+    tWD.directionDeg = oJ["wind_direction_10m"].toDouble();
+    tWD.directionRad = deg2rad(tWD.directionDeg);
+    tWD.tempDeg = oJ["temperature_2m"].toDouble();
+    tWD.uvIndex = oUv.first().toDouble();
+
+    osm_gps_map_set_meteo(map,&tWD);
   }
 }
 

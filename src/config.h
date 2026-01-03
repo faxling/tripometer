@@ -51,12 +51,6 @@
 // #define MAP_KEY_LEFT        GDK_Left
 // #define MAP_KEY_RIGHT       GDK_Right
 
-
-#ifdef SAILFISH
-#define THUMB_OSD
-#define HIGH_DPI
-#endif
-
 /* specify OSD colors explicitely. Otherwise gtk default */
 /* colors are used. fremantle always uses gtk defaults */
 
@@ -67,12 +61,12 @@
 // #define OSD_Y  -10
 #define OSD_HR_Y 60    // HR is always at screens top
 
-#ifdef HIGH_DPI
+
 #define OSD_SCALE_FONT_SIZE       (20.0)
 #define OSD_COORDINATES_FONT_SIZE (25.0)
-#endif
 
-#define WITH_QT
+
+// #define WITH_QT
 
 /* #define OSD_DOUBLE_BUFFER */    // render osd/map together
                                    // offscreen

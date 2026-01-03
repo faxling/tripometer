@@ -45,7 +45,7 @@ struct _OsmGpsMapLayerIface {
     GTypeInterface parent;
     void (*draw) (OsmGpsMapLayer *self, cairo_t *cr, OsmGpsMap *map);
     gboolean (*busy) (OsmGpsMapLayer *self);
-    gboolean (*button) (OsmGpsMapLayer *self, int x, int y, gboolean press);
+   //  gboolean (*button) (OsmGpsMapLayer *self, int x, int y, gboolean press);
 };
 
 GType osm_gps_map_layer_get_type (void);

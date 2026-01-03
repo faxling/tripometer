@@ -160,20 +160,31 @@ int osm_gps_map_depth(OsmGpsMap* map);
 void osm_gps_map_set_depth(OsmGpsMap* map, int depthDm);
 
 // Things for weather
-void osm_gps_map_set_meteo(OsmGpsMap* map, double speedMs, double directionDeg, double tempDeg,
-                           double uvIndex,int nSunrise, int nSunset);
+typedef struct
+{
+  double speedMs;
+  double directionDeg;
+  double directionRad;
+  double tempDeg;
+  double uvIndex;
+  int nSunrise;
+  int nSunset;
+  int fElevationMeter;
+} WeatherData;
+
+
+void osm_gps_map_set_meteo(OsmGpsMap* map, WeatherData* pWeatherData);
+
 double uvIndex(OsmGpsMap* map);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
 double tempDeg(OsmGpsMap* map);
+double elevation(OsmGpsMap* map);
 int sunset(OsmGpsMap* map);
 int sunrise(OsmGpsMap* map);
 
-char* osm_gps_map_get_default_cache_directory(void);
+// char* osm_gps_map_get_default_cache_directory(void);
 
-//void osm_gps_map_download_maps(OsmGpsMap* map, coord_t* pt1, coord_t* pt2, int zoom_start,
-//                               int zoom_end);
-// void osm_gps_map_get_bbox(OsmGpsMap* map, coord_t* pt1, coord_t* pt2);
 void osm_gps_map_set_mapcenter(OsmGpsMap* map, float latitude, float longitude, int zoom);
 void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude);
 int osm_gps_map_set_zoom(OsmGpsMap* map, int zoom);
@@ -186,12 +197,6 @@ gfloat osm_gps_map_get_factor(OsmGpsMap* map);
 void osm_gps_map_auto_center_at(OsmGpsMap* map, float latitude, float longitude);
 
 void osm_gps_map_adjust_to(OsmGpsMap* map, coord_t* top_left, coord_t* bottom_right);
-/*
-void osm_gps_map_get_tile_xy_at(
-    OsmGpsMap* map, float lat, float lon, int* zoom, int* x,
-    int* y);
-*/
-
 //      -1  = Db,        0 = track , 1 = point , 2 = imported
 void osm_gps_map_add_track(OsmGpsMap* map, MaepGeodata* track, int nId, int nType);
 void osm_gps_map_uppdate_offset(OsmGpsMap* map, int pixel_x, int pixel_y);
@@ -210,7 +215,7 @@ void osm_gps_map_clear_images(OsmGpsMap* map);
 void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float heading);
 void osm_gps_map_draw_gps(OsmGpsMap* map, gboolean status);
 gboolean osm_gps_map_idle_redraw(OsmGpsMap* map);
-coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y);
+// coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y);
 coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map);
 
 void osm_gps_map_from_co_ordinates(OsmGpsMap* map, coord_t* coord, int* pixel_x, int* pixel_y);

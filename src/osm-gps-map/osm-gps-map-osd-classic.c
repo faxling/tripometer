@@ -39,15 +39,6 @@
 // the osd controls
 typedef struct
 {
-  /* the offscreen representation of the OSD */
-
-  /*
-  struct
-  {
-    cairo_surface_t* surface;
-    gboolean rendered;
-  } controls;
-*/
   struct
   {
     cairo_surface_t* surface;
@@ -67,6 +58,8 @@ typedef struct
     cairo_surface_t* surface;
     float lat, lon;
   } coordinates;
+
+  // Turned on of by gui
   int* pbWeather;
   int* pbCrossHair;
   int* pbCompass;
@@ -140,37 +133,7 @@ static int osd_render_text_w_halo(cairo_t* cr, int x, int y, int nFontSize, char
 {
   if (!text)
     return y;
-/*
-  int nL = strlen(text) + 4;
-  char* p = g_malloc(strlen(text) + 4); // space for "...\n"
-  strncpy(p, text, nL);
 
-  cairo_text_extents_t extents;
-  memset(&extents, 0, sizeof(cairo_text_extents_t));
-  cairo_text_extents(cr, p, &extents);
-  g_assert(extents.width != 0.0);
-
-  //check if text needs to be truncated
-  int trunc_at = strlen(text);
-  while (extents.width > width)
-  {
-
-    // cut off all utf8 multibyte remains so the actual
-    // truncation only deals with one byte
-    while ((p[trunc_at - 1] & 0xc0) == 0x80)
-    {
-      trunc_at--;
-      g_assert(trunc_at > 0);
-    }
-
-    trunc_at--;
-    g_assert(trunc_at > 0);
-
-    strncpy(p + trunc_at, "...", nL - trunc_at);
-    cairo_text_extents(cr, p, &extents);
-  }
-*/
-// y+=(OSD_COORDINATES_FONT_SIZE/6);
   cairo_set_font_size(cr, nFontSize);
   cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
   cairo_set_line_width(cr, nFontSize / 6);
@@ -181,10 +144,6 @@ static int osd_render_text_w_halo(cairo_t* cr, int x, int y, int nFontSize, char
   cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
   cairo_move_to(cr, x, y );
   cairo_show_text(cr, text);
-
-  // g_free(p);
-
-  /* skip + 1/5 line */
   return y + nFontSize  ;
 }
 
@@ -419,8 +378,6 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   cairo_move_to(cr, OSD_CROSSHAIR_WH / 2 - nMargin,
                 OSD_CROSSHAIR_WH / 2 + g_nFontSizePx - nMargin / 3);
 
-
-
   cairo_show_text(cr, temp_str);
   int nFS = g_nFontSizePx/ 1.5;
   int nMidle = OSD_CROSSHAIR_WH / 2 - 3;
@@ -436,8 +393,6 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
   strftime(sun_str, 20, "%H:%M", t);
 
   osd_render_text_w_halo(cr,OSD_CROSSHAIR_WH- nFS*3 ,nMidle , nFS,sun_str);
-  //  cairo_move_to(cr,OSD_CROSSHAIR_WH- nFS*3 ,nMidle );
-  // cairo_show_text(cr, sun_str);
 
   cairo_destroy(cr);
 }
@@ -452,6 +407,8 @@ static void osd_render_crosshair(osm_gps_map_osd_t* osd)
 #define OSD_SCALE_I (OSD_SCALE_H2 + OSD_SCALE_TICK)
 #define OSD_SCALE_FD (OSD_SCALE_FONT_SIZE / 4)
 #define OSD_SCALE_FD_X 20
+#define MAX_SCALE_TEXT_LEN 20
+
 
 void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
 {
@@ -513,18 +470,21 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   cairo_set_source_rgba(cr, 0.5, 0.0, 0.0, 0.5);
   cairo_stroke(cr);
 
+  // width used both for meter and yards
   /* determine the size of the scale width in meters */
   float width = (OSD_SCALE_W - OSD_SCALE_FONT_SIZE / 6) * m_per_pix;
 
-  /* scale this to useful values */
   int exp = logf(width) * M_LOG10E;
   int mant = width / pow(10, exp);
   int width_metric = mant * pow(10, exp);
-  char* dist_str = NULL;
+
+  char dist_str_metric[MAX_SCALE_TEXT_LEN];
+  char dist_str_imperial[MAX_SCALE_TEXT_LEN];
   if (width_metric < 1000)
-    dist_str = g_strdup_printf("%u m", width_metric);
+    sprintf(dist_str_metric, "%u m",width_metric);
   else
-    dist_str = g_strdup_printf("%u km", width_metric / 1000);
+    sprintf(dist_str_metric, "%u km", width_metric / 1000);
+
   width_metric /= m_per_pix;
 
   /* and now the hard part: scale for useful imperial values :-( */
@@ -552,37 +512,18 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   /* also convert this to full tens/hundreds */
   exp = logf(width) * M_LOG10E;
   mant = width / pow(10, exp);
-  int width_imp = mant * pow(10, exp);
-  char* dist_str_imp = g_strdup_printf("%u %s", width_imp, dist_imp_unit);
+  int width_imperial = mant * pow(10, exp);
+  sprintf(dist_str_imperial , "%u %s",width_imperial ,dist_imp_unit);
 
   /* convert back to pixels */
-  width_imp *= imp_scale;
-  width_imp /= m_per_pix;
+  width_imperial *= imp_scale;
+  width_imperial /= m_per_pix;
 
   cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(cr, OSD_SCALE_FONT_SIZE);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
 
-  cairo_text_extents_t extents;
-  cairo_text_extents(cr, dist_str, &extents);
+  int y = osd_render_text_w_halo(cr, 2 * OSD_SCALE_FD_X, OSD_SCALE_H2 - OSD_SCALE_FD,OSD_SCALE_FONT_SIZE,dist_str_metric);
+  osd_render_text_w_halo(cr, 2 * OSD_SCALE_FD_X, y + OSD_SCALE_FONT_SIZE / 6,OSD_SCALE_FONT_SIZE,dist_str_imperial);
 
-  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-  cairo_set_line_width(cr, OSD_SCALE_FONT_SIZE / 6);
-  cairo_move_to(cr, 2 * OSD_SCALE_FD_X, OSD_SCALE_H2 - OSD_SCALE_FD);
-  cairo_text_path(cr, dist_str);
-  cairo_stroke(cr);
-  cairo_move_to(cr, 2 * OSD_SCALE_FD_X, OSD_SCALE_H2 + OSD_SCALE_FD + extents.height);
-  cairo_text_path(cr, dist_str_imp);
-  cairo_stroke(cr);
-
-  cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-  cairo_move_to(cr, 2 * OSD_SCALE_FD_X, OSD_SCALE_H2 - OSD_SCALE_FD);
-  cairo_show_text(cr, dist_str);
-  cairo_move_to(cr, 2 * OSD_SCALE_FD_X, OSD_SCALE_H2 + OSD_SCALE_FD + extents.height);
-  cairo_show_text(cr, dist_str_imp);
-
-  g_free(dist_str);
-  g_free(dist_str_imp);
 
   int LEFT_X = OSD_SCALE_FONT_SIZE / 3;
   /* draw white line */
@@ -596,7 +537,7 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   cairo_stroke(cr);
   cairo_move_to(cr, LEFT_X, OSD_SCALE_I);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
-  cairo_rel_line_to(cr, width_imp, 0);
+  cairo_rel_line_to(cr, width_imperial, 0);
   cairo_rel_line_to(cr, 0, +OSD_SCALE_TICK);
   cairo_stroke(cr);
 
@@ -610,7 +551,7 @@ void osd_render_scale_and_compass(osm_gps_map_osd_t* osd)
   cairo_stroke(cr);
   cairo_move_to(cr, LEFT_X, OSD_SCALE_I);
   cairo_rel_line_to(cr, 0, -OSD_SCALE_TICK);
-  cairo_rel_line_to(cr, width_imp, 0);
+  cairo_rel_line_to(cr, width_imperial, 0);
   cairo_rel_line_to(cr, 0, +OSD_SCALE_TICK);
   cairo_stroke(cr);
 
