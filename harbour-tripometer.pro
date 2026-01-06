@@ -50,6 +50,7 @@ OTHER_FILES += \
 HEADERS += \
     QExifImageHeader.h \
     src/osm-gps-map/osm-gps-map-osd-classic.h \
+    src/osm-gps-map/osm-gps-map-types.h \
     trackmodel.h \
     infolistmodel.h \
     Utils.h

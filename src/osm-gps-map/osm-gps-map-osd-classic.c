@@ -219,6 +219,12 @@ static void osd_render_coordinates(osm_gps_map_osd_t* osd)
     else
       osd_render_text_w_halo(cr,0,y,OSD_COORDINATES_FONT_SIZE, ">= 20 m");
   }
+  else
+  {
+    gchar* elevation_str = g_strdup_printf("Ele %.1f m", elevation(osd->map));
+    osd_render_text_w_halo(cr,0,y, OSD_COORDINATES_FONT_SIZE, elevation_str);
+    g_free(elevation_str);
+  }
 
   g_free(latitude);
   g_free(longitude);
@@ -581,7 +587,6 @@ static void osd_draw(osm_gps_map_osd_t* osd, cairo_t* cr)
 
   if (!priv->crosshair.surface)
   {
-  g_message("OSD_CROSSHAIR_WH %d", OSD_CROSSHAIR_WH);
     priv->crosshair.surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, OSD_CROSSHAIR_WH, OSD_CROSSHAIR_WH);
   }

@@ -79,9 +79,6 @@ typedef struct {
     OsmGpsMap *map;
     /* whether to redraw the map when the tile arrives */
     gboolean redraw;
-#if USE_LIBSOUP22
-    SoupSession *session;
-#endif
 } tile_download_t;
 
 typedef struct {

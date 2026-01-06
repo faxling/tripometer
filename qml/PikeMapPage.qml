@@ -116,6 +116,7 @@ Item {
       }
     }
 
+
     TrippBtn {
       id: idEniro
       bSelected: idMap.source === 16
@@ -197,6 +198,16 @@ Item {
         idMap.setSource(19)
       }
     }
+
+    TrippBtn {
+      id: idSat2
+      bSelected: idMap.source === 21
+      src: "btnSeaMap.png"
+      onClicked: {
+        idMap.setSource(21)
+      }
+    }
+
     TrippBtn {
       id: idGoogle
       bSelected: idMap.source === 6

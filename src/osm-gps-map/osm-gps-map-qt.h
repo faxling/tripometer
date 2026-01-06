@@ -387,7 +387,7 @@ namespace Maep
       return QString(url);
     }
 
-    inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
+    //inline unsigned int gpsRefreshRate() { return gpsRefreshRate_; }
     bool compassEnabled();
     bool crossHairEnabled();
     bool weatherEnabled();
@@ -414,7 +414,7 @@ namespace Maep
     void trackCaptureChanged(bool status);
     void trackChanged(bool available);
     void screenRotationChanged(bool status);
-    void gpsRefreshRateChanged(unsigned int rate);
+   // void gpsRefreshRateChanged(unsigned int rate);
     void enableCompassChanged(bool enable);
     void trippleDrag();
     void enableWeatherChanged(bool enable);
@@ -440,7 +440,7 @@ namespace Maep
     void positionLost();
     void setTrackCapture(bool status);
     void setTrack(Maep::Track* track = NULL);
-    void setGpsRefreshRate(unsigned int rate);
+   // void setGpsRefreshRate(unsigned int rate);
     void compassReadingChanged();
     void enableCompass(bool enable);
     void enableWeather(bool enable);
@@ -484,7 +484,7 @@ namespace Maep
     QColor* white;
 
     /* GPS */
-    unsigned int gpsRefreshRate_;
+    unsigned int gpsRefreshRate = 2000;
     QGeoPositionInfoSource* gps;
     QGeoPositionInfo lastGps;
     double lastLaDeg = 0;

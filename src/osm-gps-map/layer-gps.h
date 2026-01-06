@@ -43,7 +43,6 @@ typedef struct _MaepLayerGpsClass   MaepLayerGpsClass;
 struct _MaepLayerGps
 {
   GObject parent;
-
   MaepLayerGpsPrivate *priv;
 };
 

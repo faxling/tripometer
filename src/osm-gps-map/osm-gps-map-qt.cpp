@@ -44,7 +44,7 @@
 #define GCONF_KEY_LONGITUDE "longitude"
 #define GCONF_KEY_TRACK_PATH "track_path"
 #define GCONF_KEY_SCREEN_ROTATE "screen-rotate"
-#define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
+// #define GCONF_KEY_GPS_REFRESH_RATE "gps-refresh-rate"
 
 extern QObject* g_pRootObject;
 extern QObject* g_pTheTrackModel;
@@ -138,13 +138,11 @@ void Maep::Track::highlightWayPoint(int iwpt)
 Maep::GpsMap::GpsMap(QQuickItem* parent) : QQuickPaintedItem(parent), compass(parent)
 {
 
-  char* path = g_build_filename(g_get_user_cache_dir(), APP, NULL);
+
   gint source = gconf_get_int(GCONF_KEY_SOURCE, OSM_GPS_MAP_SOURCE_OPENSTREETMAP);
-  map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache",
-                                 OSM_GPS_MAP_CACHE_FRIENDLY, "tile-cache-base", path, "auto-center",
+  map = OSM_GPS_MAP(g_object_new(OSM_TYPE_GPS_MAP, "map-source", source, "auto-center",
                                  FALSE, NULL));
 
-  g_free(path);
 
   Init();
 }
@@ -162,7 +160,7 @@ void Maep::GpsMap::Init()
       }
     }
 
-    if (crossHairEnabled() && weatherEnabled())
+    // if (crossHairEnabled() && weatherEnabled())
       getWeatherCurrentPos();
   });
 
@@ -217,7 +215,6 @@ void Maep::GpsMap::Init()
   forceActiveFocus();
   setAcceptedMouseButtons(Qt::LeftButton);
 
-  gpsRefreshRate_ = 2000;
 
   gps = QGeoPositionInfoSource::createDefaultSource(this);
 
@@ -227,11 +224,10 @@ void Maep::GpsMap::Init()
             SLOT(positionUpdate(QGeoPositionInfo)));
     connect(gps, SIGNAL(updateTimeout()), this, SLOT(positionLost()));
 
-    if (gpsRefreshRate_ > 0)
-    {
-      gps->setUpdateInterval(gpsRefreshRate_);
+
+      gps->setUpdateInterval(gpsRefreshRate);
       gps->startUpdates();
-    }
+
   }
   else
     g_message("no gps source...");
@@ -391,7 +387,7 @@ Maep::GpsMap::~GpsMap()
   gconf_set_float(GCONF_KEY_LATITUDE, lat);
   gconf_set_float(GCONF_KEY_LONGITUDE, lon);
   //  gconf_set_bool(GCONF_KEY_DOUBLEPIX, dpix);
-  gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
+  // gconf_set_int(GCONF_KEY_GPS_REFRESH_RATE, gpsRefreshRate_);
   gconf_set_bool(GCONF_KEY_COMPASS_ENABLED, compassEnabled());
   gconf_set_bool(GCONF_KEY_WEATHER, weatherEnabled());
   gconf_set_bool(GCONF_KEY_CROSSHAIR, crossHairEnabled());
@@ -665,7 +661,6 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
       nLastDeltaY = delta.y();
       osm_gps_map_scroll(map);
       osm_gps_map_uppdate_offset(map, 0, 0);
-      // osm_gps_map_idle_redraw(map);
     }
     else if (zooming)
     {
@@ -749,6 +744,7 @@ void curl_wind_cb(net_result_t* result, gpointer data)
     tWD.directionDeg = oJ["wind_direction_10m"].toDouble();
     tWD.directionRad = deg2rad(tWD.directionDeg);
     tWD.tempDeg = oJ["temperature_2m"].toDouble();
+    tWD.fElevationMeter = oJD.object()["elevation"].toDouble();
     tWD.uvIndex = oUv.first().toDouble();
 
     osm_gps_map_set_meteo(map,&tWD);
@@ -1456,7 +1452,7 @@ void Maep::GpsMap::positionLost()
     track_current->finalizeSegment();
   unsetGps();
 }
-
+/*
 void Maep::GpsMap::setGpsRefreshRate(unsigned int rate)
 {
   bool restart;
@@ -1480,6 +1476,8 @@ void Maep::GpsMap::setGpsRefreshRate(unsigned int rate)
       gps->startUpdates();
   }
 }
+*/
+
 
 void Maep::GpsMap::setTrackCapture(bool status)
 {

@@ -41,15 +41,6 @@ struct _MaepLayerGpsPrivate
 
 enum
 {
-  PROP_0,
- // PROP_GPS_POINT_R1,
- //  PROP_GPS_POINT_R2,
-  PROP_LAST
-};
-
-static GParamSpec* properties[PROP_LAST];
-enum
-{
   DIRTY_SIGNAL,
   LAST_SIGNAL
 };
@@ -134,6 +125,8 @@ static void maep_layer_gps_finalize(GObject* obj)
   G_OBJECT_CLASS(maep_layer_gps_parent_class)->finalize(obj);
 }
 
+
+/*
 static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GValue* value,
                                         GParamSpec* pspec)
 {
@@ -143,7 +136,7 @@ static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GV
 
   g_return_if_fail(MAEP_IS_LAYER_GPS(object));
   MaepLayerGpsPrivate* priv = MAEP_LAYER_GPS(object)->priv;
-/*
+
   switch (prop_id)
   {
   case PROP_GPS_POINT_R1:
@@ -179,14 +172,14 @@ static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GV
   }
 
   */
-}
 
+/*
 static void maep_layer_gps_get_property(GObject* object, guint prop_id, GValue* value,
                                         GParamSpec* pspec)
 {
   g_return_if_fail(MAEP_IS_LAYER_GPS(object));
   MaepLayerGpsPrivate* priv = MAEP_LAYER_GPS(object)->priv;
-/*
+
   switch (prop_id)
   {
   case PROP_GPS_POINT_R1:
@@ -200,15 +193,13 @@ static void maep_layer_gps_get_property(GObject* object, guint prop_id, GValue* 
     break;
   }
 
-  */
-}
 
+}
+  */
 static void _draw(MaepLayerGpsPrivate* priv, cairo_t* cr, OsmGpsMap* map)
 {
   // int r = priv->ui_gps_point_inner_radius;
   double r2 = (double)priv->ui_gps_point_outer_radius;
-
-  g_message("r2 %f", r2);
 
   // draw transparent area
   if (r2 > 0.0)
