@@ -16,9 +16,9 @@
    version="1.1"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="btn.svg"
-   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnComposition.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs2998">
     <linearGradient
@@ -240,6 +240,36 @@
        id="linearGradient3040"
        xlink:href="#SVGID_1_"
        inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient953"
+       id="linearGradient912"
+       gradientUnits="userSpaceOnUse"
+       x1="-273.88586"
+       y1="39.352238"
+       x2="-297.69937"
+       y2="39.528454"
+       gradientTransform="matrix(3.3567314,0,0,5.0136656,911.17628,-152.65116)" />
+    <linearGradient
+       id="linearGradient953"
+       inkscape:collect="always">
+      <stop
+         id="stop949"
+         offset="0"
+         style="stop-color:#3c0000;stop-opacity:1" />
+      <stop
+         style="stop-color:#d3160a;stop-opacity:1"
+         offset="0.40167412"
+         id="stop957" />
+      <stop
+         style="stop-color:#ffd581;stop-opacity:1"
+         offset="0.80903018"
+         id="stop955" />
+      <stop
+         id="stop951"
+         offset="1"
+         style="stop-color:#f6f5dd;stop-opacity:1" />
+    </linearGradient>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -249,8 +279,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7.7781746"
-     inkscape:cx="37.738222"
-     inkscape:cy="45.056661"
+     inkscape:cx="16.846431"
+     inkscape:cy="50.138371"
      inkscape:current-layer="g4052"
      showgrid="true"
      inkscape:document-units="px"
@@ -261,8 +291,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:window-width="1920"
      inkscape:window-height="1057"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-x="1912"
+     inkscape:window-y="109"
      inkscape:window-maximized="1"
      inkscape:snap-grids="true"
      inkscape:snap-global="true"
@@ -400,6 +430,14 @@
        inkscape:export-filename="C:\Users\fraxl\Documents\qt\harbour-tripometer\qml\btnLrgCenter.png"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
+    <rect
+       transform="matrix(-8.0124152e-4,-0.99999968,0.99999262,-0.00384258,0,0)"
+       y="10.932959"
+       x="-89.156532"
+       height="73.057571"
+       width="81.948288"
+       id="rect908"
+       style="fill:url(#linearGradient912);fill-opacity:1;stroke:none;stroke-width:1.0785197" />
   </g>
   <g
      inkscape:groupmode="layer"

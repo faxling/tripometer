@@ -19,8 +19,8 @@ enum TRACK_ROLES_t
   DISKSIZE_t,
   TYPE_t
 };
+
 extern QObject* g_pRootObject;
-// extern QObject* g_pTheMap;
 
 TrackModel::ModelDataNode TrackModel::GetNodeFromTrack(const QString& sTrackName, bool bIsLoaded)
 {
@@ -187,29 +187,6 @@ void TrackModel::trackUnloaded(int nId)
   oc.push_back(ISLOADED_t);
   emit dataChanged(oMI, oMI, oc);
 }
-/*
-void TrackModel::trackLoaded(int nId)
-{
-  int nRow = -1;
-  for (auto& oJ : m_oc)
-  {
-    if (nId == oJ.nId)
-    {
-      nRow = IndexOf(oJ, m_oc);
-      oJ.bIsLoaded = true;
-      break;
-    }
-  }
-  if (nRow < 0)
-    return;
-
-  QModelIndex oMI = index(nRow, 0, QModelIndex());
-  QVector<int> oc;
-  oc.push_back(ISLOADED_t);
-  emit dataChanged(oMI, oMI, oc);
-}
-*/
-// extern QObject* g_pTheMap;
 
 void TrackModel::loadSelected(QObject* mapObj)
 {

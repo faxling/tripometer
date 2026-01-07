@@ -357,6 +357,7 @@ namespace Maep
     Q_INVOKABLE void loadPikeInMap(int nId, int nType, float fLo, float fLa);
     Q_INVOKABLE void saveSearchMark(int nId, QString sName, float fLo, float fLa);
     Q_INVOKABLE void saveMark(int nId);
+    Q_INVOKABLE void enableComposition(int nVal);
     Q_INVOKABLE void saveCurrentTrack();
     Q_INVOKABLE QString savePikeReport(QVariant pListTeam1, QString sTeamNameAndSum1,
                                        QVariant pListTeam2, QString sTeamNameAndSum2,

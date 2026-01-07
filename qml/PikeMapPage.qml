@@ -116,7 +116,6 @@ Item {
       }
     }
 
-
     TrippBtn {
       id: idEniro
       bSelected: idMap.source === 16
@@ -162,6 +161,11 @@ Item {
           opacity: 1
           enabled: true
         }
+        PropertyChanges {
+          target: map_controls5
+          opacity: 1
+          enabled: true
+        }
       }
     ]
 
@@ -200,15 +204,6 @@ Item {
     }
 
     TrippBtn {
-      id: idSat2
-      bSelected: idMap.source === 21
-      src: "btnSeaMap.png"
-      onClicked: {
-        idMap.setSource(21)
-      }
-    }
-
-    TrippBtn {
       id: idGoogle
       bSelected: idMap.source === 6
       src: "btnMap.png"
@@ -223,6 +218,46 @@ Item {
     }
   }
 
+  ////
+  Column {
+    id: map_controls5
+    enabled :false
+    opacity: 0
+    spacing: 20
+    anchors.bottomMargin: 20
+    anchors.leftMargin: 20
+    anchors.top: map_controls4.top
+    anchors.left: map_controls4.right
+
+    TrippBtn {
+      id: idBottom
+      src: "btnCompositionOverlay.png"
+      onClicked: {
+        bSelected = !bSelected
+        idMap.enableComposition(bSelected)
+      }
+    }
+    TrippBtn {
+      id: idSat2
+      bSelected: idMap.source === 21
+      src: "btnComposition.png"
+      onClicked: {
+        idMap.setSource(21)
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        text: "Hard"
+      }
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        text: "Soft"
+      }
+    }
+  }
+
+  ///
   Column {
     id: map_controls2
     spacing: 20

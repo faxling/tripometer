@@ -557,57 +557,14 @@ void Maep::GpsMap::zoomOut()
   osm_gps_map_magnifye(map, -1);
 }
 
-#define OSM_GPS_MAP_SCROLL_STEP (10)
-/*
-void Maep::GpsMap::keyPressEvent(QKeyEvent* event)
-{
-  int step;
-
-  step = width() / OSM_GPS_MAP_SCROLL_STEP;
-
-  int nKey = event->key();
-
-  switch (nKey)
-  {
-  case Qt::Key_Up:
-    osm_gps_map_uppdate_offset(map, 0, -step);
-    osm_gps_map_scroll(map);
-    break;
-  case Qt::Key_Down:
-    osm_gps_map_uppdate_offset(map, 0, -step);
-    osm_gps_map_scroll(map);
-    break;
-  case Qt::Key_Right:
-    osm_gps_map_uppdate_offset(map, step, 0);
-    osm_gps_map_scroll(map);
-    break;
-  case Qt::Key_Left:
-    osm_gps_map_uppdate_offset(map, -step, 0);
-    osm_gps_map_scroll(map);
-    break;
-  case Qt::Key_ZoomIn:
-  case Qt::Key_Plus:
-    osm_gps_map_zoom_in(map);
-    break;
-
-  case Qt::Key_ZoomOut:
-  case Qt::Key_Minus:
-    osm_gps_map_zoom_out(map);
-    break;
-  case Qt::Key_S:
-    emit searchRequest();
-    break;
-  }
-}
-*/
 void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
 {
-  int nTDist = 0;
+  //  int nTDist = 0;
   static int nTDistLast = 0;
   static int nLastDeltaX = 0;
   static int nLastDeltaY = 0;
-  static QTouchEvent::TouchPoint tBeginPoint;
-  static QTouchEvent::TouchPoint tEndPoint;
+  //static QTouchEvent::TouchPoint tBeginPoint;
+  //  static QTouchEvent::TouchPoint tEndPoint;
 
   if (g_nSkipDraw != 0)
     return;
@@ -626,7 +583,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     if (dragging)
     {
       m_oElapsed.start();
-      tBeginPoint = touchPoints.first();
+      //  tBeginPoint = touchPoints.first();
     }
     if (zooming)
     {
@@ -641,7 +598,7 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     // g_message("touch update %d", haveMouseEvent);
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
 
-    tEndPoint = touchPoints.first();
+    //tEndPoint = touchPoints.first();
     if (touchPoints.count() == 2 && dragging)
     {
       dragging = false;
@@ -683,11 +640,16 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
     return;
   }
   case QEvent::TouchEnd:
+    if (m_oElapsed.elapsed() < 200)
+      emit trippleDrag();
+    /*
     tEndPoint = touchEvent->touchPoints().first();
 
     nTDist = QLineF(tBeginPoint.pos(), tEndPoint.pos()).length();
     if ((m_oElapsed.elapsed() < 200) && (nTDist < 50))
       emit trippleDrag();
+      
+      */
     break;
   default:
     QQuickItem::touchEvent(touchEvent);
@@ -703,14 +665,17 @@ static void osm_gps_map_qt_source(Maep::GpsMap* widget, GParamSpec* pspec, OsmGp
   widget->sourceChanged(widget->source());
 }
 
+
+
 void Maep::GpsMap::setSource(Maep::GpsMap::Source value)
 {
+  /*
   Source orig;
   orig = source();
   if (orig == value)
     return;
-
-  g_object_set(map, "map-source", (OsmGpsMapSource_t)value, NULL);
+*/
+  g_object_set(map, "map-source", (OsmGpsMapSource_t) value, NULL);
 }
 /*
 void Maep::GpsMap::clearTrack()
@@ -1177,6 +1142,12 @@ void Maep::GpsMap::saveSearchMark(int nId, QString sName, float fLo, float fLa)
   QMetaObject::invokeMethod(g_pTheTrackModel, "trackAdd", Q_ARG(QString, sTrackName));
   QMetaObject::invokeMethod(this, "loadTrack", Q_ARG(QString, sTrackName), Q_ARG(int, nId));
   QMetaObject::invokeMethod(this, "scrollToBottom");
+}
+
+void Maep::GpsMap::enableComposition(int nVal)
+{
+  osm_gps_map_enableComposition(map, nVal);
+  osm_gps_map_idle_redraw(map);
 }
 
 void Maep::GpsMap::saveMark(int nId)

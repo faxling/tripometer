@@ -90,12 +90,8 @@ void net_io_finalize()
 
 static void request_free(net_io_request_t* request)
 {
- // if (request->proxy)
- //   proxy_config_free(request->proxy);
   if (request->url)
     g_free(request->url);
-  //if (request->user)
-  //   g_free(request->user);
 
   if (request->result.data.ptr)
   {

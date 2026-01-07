@@ -67,8 +67,6 @@ static void maep_search_context_init(MaepSearchContext* obj)
 {
   obj->priv = G_TYPE_INSTANCE_GET_PRIVATE(obj, MAEP_TYPE_SEARCH_CONTEXT, MaepSearchContextPrivate);
   obj->priv->dispose_has_run = FALSE;
-  // obj->priv->list_geonames_places = NULL;
-  //  obj->priv->downloading_geonames = FALSE;
   obj->priv->list_nominatim_places = NULL;
   obj->priv->downloading_nominatim = FALSE;
 }

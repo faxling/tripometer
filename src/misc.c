@@ -222,42 +222,6 @@ gfloat gconf_get_float(const char *m_key, gfloat def_value) {
   return ret;
 }
 
-/*
-struct proxy_config *proxy_config_get()
-{
-    struct proxy_config *config = g_new0(struct proxy_config, 1);
-
-    // TODO: As fallback, get proxy from environment ("http_proxy")
-    // TODO: On Sailfish, get proxy settings from Qt or ConnMan(?)
-
-#define PROXY_KEY  "/system/http_proxy/"
-    if (gconf_get_bool(PROXY_KEY "use_http_proxy", FALSE)) {
-        g_message("thread: using proxy.");
-
-
-        config->host = gconf_get_string(PROXY_KEY "host");
-        config->port = gconf_get_int(PROXY_KEY "port", 0);
-
-        if(gconf_get_bool(PROXY_KEY "use_authentication", FALSE)) {
-            config->username = gconf_get_string(PROXY_KEY "authentication_user");
-            config->password = gconf_get_string(PROXY_KEY "authentication_password");
-        }
-    }
-#undef PROXY_KEY
-
-    return config;
-}
-
-void proxy_config_free(struct proxy_config *config)
-{
-    if (config) {
-        g_free(config->host);
-        g_free(config->username);
-        g_free(config->password);
-        g_free(config);
-    }
-}
-*/
 //  "~/" APP,                 // in home directory
 static const char *data_paths[] = {
   DATADIR ,                  // final installation path (e.g. /usr/share/maep)
@@ -277,8 +241,6 @@ char *find_file(const char *name) {
     else
       full_path = g_strdup_printf("%s/%s", *path, name);
 
-
- //    g_message(full_path);
     if(g_file_test(full_path, G_FILE_TEST_IS_REGULAR))
       return full_path;
 

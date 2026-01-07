@@ -100,13 +100,13 @@ typedef enum
 #define EXTRA_BORDER 0 /*                (TILESIZE / 2) */
 
 typedef struct _OsmGpsMapSource OsmGpsMapSource;
-
+/*
 const OsmGpsMapSource* osm_gps_map_source_new(const gchar* name, const gchar repo_uri,
                                               const gchar* image_format,
                                               const gchar* copyright_notice,
                                               const gchar* copyright_url, guint min_zoom,
                                               guint max_zoom);
-
+*/
 void osm_map_fill_tiles_surface(OsmGpsMap* map, cairo_surface_t* surf, cairo_t* cairoHandle);
 const char* osm_gps_map_source_get_friendly_name(OsmGpsMapSource_t source);
 const char* osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source);
@@ -184,7 +184,8 @@ double uvIndex(OsmGpsMap* map);
 double windSpeedMs(OsmGpsMap* map);
 double windDirRad(OsmGpsMap* map);
 double tempDeg(OsmGpsMap* map);
-double elevation(OsmGpsMap* map);
+double elevation(OsmGpsMap *map);
+void osm_gps_map_enableComposition(OsmGpsMap *map, int v);
 int sunset(OsmGpsMap* map);
 int sunrise(OsmGpsMap* map);
 

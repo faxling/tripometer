@@ -31,9 +31,7 @@ struct _MaepLayerGpsPrivate
   gboolean dispose_has_run;
   coord_t gps;
   float gps_heading;
-  // float compass_azimuth;
   gboolean gps_valid;
- // guint ui_gps_point_inner_radius;
   guint ui_gps_point_outer_radius;
   cairo_surface_t** boatImages;
   cairo_surface_t* surf;
@@ -48,10 +46,7 @@ static guint _signals[LAST_SIGNAL] = {0};
 
 static void maep_layer_gps_dispose(GObject* obj);
 static void maep_layer_gps_finalize(GObject* obj);
-// static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GValue* value,
-//                                         GParamSpec* pspec);
-//static void maep_layer_gps_get_property(GObject* object, guint prop_id, GValue* value,
-//                                         GParamSpec* pspec);
+
 static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface);
 static void maep_layer_gps_draw(OsmGpsMapLayer* self, cairo_t* cr, OsmGpsMap* map);
 
@@ -66,34 +61,19 @@ static void maep_layer_gps_class_init(MaepLayerGpsClass* klass)
   /* Connect the overloading methods. */
   oclass->dispose = maep_layer_gps_dispose;
   oclass->finalize = maep_layer_gps_finalize;
-  // oclass->set_property = maep_layer_gps_set_property;
-  // oclass->get_property = maep_layer_gps_get_property;
 
   _signals[DIRTY_SIGNAL] =
       g_signal_new("dirty", G_TYPE_FROM_CLASS(klass),
                    G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS, 0, NULL, NULL,
                    g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
-/*
-  properties[PROP_GPS_POINT_R1] = g_param_spec_uint(
-      "gps-point-radius", "gps-point-radius", "radius of the gps point inner circle", 0, G_MAXUINT,
-      10, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-  g_object_class_install_property(oclass, PROP_GPS_POINT_R1, properties[PROP_GPS_POINT_R1]);
 
-  properties[PROP_GPS_POINT_R2] = g_param_spec_uint(
-      "gps-highlight-radius", "gps-highlight-radius", "radius of the gps point highlight circle", 0,
-      G_MAXUINT, 0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-
-  g_object_class_install_property(oclass, PROP_GPS_POINT_R2, properties[PROP_GPS_POINT_R2]);
-*/
   g_type_class_add_private(klass, sizeof(MaepLayerGpsPrivate));
 }
 
 static void osm_gps_map_layer_interface_init(OsmGpsMapLayerIface* iface)
 {
- //  iface->render = NULL;
   iface->draw = maep_layer_gps_draw;
   iface->busy = NULL;
- //  iface->button = NULL;
 }
 
 static void maep_layer_gps_init(MaepLayerGps* obj)
@@ -125,83 +105,11 @@ static void maep_layer_gps_finalize(GObject* obj)
   G_OBJECT_CLASS(maep_layer_gps_parent_class)->finalize(obj);
 }
 
-
-/*
-static void maep_layer_gps_set_property(GObject* object, guint prop_id, const GValue* value,
-                                        GParamSpec* pspec)
+static void _draw(MaepLayerGpsPrivate *priv, cairo_t *cr, OsmGpsMap *map)
 {
-  cairo_t* cr;
-  cairo_pattern_t* pat;
-  double r;
+  double r2 = (double) priv->ui_gps_point_outer_radius;
 
-  g_return_if_fail(MAEP_IS_LAYER_GPS(object));
-  MaepLayerGpsPrivate* priv = MAEP_LAYER_GPS(object)->priv;
-
-  switch (prop_id)
-  {
-  case PROP_GPS_POINT_R1:
-    priv->ui_gps_point_inner_radius = g_value_get_uint(value);
-    if (priv->surf)
-      cairo_surface_destroy(priv->surf);
-    priv->surf =
-        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, priv->ui_gps_point_inner_radius * 2 + 2,
-                                   priv->ui_gps_point_inner_radius * 2 + 2);
-    cr = cairo_create(priv->surf);
-    cairo_translate(cr, priv->ui_gps_point_inner_radius + 1, priv->ui_gps_point_inner_radius + 1);
-    r = (double)(priv->ui_gps_point_inner_radius / 5);
-    pat = cairo_pattern_create_radial(-r, -r, r, 0., 0., 5 * r);
-    cairo_pattern_add_color_stop_rgba(pat, 0, 1, 1, 1, 1.0);
-    cairo_pattern_add_color_stop_rgba(pat, 1, 0, 0, 1, 1.0);
-    cairo_set_source(cr, pat);
-    // cairo_set_source_rgba (cr, 0.0, 0.0, 1.0, 1.0);
-    cairo_arc(cr, 0., 0., priv->ui_gps_point_inner_radius, 0, 2 * M_PI);
-    cairo_fill_preserve(cr);
-    // draw ball border
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-    cairo_stroke(cr);
-    cairo_pattern_destroy(pat);
-    cairo_destroy(cr);
-    break;
-  case PROP_GPS_POINT_R2:
-    priv->ui_gps_point_outer_radius = g_value_get_uint(value);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-    break;
-  }
-
-  */
-
-/*
-static void maep_layer_gps_get_property(GObject* object, guint prop_id, GValue* value,
-                                        GParamSpec* pspec)
-{
-  g_return_if_fail(MAEP_IS_LAYER_GPS(object));
-  MaepLayerGpsPrivate* priv = MAEP_LAYER_GPS(object)->priv;
-
-  switch (prop_id)
-  {
-  case PROP_GPS_POINT_R1:
-    g_value_set_uint(value, priv->ui_gps_point_inner_radius);
-    break;
-  case PROP_GPS_POINT_R2:
-    g_value_set_uint(value, priv->ui_gps_point_outer_radius);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-    break;
-  }
-
-
-}
-  */
-static void _draw(MaepLayerGpsPrivate* priv, cairo_t* cr, OsmGpsMap* map)
-{
-  // int r = priv->ui_gps_point_inner_radius;
-  double r2 = (double)priv->ui_gps_point_outer_radius;
-
-  // draw transparent area
+  // draw transparent area for marking gps precition
   if (r2 > 0.0)
   {
     /* Transform meters to pixels. */
@@ -279,7 +187,6 @@ gboolean maep_layer_gps_set_coordinates(MaepLayerGps* gps, gfloat lat, gfloat lo
   {
     changed = TRUE;
     gps->priv->ui_gps_point_outer_radius = gpsAccuracyMeter;
-   //  g_object_notify_by_pspec(G_OBJECT(gps), properties[PROP_GPS_POINT_R2]);
   }
 
 
