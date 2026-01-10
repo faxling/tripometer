@@ -365,9 +365,9 @@ namespace Maep
                                        QString sName, int nTeamCount);
 
     Q_INVOKABLE QString saveMap(int w, int h);
-    Q_INVOKABLE void loadTrack(const QString& sTrackName, int nId);
+    Q_INVOKABLE void loadTrack(const QString &sTrackName, int nId, int nCenter);
     Q_INVOKABLE void unloadTrack(int nId);
-    Q_INVOKABLE void centerTrack(float fLo, float fLa);
+    Q_INVOKABLE void centerMap(float fLaRad, float fLoRad);
     Q_INVOKABLE void renameTrack(const QString& sTrackName, int nId);
 
     Q_INVOKABLE void centerCurrentGps();

@@ -128,11 +128,9 @@ bool TrackModelFiltered::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 
 void TrackModel::trackCenterAndLoad(int nId, QObject* mapObj)
 {
-  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode& t) {
+  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode &t) {
     if (t.nId == nId)
     {
-
-
       if (t.bIsLoaded == false)
       {
         t.bIsLoaded = true;
@@ -141,29 +139,38 @@ void TrackModel::trackCenterAndLoad(int nId, QObject* mapObj)
         QVector<int> oc;
         oc.push_back(ISLOADED_t);
         emit dataChanged(oMI, oMI, oc);
-        QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, t.sName), Q_ARG(int, t.nId));
       }
-
-
-
-      QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
+      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, t.sName), Q_ARG(int, t.nId), Q_ARG(int, 1));
       return true;
     }
-    else
-      return false;
+    return false;
   });
 }
 
-void TrackModel::trackCenter(int nId, QObject* mapObj)
+void TrackModel::trackCenter(int nId, QObject *mapObj)
 {
-  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode& t) {
-    if (t.nId == nId)
-    {
-      QMetaObject::invokeMethod(mapObj, "centerTrack", Q_ARG(float, t.lo), Q_ARG(float, t.la));
+  qDebug() << " nId " << nId;
+
+  std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode &t) {
+    if (t.nId == nId) {
+      qDebug() << t.sName;
+      if (t.nType == 0 || t.nType == 2) {
+        QString sGpxFileName = GpxFullName(t.sName);
+        GError *error = 0;
+        MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
+        if (track) {
+          coord_t tP = maep_geodata_track_get_firstpoint(track);
+          g_object_unref(G_OBJECT(track));
+          qDebug() << t.sName << sGpxFileName << " tP.rlon " << tP.rlon << "  " << tP.rlat;
+          QMetaObject::invokeMethod(mapObj, "centerMap", Q_ARG(float, tP.rlat), Q_ARG(float, tP.rlon));
+        }
+
+      } else {
+        QMetaObject::invokeMethod(mapObj, "centerMap", Q_ARG(float, deg2rad(t.la)), Q_ARG(float, deg2rad(t.lo)));
+      }
       return true;
     }
-    else
-      return false;
+    return false;
   });
 }
 
@@ -197,7 +204,7 @@ void TrackModel::loadSelected(QObject* mapObj)
     if (oJ.bSelected == true && oJ.bIsLoaded == false)
     {
       oJ.bIsLoaded = true;
-      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId));
+      QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId), Q_ARG(int, 0));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
     }

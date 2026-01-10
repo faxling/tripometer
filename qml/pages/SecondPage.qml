@@ -208,6 +208,13 @@ SilicaListView {
         font.pixelSize: Theme.fontSizeMedium
         // @disable-check M325
         text: sDuration === "x" ? "" : sDuration
+        MouseArea {
+          anchors.fill: parent
+          onPressed: {
+            mainMap.skipDraw = false
+            idTrackModel.trackCenter(nId, mainMap)
+          }
+        }
       }
     }
 

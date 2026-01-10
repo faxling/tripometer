@@ -90,7 +90,6 @@ typedef struct _MaepGeodataClass   MaepGeodataClass;
 struct _MaepGeodata
 {
   GObject parent;
-
   MaepGeodataPrivate *priv;
 };
 
@@ -183,7 +182,7 @@ int maep_geodata_track_get_contents(const MaepGeodata *track_state);
 guint maep_geodata_track_get_length(const MaepGeodata *track_state);
 gfloat maep_geodata_track_get_metric_length(const MaepGeodata *track_state);
 
-
+coord_t maep_geodata_track_get_firstpoint(const MaepGeodata *track_state);
 coord_t maep_geodata_track_get_lastpoint(const MaepGeodata *track_state);
 
 

@@ -155,7 +155,6 @@ enum
   PROP_0,
   PROP_AUTO_CENTER,
   PROP_TILE_CACHE_DIR,
-  // PROP_TILE_CACHE_BASE_DIR,
   PROP_TILE_CACHE_DIR_IS_FULL_PATH,
   PROP_ZOOM,
   PROP_FACTOR,
@@ -165,8 +164,6 @@ enum
   PROP_MAP_Y,
   PROP_TILES_QUEUED,
   PROP_GPS_TRACK_WIDTH,
-  // PROP_GPS_POINT_R1,
-  // PROP_GPS_POINT_R2,
   PROP_MAP_SOURCE,
   PROP_IMAGE_FORMAT,
   PROP_VIEWPORT_WIDTH,
@@ -1035,7 +1032,8 @@ void osm_gps_map_download_tile2(OsmGpsMap* map, int zoom, int x, int y, gboolean
     return;
 
   dl->redraw = redraw;
-  struct curl_slist* chunk = 0;
+
+  struct curl_slist *chunk = 0;
   if (priv->the_navionics)
   {
     net_io_append_header(&chunk, "referer: https://maps.garmin.com/");
@@ -1073,41 +1071,11 @@ gchar *get_cached_file(const gchar *cache_dir, const gchar *format, int zoom, in
   }
 }
 
-/*
-gchar* osm_gps_map_source_get_cached_file(OsmGpsMapSource_t source, const gchar* cache_dir,
-                                          int zoom, int x, int y)
-{
-  return get_cached_file(cache_dir, osm_gps_map_source_get_image_format(source), zoom, x, y);
-}
-*/
 gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source,  const gchar* base)
 {
   return g_strdup_printf("%s%c%s", base, G_DIR_SEPARATOR, osm_gps_map_source_get_friendly_name(source));
-
-  /*
-  gchar* cache_dir;
-
-  if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_AUTO) == 0)
-  {
-    char* md5 =
-        g_compute_checksum_for_string(G_CHECKSUM_MD5, osm_gps_map_source_get_repo_uri(source), -1);
-
-    cache_dir = g_strdup_printf("%s%c%s", base, G_DIR_SEPARATOR, md5);
-    g_free(md5);
-  }
-  else if (g_strcmp0(tile_dir, OSM_GPS_MAP_CACHE_FRIENDLY) == 0)
-  {
-    cache_dir = g_strdup_printf("%s%c%s", base, G_DIR_SEPARATOR,
-                                osm_gps_map_source_get_friendly_name(source));
-  }
-  else
-  {
-    cache_dir = g_strdup(tile_dir);
-  }
-
-  return cache_dir;
-  */
 }
+
 typedef struct _composition_cb_data
 {
   OsmCachedTile *tile;
@@ -2516,9 +2484,15 @@ static gboolean _set_zoom(OsmGpsMap* map, int zoom)
   return TRUE;
 }
 
-void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude)
+void osm_gps_map_set_center_rad(OsmGpsMap *map, float latitude, float longitude)
 {
-  g_object_set(G_OBJECT(map), "auto-center", FALSE, NULL);
+  if (_set_center(map, latitude, longitude))
+    _update_screen_pos(map);
+}
+
+void osm_gps_map_set_center(OsmGpsMap *map, float latitude, float longitude)
+{
+  //  g_object_set(G_OBJECT(map), "auto-center", FALSE, NULL);
   if (_set_center(map, deg2rad(latitude), deg2rad(longitude)))
     _update_screen_pos(map);
 }
@@ -2920,25 +2894,6 @@ void osm_gps_map_set_gps(OsmGpsMap* map, float latitude, float longitude, float 
   priv->osm_gps->rlon = deg2rad(longitude);
   priv->osm_gps_heading = deg2rad(heading);
 
-  // If trip marker add to list of gps points.
-  /*
-  if (priv->record_trip_history)
-  {
-    if (!priv->trip_history)
-      priv->trip_history = maep_geodata_new();
-    maep_geodata_add_trackpoint(priv->trip_history, latitude, longitude, FLT_MAX, NAN, NAN, NAN,
-                                NAN);
-  }
-
-  */
-
-  // dont draw anything if we are dragging
-  /* g_error("implement here."); */
-  /* if (priv->dragging) { */
-  /*     g_debug("Dragging"); */
-  /*     return; */
-  /* } */
-
   // Automatically center the map if the track approaches the edge
   if (priv->map_auto_center)
   {
@@ -2983,22 +2938,7 @@ coord_t osm_gps_map_get_center_ordinates(OsmGpsMap* map)
   coord.rlat = priv->center_rlat;
   return coord;
 }
-/*
-coord_t osm_gps_map_get_co_ordinates(OsmGpsMap* map, int pixel_x, int pixel_y)
-{
-  coord_t coord;
-  OsmGpsMapPrivate* priv = map->priv;
 
-  coord.rlat =
-      pixel2lat(priv->map_zoom,
-                priv->map_y + (pixel_y + (priv->map_factor - 1.f) * priv->viewport_height * 0.5f) /
-                                  priv->map_factor);
-  coord.rlon = pixel2lon(priv->map_zoom, priv->map_x + (pixel_x + (priv->map_factor - 1.f) *
-                                                                      priv->viewport_width * 0.5f) /
-                                                           priv->map_factor);
-  return coord;
-}
-*/
 void osm_gps_map_from_deg(OsmGpsMap* map, double logDeg, double latDeg, int* px, int* py)
 {
   coord_t pos;

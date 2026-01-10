@@ -1085,7 +1085,7 @@ const int kb = 1024;
 const int mb = 1024 * kb;
 const int gb = 1024 * mb;
 
-QString FormatNrBytes(int nBytes)
+QString FormatNrBytes(size_t nBytes)
 {
   double fBytes = nBytes;
   wchar_t szStr[30];

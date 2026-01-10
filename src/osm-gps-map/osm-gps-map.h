@@ -140,15 +140,7 @@ void drawDownloadSquare(OsmGpsMap* map, float fSizeDeg);
 void saveDraw(OsmGpsMap* map);
 
 void restoreDraw(OsmGpsMap* map);
-/*
-gchar* osm_gps_map_source_get_cache_dir(OsmGpsMapSource_t source, const gchar* tile_dir,
-                                        const gchar* base);
 
-
-gchar* osm_gps_map_source_get_cached_file(OsmGpsMapSource_t source, const gchar* cache_dir,
-                                          int zoom, int x, int y);
-
-*/
 typedef struct
 {
   gint x, y, w, h;
@@ -189,11 +181,9 @@ void osm_gps_map_enableComposition(OsmGpsMap *map, int v);
 int sunset(OsmGpsMap* map);
 int sunrise(OsmGpsMap* map);
 
-// char* osm_gps_map_get_default_cache_directory(void);
-
 // Init
 void osm_gps_map_set_mapcenter(OsmGpsMap* map, float latitude, float longitude, int zoom);
-
+void osm_gps_map_set_center_rad(OsmGpsMap *map, float latitude, float longitude);
 void osm_gps_map_set_center(OsmGpsMap* map, float latitude, float longitude);
 int osm_gps_map_set_zoom(OsmGpsMap* map, int zoom);
 int osm_gps_map_zoom_in(OsmGpsMap* map);
@@ -235,7 +225,6 @@ void osm_gps_map_geographic_to_screen(OsmGpsMap* map, gfloat latitude, gfloat lo
 void osm_gps_map_scroll(OsmGpsMap* map);
 float osm_gps_map_get_scale(OsmGpsMap* map);
 
-// cairo_surface_t* osm_gps_map_get_surface(OsmGpsMap* map);
 void osm_gps_map_set_viewport(OsmGpsMap* map, guint width, guint height);
 
 void osm_gps_map_blit(OsmGpsMap* map, cairo_t* cr, cairo_operator_t op);

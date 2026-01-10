@@ -746,10 +746,9 @@ void Maep::GpsMap::getWeatherCurrentPos()
   }
 }
 
-void Maep::GpsMap::centerTrack(float lo, float la)
+void Maep::GpsMap::centerMap(float laRad, float loRad)
 {
-  //   MarkData t = GetMarkData(sTrackName);
-  osm_gps_map_set_center(map, la, lo);
+  osm_gps_map_set_center_rad(map, laRad, loRad);
 }
 
 void Maep::GpsMap::renameTrack(const QString& sTrackName, int nId)
@@ -761,30 +760,35 @@ void Maep::GpsMap::renameTrack(const QString& sTrackName, int nId)
   }
 }
 
-void Maep::GpsMap::loadTrack(const QString& sTrackName, int nId)
+void Maep::GpsMap::loadTrack(const QString &sTrackName, int nId, int nCenter)
 {
   MarkData t = GetMarkData(sTrackName);
 
-  if (t.nType == 0 || t.nType == 2)
-  {
-    QString sGpxFileName = GpxFullName(sTrackName);
+  if (t.nType == 0 || t.nType == 2) {
+    MaepGeodata *track = osm_get_track(map, nId);
 
-    GError* error = 0;
-    MaepGeodata* track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
+    // Skip loading if already loaded
+    if (track == 0) {
+      QString sGpxFileName = GpxFullName(sTrackName);
+      GError *error = 0;
+      track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
+    }
 
-    if (track != 0)
+    if (track != 0) {
       osm_gps_map_add_track(map, track, nId, 2);
-  }
-  else
-  {
-    if (m_ocMarkers.contains(nId) == false)
-    {
-      char* szSymName = find_file("qml/symFia.png");
-      cairo_surface_t* pSurface = cairo_image_surface_create_from_png(szSymName);
+      if (nCenter == 1) {
+        coord_t t = maep_geodata_track_get_firstpoint(track);
+        osm_gps_map_set_center_rad(map, t.rlat, t.rlon);
+      }
+    }
+
+  } else {
+    if (m_ocMarkers.contains(nId) == false) {
+      char *szSymName = find_file("qml/symFia.png");
+      cairo_surface_t *pSurface = cairo_image_surface_create_from_png(szSymName);
       m_ocMarkers[nId] = pSurface;
       g_free(szSymName);
-      osm_gps_map_add_image_with_alignment(map, t.la, t.lo, pSurface, 0.5, 1.0,
-                                           sTrackName.toUtf8().data());
+      osm_gps_map_add_image_with_alignment(map, t.la, t.lo, pSurface, 0.5, 1.0, sTrackName.toUtf8().data());
     }
   }
 }
@@ -931,8 +935,7 @@ static MssFont NormalFont(22, QFont::Normal);
 const static MssFont BigFont1(72, QFont::Normal);
 const static MssFont BigFont(42, QFont::Bold);
 
-void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum, int nMinSize,
-                                     QImage& oImg, QPainter* pPainter, double fQuote)
+void Maep::GpsMap::DrawResultForTeam(QVariant pListTeam, QString sTeamNameAndSum, int nMinSize, QImage &oImg, QPainter *pPainter, double fQuote)
 {
   QAbstractListModel* pp = qvariant_cast<QAbstractListModel*>(pListTeam);
 
@@ -1210,8 +1213,10 @@ void Maep::GpsMap::saveCurrentTrack()
   t.nType = 0;
   t.len = fLen;
 
-  t.la = currentPos().latitude();
-  t.lo = currentPos().longitude();
+  coord_t tP = maep_geodata_track_get_firstpoint(track_current->get());
+
+  t.la = rad2deg(tP.rlat);
+  t.lo = rad2deg(tP.rlon);
   t.speed = InfoListModel::MaxSpeed;
   t.nTime = time(0);
 

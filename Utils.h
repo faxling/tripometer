@@ -26,7 +26,7 @@ QString FormatDateTime(unsigned int nTime);
 QString FormatLatitude(double fLatitude);
 QString FormatLongitude(double fLongitude);
 QString FormatKm(double f);
-QString FormatNrBytes(int nBytes);
+QString FormatNrBytes(size_t nBytes);
 QString FormatAisShipType(int nShipType);
 unsigned int ColorAisShipType(int nShipType);
 
