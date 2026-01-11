@@ -8,7 +8,17 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
-* Sun Mar 16 2025 Fredrik Axling <faxling11@gmail.com> 1.5.3
+* Sun Jan 11 2026 Fredrik Axling <faxling11@gmail.com> 1.5.4
+- Ver 1.5.4
+- Download mapdata for offline use in settings page
+- Eleveation displayed together with position
+- Uv index sunrise and sunset in weather info
+- Map for bottom composition hard to soft
+- Overlay if composition in seacharts
+- Magnify with pinch instead of + and - buttons
+- buggfix for center on tracks
+
+* Sun May 25 2025 Fredrik Axling <faxling11@gmail.com> 1.5.3
 - Ver 1.5.3
 - Add display of live AIS vessels in map
 - Fix broken seacharts / sonar
