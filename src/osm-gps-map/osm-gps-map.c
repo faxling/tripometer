@@ -2515,10 +2515,14 @@ int osm_gps_map_get_zoom(OsmGpsMap* map)
 
 void osm_gps_map_magnifye(OsmGpsMap* map, int nOrder)
 {
+  osm_gps_map_set_factor(map, map->priv->map_factor + (nOrder / 200.0));
+  /*
   if (nOrder > 0)
     osm_gps_map_set_factor(map, map->priv->map_factor + 0.5);
   else
     osm_gps_map_set_factor(map, map->priv->map_factor - 0.5);
+    
+    */
 }
 
 int osm_gps_map_depth(OsmGpsMap* map)

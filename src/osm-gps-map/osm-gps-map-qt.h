@@ -435,8 +435,8 @@ namespace Maep
     {
       setLookAt(coord.latitude(), coord.longitude());
     }
-    void zoomIn();
-    void zoomOut();
+    // 0 = zoom by scale 1 = zoom by magnify image
+    void zoomIn(int nZoomMode);
     void positionUpdate(const QGeoPositionInfo& info);
     void positionLost();
     void setTrackCapture(bool status);
@@ -471,6 +471,7 @@ namespace Maep
     MaepSearchContext* search;
 
     bool m_bDownload = false;
+    int m_nMagnifyMode = 0;
     gboolean dragging;
     gboolean zooming;
     int numberPendingReq() { return m_numberPendingReq; };

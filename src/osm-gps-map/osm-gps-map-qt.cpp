@@ -547,14 +547,9 @@ void Maep::GpsMap::paint(QPainter* painter)
   paintTo(painter, width(), height());
 }
 
-void Maep::GpsMap::zoomIn()
+void Maep::GpsMap::zoomIn(int nM)
 {
-  osm_gps_map_magnifye(map, 1);
-}
-
-void Maep::GpsMap::zoomOut()
-{
-  osm_gps_map_magnifye(map, -1);
+  m_nMagnifyMode = nM;
 }
 
 void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
@@ -628,15 +623,19 @@ void Maep::GpsMap::touchEvent(QTouchEvent* touchEvent)
       const QTouchEvent::TouchPoint& touchPoint0 = touchPoints.first();
       const QTouchEvent::TouchPoint& touchPoint1 = touchPoints.last();
       int nTDistNew = QLineF(touchPoint0.pos(), touchPoint1.pos()).length();
-      if (abs(nTDistNew - nTDistLast) > 50)
-      {
-        if (nTDistNew >= nTDistLast)
-          osm_gps_map_zoom_in(map);
-        else
-          osm_gps_map_zoom_out(map);
-        nTDistLast = nTDistNew;
+      if (m_nMagnifyMode) {
+        osm_gps_map_magnifye(map, nTDistNew - nTDistLast);
+      } else {
+        if (abs(nTDistNew - nTDistLast) > 50) {
+          if (nTDistNew >= nTDistLast)
+            osm_gps_map_zoom_in(map);
+          else
+            osm_gps_map_zoom_out(map);
+          nTDistLast = nTDistNew;
+        }
       }
     }
+
     return;
   }
   case QEvent::TouchEnd:

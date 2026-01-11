@@ -129,7 +129,7 @@ static char* osd_longitude_str(float longitude)
 }
 
 /* render a string at the given screen position */
-static int osd_render_text_w_halo(cairo_t* cr, int x, int y, int nFontSize, char* text )
+static int osd_render_text_w_halo(cairo_t *cr, double x, double y, int nFontSize, char *text)
 {
   if (!text)
     return y;
@@ -174,7 +174,6 @@ static void osd_render_coordinates(osm_gps_map_osd_t* osd)
   g_assert(priv->coordinates.surface);
   cairo_t* cr = cairo_create(priv->coordinates.surface);
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-  //    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
   cairo_paint(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);

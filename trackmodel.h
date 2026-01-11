@@ -32,7 +32,9 @@ class TrackModel : public QAbstractItemModel
 public:
   Q_INVOKABLE int nextId();
   Q_INVOKABLE void trackAdd(const QString& sName);
-  Q_INVOKABLE void trackImport(const QString& sPath);
+  Q_INVOKABLE void trackImport(const QString &sPath);
+
+  // the methods with mapObj call operations on the map
   Q_INVOKABLE void trackCenter(int nId, QObject* mapObj);
   Q_INVOKABLE void trackCenterAndLoad(int nId, QObject* mapObj);
   Q_INVOKABLE void trackToggleSelect(int nId);

@@ -199,11 +199,13 @@ void TrackModel::loadSelected(QObject* mapObj)
 {
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
+  oc.push_back(SELECTED_t);
   for (auto& oJ : m_oc)
   {
     if (oJ.bSelected == true && oJ.bIsLoaded == false)
     {
       oJ.bIsLoaded = true;
+      oJ.bSelected = false;
       QMetaObject::invokeMethod(mapObj, "loadTrack", Q_ARG(QString, oJ.sName), Q_ARG(int, oJ.nId), Q_ARG(int, 0));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);
@@ -216,11 +218,13 @@ void TrackModel::unloadSelected(QObject* mapObj)
 
   QVector<int> oc;
   oc.push_back(ISLOADED_t);
+  oc.push_back(SELECTED_t);
   for (auto& oJ : m_oc)
   {
     if (oJ.bSelected == true)
     {
       oJ.bIsLoaded = false;
+      oJ.bSelected = false;
       QMetaObject::invokeMethod(mapObj, "unloadTrack", Q_ARG(int, oJ.nId));
       QModelIndex oMI = index(IndexOf(oJ, m_oc), 0, QModelIndex());
       emit dataChanged(oMI, oMI, oc);

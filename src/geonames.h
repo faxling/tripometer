@@ -27,14 +27,6 @@
 #include "converter.h"
 
 G_BEGIN_DECLS
-/*
-
-struct _MaepGeonamesEntry {
-  char *title, *summary;
-  char *url, *thumbnail_url;
-  coord_t pos;
-};
-*/
 
 struct _NominatimPlace
 {

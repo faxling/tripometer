@@ -11,7 +11,6 @@ Item {
   id: idPikePage
   property alias bTransitionRunning: idMap.skipDraw
   property int nSavedTrackId: -1
-  //// property bool bShowBtns: true
   GpsMap {
     id: idMap
     property bool bIsRotated: idApp.bIsRotated
@@ -433,18 +432,13 @@ Item {
     z: idMap.z + 1
 
     //  visible: !Qt.inputMethod.visible
-    TrippBtn {
-      id: zoomout
-      src: "btnMinus.png"
-      onClicked: {
-        idMap.zoomOut()
-      }
-    }
+
     TrippBtn {
       id: zoomin
-      src: "btnPlus.png"
+      src: "btnZoom.png"
       onClicked: {
-        idMap.zoomIn()
+        bSelected = !bSelected
+        idMap.zoomIn(bSelected)
       }
     }
 
@@ -528,16 +522,6 @@ Item {
         label: "Place search"
         width: Theme.itemSizeLarge * 4 + Theme.paddingMedium * 2
         height: Theme.itemSizeLarge
-
-
-        /*
-            EnterKey.text: "search"
-            EnterKey.onClicked:
-            {
-              idSearchPage.currentIndex = -1
-              idMap.setSearchRequest(idSearchText.text)
-            }
-            */
       }
       IconButton {
 
@@ -652,13 +636,6 @@ Item {
     Row {
 
       id: idButtonRow
-
-
-      /*
-      onWidthChanged: {
-        console.log("width " + width)
-      }
-*/
       x: (Screen.width - width) / 2
 
       y: 10
@@ -714,12 +691,6 @@ Item {
       }
 
 
-      /*
-      Item {
-        height: 1
-        width: Theme.itemSizeLarge
-      }
-      */
     }
 
     Row {

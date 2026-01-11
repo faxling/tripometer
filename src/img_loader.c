@@ -104,7 +104,6 @@ cairo_surface_t* maep_loader_jpeg_from_file(const char* filename, GError** error
   FILE* infile;
   struct jpeg_decompress_struct cinfo;
   struct my_error_mgr jerr;
-  // cairo_surface_t *surf = NULL;
 
   if ((infile = fopen(filename, "rb")) == NULL)
   {
