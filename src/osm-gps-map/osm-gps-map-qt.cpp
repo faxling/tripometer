@@ -1500,14 +1500,8 @@ void Maep::GpsMap::setTrack(Maep::Track* track)
 
   if (track && track->get())
   {
-    coord_t top_left, bottom_right;
-
     /* Set track for map. */
     osm_gps_map_add_track(map, track->get(), 0, 0);
-
-    /* Adjust map zoom and location according to track bounding box. */
-    if (maep_geodata_get_bounding_box(track->get(), &top_left, &bottom_right))
-      osm_gps_map_adjust_to(map, &top_left, &bottom_right);
   }
 }
 void Maep::GpsMap::gpsToTrack()
