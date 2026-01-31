@@ -8,9 +8,7 @@ SilicaListView {
 
   //   transitions.running
   id: idObjectList
-  Component.onCompleted: {
-    console.log("maximumFlickVelocity " + maximumFlickVelocity)
-  }
+
 
   // maximumFlickVelocity: 2000
   // cacheBuffer: 2000

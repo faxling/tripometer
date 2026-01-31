@@ -16,7 +16,7 @@ Name: harbour-pikefight
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 
 Summary: Pike with Map
-Version: 1.5.4
+Version: 1.5.5
 Release: 1%{?dist}
 Group: Applications/Engineering
 License: GPLv2

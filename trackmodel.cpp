@@ -113,7 +113,6 @@ void TrackModelFiltered::setFilter(QString sFilter)
   if (m_sFilterStr == sFilter)
     return;
   m_sFilterStr = sFilter;
-  qDebug() << " sFilter " << sFilter;
   invalidate();
 }
 
@@ -149,28 +148,12 @@ void TrackModel::trackCenterAndLoad(int nId, QObject* mapObj)
 
 void TrackModel::trackCenter(int nId, QObject *mapObj)
 {
-  qDebug() << " nId " << nId;
-
   std::find_if(m_oc.begin(), m_oc.end(), [&](ModelDataNode &t) {
     if (t.nId == nId) {
-      qDebug() << t.sName;
-      if (t.nType == 0 || t.nType == 2) {
-        QString sGpxFileName = GpxFullName(t.sName);
-        GError *error = 0;
-        MaepGeodata *track = maep_geodata_new_from_file(sGpxFileName.toUtf8().data(), &error);
-        if (track) {
-          coord_t tP = maep_geodata_track_get_firstpoint(track);
-          g_object_unref(G_OBJECT(track));
-          qDebug() << t.sName << sGpxFileName << " tP.rlon " << tP.rlon << "  " << tP.rlat;
-          QMetaObject::invokeMethod(mapObj, "centerMap", Q_ARG(float, tP.rlat), Q_ARG(float, tP.rlon));
-        }
-
-      } else {
-        QMetaObject::invokeMethod(mapObj, "centerMap", Q_ARG(float, deg2rad(t.la)), Q_ARG(float, deg2rad(t.lo)));
-      }
+      QMetaObject::invokeMethod(mapObj, "centerMap", Q_ARG(float, deg2rad(t.la)), Q_ARG(float, deg2rad(t.lo)));
       return true;
-    }
-    return false;
+    } else
+      return false;
   });
 }
 

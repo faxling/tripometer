@@ -220,7 +220,7 @@ Item {
   ////
   Column {
     id: map_controls5
-    enabled :false
+    enabled: false
     opacity: 0
     spacing: 20
     anchors.bottomMargin: 20
@@ -432,7 +432,6 @@ Item {
     z: idMap.z + 1
 
     //  visible: !Qt.inputMethod.visible
-
     TrippBtn {
       id: zoomin
       src: "btnZoom.png"
@@ -656,8 +655,8 @@ Item {
                                   "Deleting  " + nSelectCount + " Item(s)",
                                   function () {
                                     oMap.skipDraw = false
-                                    oM.unloadSelected(mainMap)
                                     oM.deleteSelected()
+                                    oM.unloadSelected(mainMap)
                                   })
         }
       }
@@ -689,8 +688,6 @@ Item {
         text: "GPX"
         onClicked: pageStack.push(idDownloadPickerPage)
       }
-
-
     }
 
     Row {

@@ -198,8 +198,6 @@ static void track_dispose(GObject *obj)
     return;
   MAEP_GEODATA(obj)->priv->dispose_has_run = TRUE;
 
-  g_message("dispose track.");
-
   /* Chain up to the parent class */
   G_OBJECT_CLASS(maep_geodata_parent_class)->dispose(obj);
 }

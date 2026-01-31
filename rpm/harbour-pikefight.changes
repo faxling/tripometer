@@ -8,6 +8,9 @@
 # * date Author's Name <author's email> version-release
 # - Summary of changes
 
+* Tue Jan 27 2026 Fredrik Axling <faxling11@gmail.com> 1.5.5
+- Fix delete track/marker
+
 * Sun Jan 11 2026 Fredrik Axling <faxling11@gmail.com> 1.5.4
 - Ver 1.5.4
 - Download mapdata for offline use in settings page
